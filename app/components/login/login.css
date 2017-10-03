@@ -1,0 +1,16 @@
+.verticle-center{
+
+ margin-top: 20%;   
+color: white;
+background: rgba(255,255,255,0.4);
+
+
+ 
+}
+.background-img{
+    background-image: url("SignupBackround.jpg");
+}
+.translucent{
+  background-color: white;
+  opacity: .5;
+ }
