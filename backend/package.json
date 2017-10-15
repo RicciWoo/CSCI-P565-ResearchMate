@@ -1,0 +1,20 @@
+{
+  "name": "mongooseTest",
+  "version": "0.0.1",
+  "description": "ResearchMate CSCI-P565-SoftwareEngineering Project Fall 2017",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gmadhwani01/CSCI-P565-ResearchMate.git"
+  },
+  "dependencies": {
+    "mongoose": "~4.11.13",
+    "express": "~4.16.1",
+    "bcrypt": "~1.0.3",
+    "http": "~0.0.0",
+    "fs": "~0.0.1-security",
+    "nodemailer": "~4.1.1",
+    "nodemailer-smtp-transport": "~2.7.4",
+    "randomstring": "~1.1.5",
+    "cors": "~2.8.4"
+  }
+}
