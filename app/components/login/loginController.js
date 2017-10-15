@@ -19,7 +19,8 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
             alert(response.data.msg)
         }
         else {
-          $cookies.put('sessionString', response.data.msg)
+         // $cookies.put('sessionString', response.data.msg)
+          $location.path('/profile');
         }
       }
     },
