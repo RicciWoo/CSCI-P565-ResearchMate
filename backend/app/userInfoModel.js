@@ -10,6 +10,9 @@ var userInfoSchema = mongoose.Schema({
         type: String
     },
     location:{
+        address:{
+            type: String
+        },
         city:{
             type: String
         },
@@ -21,7 +24,7 @@ var userInfoSchema = mongoose.Schema({
         }
     },
     dob:{
-        type:String
+        type:Date
     },
     advisor: {
         primary: {
@@ -30,6 +33,9 @@ var userInfoSchema = mongoose.Schema({
         secondary: {
             type: String
         }
+    },
+    picture:{
+        type : String
     }
 });
 

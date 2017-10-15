@@ -364,6 +364,7 @@ function forgetPassword(req, res, next){
 }
 
 // basic function to get userInfo
+app.post('/getUserInfo', getUserInfo);
 function getUserInfo(req,res,next) {
     // check sessionString in usertable & get userID
     var sessionString = req.body.sessionstring;
@@ -383,57 +384,64 @@ function getUserInfo(req,res,next) {
                     console.log("Error: UserInfo not found, may due to verification not done!");
                 }
                 else {
-                    response["msg"] = JSON.stringify(userInfo);
+                    response["msg"] = userInfo;
                     response["status"] = "true";
                     res.send(response);
-                    console.log("Complete: UserInfo sent.");
+                    console.log("Complete: UserInfo sent for user = "+user.userName);
                 }
             });
         }
     });
-};
-app.post('/getUserInfo', getUserInfo);
+}
 
 // basic function to set userInfo
+app.post('/setUserInfo', setUserInfo);
 function setUserInfo(req,res,next) {
-    //  setting up the header configurations
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST');
-    // check sessionString in usertable & get userID
-    var sessionString = req.body.sessionString;
+//  check sessionString in usertable & get userID
+    var sessionString = req.body.sessionstring;
     var query = {"sessionString": sessionString};
     User.findOne(query, function(err, user) {
         if (user == null) {
-            res.send("Error: Update failed. User not found!");
+            response["msg"] = "Invalid Session String";
+            res.send(response);
             console.log("Error: Update failed. User not found!")
-        } else {
+        }
+        else {
             var queryInfo = {"userID": user.userID};
             UserInfo.findOne(queryInfo, function(err, userInfo) {
                 if (userInfo == null) {
-                    res.send("Error: Update failed. UserInfo not found, may due to user not verified!");
+                    response["msg"] = " Update failed.";
+                    res.send(response);
                     console.log("Error: Update failed. UserInfo not found, may due to user not verified!");
-                } else {
+                }
+                else {
                     userInfo.set({university: req.body.university});
                     userInfo.set({
                         location: {
+                            address: req.body.address,
                             city: req.body.city,
                             state: req.body.state,
                             country: req.body.country
                         }
                     });
-                    userInfo.set({dob: req.body.dob});
-                    UserInfo.set({
+                    var dobDate = new Date(req.body.dob);
+                    userInfo.set({dob: dobDate});
+                    userInfo.set({
                         advisor: {
                             primary: req.body.primaryAdvisor,
                             secondary: req.body.secondaryAdvisor
                         }
                     });
-                    UserInfo.save(function (err, updatedUser) {
+                    userInfo.set({picture: req.body.picture});
+                    userInfo.save(function (err, updatedUser) {
                         if(err) {
-                            res.send("Error: Update failed while saving!");
+                            response["msg"] = " Update failed while saving.";
+                            res.send(response);
                             console.log("Error: Update failed while saving!");
                         } else {
-                            res.send("Complete: Update successful.");
+                            response["msg"] = " Update successful.";
+                            response["status"] = "true";
+                            res.send(response);
                             console.log("Complete: Update successful.");
                         }
                     });
@@ -441,5 +449,105 @@ function setUserInfo(req,res,next) {
             });
         }
     });
-};
-app.post('/setUserInfo', setUserInfo);
+}
+
+app.post('/getUserPublications', getUserPublications);     //sessionstring
+function getUserPublications(req,res,next) {
+    var query = {"sessionString": req.body.sessionstring};
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            query = {"userID":user.userID};
+            UserPublications.find(query,function(err,publics){
+                if(err||publics == null){
+                    response["msg"] = "No entry found for this user in publications.";
+                    res.send(response);
+                    console.log("Error: User not found in publications!")
+                }
+                else{
+                    response["status"] = "true";
+                    response["msg"] = publics.publicationID;
+                    res.send(response);
+                }
+            })
+        }
+    });
+}
+
+app.post('/setUserPublication', setUserPublication);      //sessionstring, publicationID   (not properly set yet)
+function setUserPublication(req,res,next) {
+    var query = {"sessionString": req.body.sessionstring};
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var setUserPublicationDoc = new UserPublications({
+               userID:user.userID,
+               publicationID:req.body.publicationID
+            });
+            setUserPublicationDoc.save(function (err) {
+                if(err){
+                    response["msg"] = "unable to save";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    response["msg"] = "publication added.";
+                    response["status"] = "true";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+            });
+        }
+
+        });
+}
+
+app.post('/getUserGroups', getUserGroups);                  //sessionstring
+function getUserGroups(req,res,next) {
+    var query = {"sessionString": req.body.sessionstring};
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            query = {"userID":user.userID};
+            UserGroup.find(query,function(err,groups){
+                if(err||groups == null){
+                    response["msg"] = "No entry found for this user in groups.";
+                    res.send(response);
+                    console.log("Error: User not found in groups!")
+                }
+                else{
+                    response["status"] = "true";
+                    response["msg"] = groups.groupID;
+                    res.send(response);
+                }
+            })
+        }
+    });
+}
+
+app.post('/setUserGroup', setUserGroup);                   //sessionstring, groupname, membertype
+function setUserGroup(req,res,next) {
+
+}
+
+app.post('/getUserFollowers', getUserFollowers);           //sessionstring
+function getUserFollowers(req,res,next) {
+    
+}
+
+app.post('/followSomeone', followSomeone);                 //sessionstring, username(user that needs to be followed by sessionstring holder)
+function followSomeone(req,res,next) {
+    
+}
