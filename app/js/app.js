@@ -7,7 +7,15 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/signup/signup.html"
     }).when("/profile", {
       templateUrl: "components/profile/profile.html"
-    });;
+    }).when("/forgetpassword", {
+      templateUrl: "components/login/forgetpassword.html"
+    }).when("/forgetusername", {
+      templateUrl: "components/login/forgetusername.html"
+    }).when("/updatepassword", {
+      templateUrl: "components/login/updatepassword.html"
+    }).when("/verifyuser", {
+      templateUrl: "components/login/verifyuser.html"
+    });
   
 
    
