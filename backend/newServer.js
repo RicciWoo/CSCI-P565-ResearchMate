@@ -32,10 +32,19 @@ var GroupInfo = require('./app/groupInfoModel');
 var UserGroup = require('./app/userGroupInfoModel');
 var Publications = require('./app/publicationsInfoModel');
 var UserPublications = require('./app/userPublicationInfoModel');
-
+//  basic response initialization
+var response = {
+    "status":"false",
+    "msg" : ""
+};
 
 //          mundane functions
 //  hashing function
+/**
+ * [Function used to generate hash for the password]
+ * @param  {[String]} password [Password]
+ * @return {[String]}          [Hash of the password]
+ */
 var myHasher = function(password) {
     if(password.trim()=="")
         return "";
@@ -43,6 +52,10 @@ var myHasher = function(password) {
     return hash;
 };
 //  nodemailer setup
+/**
+ * [transporter Create a sender object for email]
+ * @type {[type]}
+ */
 var transporter = nodemailer.createTransport(smtpTransport({
     service: 'gmail',
     host: 'smtp.gmail.com',
@@ -53,6 +66,11 @@ var transporter = nodemailer.createTransport(smtpTransport({
     }
 }));
 //  sending mail using nodemailer
+/**
+ * [sendMaill Accept mail options and send email to the user]
+ * @param  {[Object]} mailOptions [Recipient's Details]
+ * @return {[type]}             [description]
+ */
 function sendMaill(mailOptions) {
     transporter.sendMail(mailOptions, function(error, info){
         if (error) {
@@ -62,11 +80,7 @@ function sendMaill(mailOptions) {
         }
     });
 }
-//  basic response initialization
-var response = {
-    "status":"false",
-    "msg" : ""
-};
+
 
 
 // basic function for testing
@@ -81,7 +95,49 @@ function sayHello(req,res,next){
     console.log("said hello");
 }
 
+/**
+ * [checkSignupInput Function to verify if sign up input is valid]
+ * @param  {[Obj]} resp      [Response object]
+ * @param  {[string]} firstname [description]
+ * @param  {[type]} username  [description]
+ * @param  {[type]} email     [description]
+ * @param  {[type]} password  [description]
+ * @return {[type]}           [description]
+ */
+function checkSignupInput(resp, firstname, username, email, password){
+  var msg = "";
+  var result = true;
+  if(firstname == undefined || firstname.trim()==""){
+    msg+="First name is required\n";
+    result = false;
+  }
+  if(username == undefined || username.trim() == ""){
+    msg+="Username is required\n";
+    result = false;
+  }
+  if(email == undefined || email.trim()==""){
+    msg += "Email is required\n";
+    result = false;
+  }
+  if(password == undefined || password.trim() == ""){
+    msg += "Password is required";
+    result = false;
+  }
+  if(!result){
+    response["msg"] = msg;
+    resp.send(response);
+  }
+  return result;
+}
+
 app.post('/signUp',signUp);
+/**
+ * [signUp Function to add user details on sign up]
+ * @param  {[type]}   req  [request object]
+ * @param  {[type]}   res  [response object]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function signUp(req,res,next) {
 //  creating a document
 
@@ -90,6 +146,9 @@ function signUp(req,res,next) {
     var firstname = req.body.firstname;
     var lastname = req.body.lastname;
     var pw = req.body.password;
+
+    if(!checkSignupInput(res, firstname, lastname, username, email, pw))
+      return;
 
     var maxCount = 1;
     User.findOne().sort('userID').exec(function(err, entry) {
@@ -147,10 +206,37 @@ function signUp(req,res,next) {
     });
 }
 
+function checkVerifyUserInput(resp, username, verNum){
+  var msg = "";
+  var result = true;
+  if(username == undefined || username.trim() == ""){
+    msg += "Username is required\n";
+    result = false;
+  }
+  if(verNum == undefined || verNum.trim() == ""){
+    msg += "Verification Number is required";
+    result = false;
+  }
+  if(!result){
+    response["msg"] = msg;
+    resp.send(response);
+  }
+  return result;
+}
+
 app.post('/verifyUser',verifyUser);
+/**
+ * [verifyUser Function to verify user. Accepts username and verification number]
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function verifyUser(req,res,next) {
     var username = req.body.username;
     var verifNumber = req.body.verificationNumber;
+    if(!checkVerifyUserInput(res, username, verifNumber))
+      return;
     var query = {"userName": username};
 
     User.findOne(query, function(err, seeUser) {
@@ -206,10 +292,44 @@ function verifyUser(req,res,next) {
     });
 }
 
+/**
+ * [checkLoginInput Function to check if login inputs are given properly]
+ * @param  {[type]} resp     [description]
+ * @param  {[type]} username [description]
+ * @param  {[type]} password [description]
+ * @return {[type]}          [description]
+ */
+function checkLoginInput(resp, username, password){
+  var msg = "";
+  var result = true;
+  if(username == undefined || username.trim() == ""){
+    msg += "Username is required\n";
+    result = false;
+  }
+  if(password == undefined || password.trim()==""){
+    msg += "Password is required";
+    result = false;
+  }
+  if(!result){
+    response["msg"] = msg;
+    resp.send(response);
+  }
+  return result;
+}
+
 app.post('/login',login);
+/**
+ * [login Function to check the login for user.]
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function login(req,res,next) {
     var username = req.body.username;
     var pw = req.body.password;
+    if(!checkLoginInput(res, username, pw))
+      return;
     var query = {'userName':username};
     User.findOne(query, function(err, seeUser) {
         if (seeUser == null) {
@@ -261,10 +381,40 @@ function login(req,res,next) {
     });
 }
 
+function checkUpdatePwdInput(resp, sessionString, password){
+  var msg = "";
+  var result = true;
+
+  if(sessionString == undefined || sessionString.trim()==""){
+    msg += "Session string is required\n";
+    result = false;
+  }
+  if(password == undefined || password.trim()==""){
+    msg += "Password is required";
+    result = false;
+  }
+
+  if(!result){
+    response["msg"] = msg;
+    resp.send(response);
+  }
+  return result;
+}
+
 app.post('/updatePassword',updatePassword);
+/**
+ * [updatePassword Function to update the user after forget password]
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function updatePassword(req, res, next){
     var sessionString = req.body.sessionString;
-    var password = myHasher(req.body.password);
+    var password = req.body.password;
+    if(!checkUpdatePwdInput(res, sessionString, password))
+      return;
+    password = myHasher(password);
     var query = {'sessionString': sessionString};
     User.findOne(query, function(err, UserObj){
         if(UserObj == null){
@@ -294,9 +444,34 @@ function updatePassword(req, res, next){
     });
 }
 
+
+function checkForgetUsernameInput(resp, email){
+  var msg = "";
+  var result = true;
+
+  if(email == undefined || email.trim()==""){
+    msg += "Email is required";
+    result = false;
+  }
+  if(!result){
+    response["msg"] = msg;
+    resp.send(response);
+  }
+  return result;
+}
+
 app.post('/forgetUsername',forgetUsername);
+/**
+ * [forgetUsername Function that accepts email and sends username on email]
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function forgetUsername(req, res, next){
     var email = req.body.email;
+    if(!checkForgetUsernameInput(res, email))
+      return;
     var query = {'emailID' : email};
     User.findOne(query, function(err, UserObj){
         if(UserObj == null){
@@ -320,9 +495,33 @@ function forgetUsername(req, res, next){
     });
 }
 
+function checkForgetPasswordInput(resp, input){
+  var msg = "";
+  var result = true;
+
+  if(input == undefined || input.trim() == ""){
+    msg += "Either email or username is required";
+    result = false;
+  }
+  if(!result){
+    response["msg"] = msg;
+    resp.send(response);
+  }
+  return result;
+}
+
 app.post('/forgetPassword',forgetPassword);
+/**
+ * [forgetPassword Function that accepts email or username, generates random string and allows user to update the password]
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function forgetPassword(req, res, next){
     var input = req.body.input;
+    if(!checkForgetPasswordInput(res, input))
+      return;
     var query = {};
     if(input.indexOf('@')!=-1){
         query = {'emailID' : input};
@@ -544,10 +743,10 @@ function setUserGroup(req,res,next) {
 
 app.post('/getUserFollowers', getUserFollowers);           //sessionstring
 function getUserFollowers(req,res,next) {
-    
+
 }
 
 app.post('/followSomeone', followSomeone);                 //sessionstring, username(user that needs to be followed by sessionstring holder)
 function followSomeone(req,res,next) {
-    
+
 }
