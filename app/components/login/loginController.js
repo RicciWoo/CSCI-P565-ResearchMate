@@ -1,17 +1,10 @@
 
-
-myApp.controller('loginController', ['$scope','$http','$location', function($scope,$http,$location) {
+myApp.controller('loginController', ['$scope','$http','$location', function($scope,$http,$location,$cookies,$cookieStore) {
   var self=$scope; 
  
     $scope.submit = function(){
   
-      console.log($scope.pwd);
-      $http.get('https://jsonplaceholder.typicode.com/posts/1').then(function(response) {
-        $location.path("/singup");
-              
-      });
-    } 
-
+    }
  
 }]);
 
