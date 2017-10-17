@@ -20,6 +20,7 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
         }
         else {
          // $cookies.put('sessionString', response.data.msg)
+         alert(response.data.status)
           $location.path('/profile');
         }
       }

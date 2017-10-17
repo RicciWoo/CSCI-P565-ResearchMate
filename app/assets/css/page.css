@@ -3,12 +3,10 @@
      margin-top: 20%;   
     color: white;
     background: rgba(255,255,255,0.4);
-    
-    
-     
+    padding:inherit;
     }
     .background-img{
-        background-image: url("/img/Backround.jpg");
+        background-image: url("../img/Backround.jpg");
         
     }
     .translucent{
