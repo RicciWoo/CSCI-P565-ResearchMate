@@ -661,7 +661,8 @@ function getUserPublications(req,res,next) {
         }
         else {
             query = {"userID":user.userID};
-            UserPublications.find(query,function(err,publics){
+            UserPublications.findOne(query,function(err,publics){
+//                console.log(publics.userID);
                 if(err||publics == null){
                     response["msg"] = "No entry found for this user in publications.";
                     res.send(response);
@@ -671,6 +672,7 @@ function getUserPublications(req,res,next) {
                     response["status"] = "true";
                     response["msg"] = publics.publicationID;
                     res.send(response);
+                    console.log(response[msg]);
                 }
             })
         }
@@ -709,6 +711,43 @@ function setUserPublication(req,res,next) {
         });
 }
 
+app.post('/createGroups', createGroups);                  //groupname
+function createGroups(req,res,next) {
+    var maxCount = 1;
+    GroupInfo.findOne().sort('groupID').exec(function(err, entry) {
+        // entry.userID is the max value
+        if(entry == null) {
+            maxCount = 1;
+//            console.log("if "+entry);
+        }
+        else {
+            maxCount = entry.groupID + 1;
+//            console.log("else "+entry.userID);
+//            console.log("maxcount : "+ maxCount);
+        }
+
+        var newGroupDoc = new GroupInfo({
+            groupName: req.body.groupname,
+            groupID: maxCount,
+            createdOn: Date.now()
+        });
+
+    newGroupDoc.save(function (err) {
+        if(err){
+            response["msg"] = "unable to save group";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            response["msg"] = "group created.";
+            response["status"] = "true";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+    });
+    });
+}
+
 app.post('/getUserGroups', getUserGroups);                  //sessionstring
 function getUserGroups(req,res,next) {
     var query = {"sessionString": req.body.sessionstring};
@@ -720,7 +759,7 @@ function getUserGroups(req,res,next) {
         }
         else {
             query = {"userID":user.userID};
-            UserGroup.find(query,function(err,groups){
+            UserGroup.findOne(query,function(err,groups){
                 if(err||groups == null){
                     response["msg"] = "No entry found for this user in groups.";
                     res.send(response);
@@ -730,6 +769,7 @@ function getUserGroups(req,res,next) {
                     response["status"] = "true";
                     response["msg"] = groups.groupID;
                     res.send(response);
+                    console.log(response["msg"]);
                 }
             })
         }
@@ -738,15 +778,112 @@ function getUserGroups(req,res,next) {
 
 app.post('/setUserGroup', setUserGroup);                   //sessionstring, groupname, membertype
 function setUserGroup(req,res,next) {
-
+    var query = {"sessionString": req.body.sessionstring};
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            query = {"groupName":req.body.groupname};
+            GroupInfo.findOne(query,function (err, group) {
+                if(err|| group == null){
+                    response["msg"] = "group not found";
+                    console.log(response["msg"]);
+                    res.send(response);
+                }
+                else{
+                    var setUserGroupDoc = new UserGroup({
+                        userID: user.userID,
+                        userType: req.body.membertype,
+                        groupID: group.groupID
+                    });
+                    setUserGroupDoc.save(function (err) {
+                        if(err){
+                            response["msg"] = "unable to add in group";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else{
+                            response["msg"] = "group entry added.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
 }
 
 app.post('/getUserFollowers', getUserFollowers);           //sessionstring
 function getUserFollowers(req,res,next) {
-
+    var query = {"sessionString": req.body.sessionstring};
+    User.findOne(query, function (err, user) {
+        if (user == null||err) {
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!");
+        }
+        else {
+            query = {"userID":user.userID};
+            UserFollowee.findOne(query,function (err,userfollowee) {
+                if (userfollowee == null||err) {
+                    response["msg"] = "No followers";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    response["status"] = "true";
+                    response["msg"] = userfollowee.followeeID;
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+            });
+        }
+    });
 }
 
-app.post('/followSomeone', followSomeone);                 //sessionstring, username(user that needs to be followed by sessionstring holder)
+app.post('/followSomeone', followSomeone);                 //sessionstring, followthis(user that needs to be followed by sessionstring holder)
 function followSomeone(req,res,next) {
-
+    var query = {"sessionString": req.body.sessionstring};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            query = {"userName":req.body.followthis};
+            User.findOne(query,function (err,followme) {
+                if(err || followme == null){
+                    response["msg"] = "Unable to find user you want to follow.";
+                    res.send(response);
+                    console.log("Error: User not found!")
+                }
+                else{
+                    var userFollowDoc = new UserFollowee({
+                        userID:followme.userID,
+                        followeeID:user.userID,
+                        followingFrom:Date.now()
+                    });
+                    userFollowDoc.save(function (err) {
+                        if(err){
+                            response["msg"] = "unable to follow this user";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else{
+                            response["msg"] = "following successful entry added.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
 }
