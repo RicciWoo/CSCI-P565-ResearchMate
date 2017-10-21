@@ -4,7 +4,17 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
   var sessionString = $cookies.get('sessionString');
   var url = $location.path().split('/');
   $scope.username = url[2];
-
+  $scope.edit=false;
+  $scope.icon="fa fa-pencil-square-o btnEdit"
+  
+  $scope.editProfile=function(){
+    
+    $scope.edit=!$scope.edit;
+    if($scope.edit)
+    $scope.icon="fa fa-floppy-o btnEdit"
+    else
+    $scope.icon="fa fa-pencil-square-o btnEdit"
+  }
   $http({
         url: "http://silo.soic.indiana.edu:54545/getUserInfo",
         method: "POST",
@@ -34,6 +44,7 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
             console.log(userinfo);
             $scope.firstname = userinfo.user.firstName;
             $scope.lastname = userinfo.user.lastName;
+            $scope.name=$scope.firstname+" "+$scope.lastname;
             $scope.imgLocation = "http://simpleicon.com/wp-content/uploads/user1.png";
             $scope.address = userinfo.userInfo.location.address != undefined && userinfo.userInfo.location.address.trim()!=""?userinfo.userInfo.location.address + ',':"";
             $scope.city = userinfo.userInfo.location.city != undefined && userinfo.userInfo.location.city.trim()!=""?userinfo.userInfo.location.city + ',':"";

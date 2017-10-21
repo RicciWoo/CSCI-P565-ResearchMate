@@ -12,24 +12,52 @@
 <body ng-app="myApp" ng-model="allowEdit">
 <div ng-controller="profileController" class="container col-lg-8">
 <div class="row bg-white">
-  <div class="col-lg-12 col-sm-2 text-right"><i ng-show="allowEdit" ng-click="editProfile('genInfo')" class="fa fa-pencil-square-o btnEdit" aria-hidden="true"></i></div>
+  <div class="col-lg-12 col-sm-2 text-right"><i  ng-click="editProfile('genInfo')" class="{{icon}}" aria-hidden="true"></i></div>
     <div class="col-lg-3 col-sm-12">
         <img ng-src="{{imgLocation}}" class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
     </div>
     <div class="col-lg-9 col-sm-12">
         <div class="row">
+            
             <div class="col-12 text-truncate">
+            <div ng-show="edit">
+            <input ng-model="firstname">
+            <input ng-model="lastname">
+            </div>
+            <div ng-show="!edit">
              {{firstname}} {{lastname}}
+            </div>
             </div>
           </div>
           <div class="row">
-            <div class="col-12 text-truncate">
+            <div>
+            <div ng-show="edit" class="col-12 text-truncate">
+                   <div> 
+                   <input ng-model="address">
+                   </div>
+                   <div>
+                    <input ng-model="city">
+                </div>
+                <div>
+                    <input ng-model="state">
+                </div>
+                <div>
+                    <input ng-model="country">
+                </div>
+                </div>
+                <div ng-show="!edit">
                 {{address}} {{city}} {{state}} {{country}}
+               </div>
             </div>
           </div>
           <div class="row">
             <div class="col-12">
+                <div ng-show="edit">
+                <input ng-model="summary">
+                </div>
+                <div ng-show="!edit">
                 {{summary}}
+                </div>
             </div>
           </div>
 
