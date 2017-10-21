@@ -1,12 +1,12 @@
 var myApp = angular.module('myApp',['ngRoute','ngCookies']);
-myApp.constant('URL','http://silo.soic.indiana.edu:48167');
+myApp.constant('URL','http://silo.soic.indiana.edu:54545');
 myApp.config(function ($routeProvider) {
   $routeProvider
     .when("/", {
       templateUrl: "components/login/login.html"
     }).when("/signup", {
       templateUrl: "components/signup/signup.html"
-    }).when("/profile", {
+    }).when("/profile/:username", {
       templateUrl: "components/profile/profile.html"
     }).when("/forgetpassword", {
       templateUrl: "components/login/forgetpassword.html"
