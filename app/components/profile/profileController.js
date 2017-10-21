@@ -30,9 +30,6 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
               alert(response.data.msg)
           }
           else{
-
-
-
             var userinfo = response.data.msg;
             var sessString = userinfo.user.sessionString;
 
@@ -59,4 +56,90 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
         alert("Error occured while authenticating user");
       }
     );
+
+
+    $http({
+          url: "http://silo.soic.indiana.edu:54545/getUserFollowers",
+          method: "POST",
+          data: {
+            'username':$scope.username,
+            'sessionString': sessionString
+        },
+
+      }).then(function success(response){
+        if(response.status == 200){
+          if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
+            alert(response.data.msg);
+          else{
+            var followerInfo = response.data.msg.userInfo;
+            $scope.followUsernames = followerInfo.usernames;
+
+          }
+        }
+      },
+    function error(response){
+
+    }
+    );
+
+
+
+    $http({
+          url: "http://silo.soic.indiana.edu:54545/getUserGroups",
+          method: "POST",
+          data: {
+            'username':$scope.username,
+            'sessionString': sessionString
+        },
+
+      }).then(function success(response){
+        if(response.status == 200){
+          if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
+            alert(response.data.msg);
+          else{
+            var groupInfo = response.data.msg.groupInfo
+            var groupNames = []
+            for(var i = 0; i<groupInfo.length;i++){
+              groupNames.push(groupInfo[i].groupName)
+            }
+            $scope.groupNames = groupNames;
+          }
+        }
+      },
+    function error(response){
+
+    }
+    );
+
+
+
+    $http({
+          url: "http://silo.soic.indiana.edu:54545/getUserPublications",
+          method: "POST",
+          data: {
+            'username':$scope.username,
+            'sessionString': sessionString
+        },
+
+      }).then(function success(response){
+        if(response.status == 200){
+          if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
+            alert(response.data.msg);
+          else{
+            var publicationInfo = response.data.msg.publicationInfo
+            var publicationNames = []
+            for(var i = 0; i<publicationInfo.length;i++){
+              publicationNames.push(publicationInfo[i].name)
+            }
+            $scope.publicationNames = publicationNames;
+          }
+        }
+      },
+    function error(response){
+
+    }
+    );
+
+
+
 }); //end of controller

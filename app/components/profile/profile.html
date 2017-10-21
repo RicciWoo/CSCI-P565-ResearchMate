@@ -12,13 +12,13 @@
 <body ng-app="myApp" ng-model="allowEdit">
 <div ng-controller="profileController" class="container col-lg-8">
 <div class="row bg-white">
-  <div class="col-lg-12 col-sm-2 text-right"><i  ng-click="editProfile('genInfo')" class="{{icon}}" aria-hidden="true"></i></div>
+  <div class="col-lg-12 col-sm-2 text-right"><i ng-show="allowEdit" ng-click="editProfile('genInfo')" class="{{icon}}" aria-hidden="true"></i></div>
     <div class="col-lg-3 col-sm-12">
         <img ng-src="{{imgLocation}}" class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
     </div>
     <div class="col-lg-9 col-sm-12">
         <div class="row">
-            
+
             <div class="col-12 text-truncate">
             <div ng-show="edit">
             <input ng-model="firstname">
@@ -32,7 +32,7 @@
           <div class="row">
             <div>
             <div ng-show="edit" class="col-12 text-truncate">
-                   <div> 
+                   <div>
                    <input ng-model="address">
                    </div>
                    <div>
@@ -60,7 +60,11 @@
                 </div>
             </div>
           </div>
-
+          <div class="row">
+            <div class="col-12">
+                <input type="button" class="btn btn-success" value="Follow" ng-show="!allowEdit"/>
+            </div>
+          </div>
     </div>
 </div>
 <div class="row bg-white">
@@ -77,37 +81,31 @@
 
     </div>
 </div>
-<div class="row bg-white">
-    <h2>following</h2>
+<div ng-show="followUsernames.length>0" class="row bg-white">
+    <h2>Following</h2>
     <div class="col-lg-12 col-sm-12">
         <ul>
-            <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
-            <li>Aliquam tincidunt mauris eu risus.</li>
-            <li>Vestibulum auctor dapibus neque.</li>
+            <li ng-repeat="username in followUsernames"><a href="http://localhost/researchmate/#/profile/{{username}}">{{username}}</a></li>
          </ul>
 
 
     </div>
 </div>
-<div class="row bg-white">
+<div class="row bg-white" ng-show = "groupNames.length>0">
     <h2>Groups</h2>
     <div class="col-lg-12 col-sm-12">
-        <ul>
-            <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
-            <li>Aliquam tincidunt mauris eu risus.</li>
-            <li>Vestibulum auctor dapibus neque.</li>
+        <ul ng-repeat = "groupName in groupNames">
+            <li>{{groupName}}</li>
          </ul>
 
 
     </div>
 </div>
-<div class="row bg-white">
-    <h2>Recent Documents</h2>
+<div class="row bg-white" ng-show = "publicationNames.length>0">
+    <h2>Publications</h2>
     <div class="col-lg-12 col-sm-12">
         <ul>
-            <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
-            <li>Aliquam tincidunt mauris eu risus.</li>
-            <li>Vestibulum auctor dapibus neque.</li>
+            <li ng-repeat="name in publicationNames">{{name}}</li>
          </ul>
 
 
