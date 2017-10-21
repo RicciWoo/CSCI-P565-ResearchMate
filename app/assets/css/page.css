@@ -1,0 +1,15 @@
+.verticle-center{
+    
+     margin-top: 20%;   
+    color: white;
+    background: rgba(255,255,255,0.4);
+    padding:inherit;
+    }
+    .background-img{
+        background:	rgb(220,220,220);
+        
+    }
+    .translucent{
+      background-color: white;
+      opacity: .5;
+     }
