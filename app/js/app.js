@@ -17,7 +17,7 @@ myApp.config(function ($routeProvider) {
     }).when("/verifyuser", {
       templateUrl: "components/login/verifyuser.html"
     });
-  
 
-   
+
+
 });

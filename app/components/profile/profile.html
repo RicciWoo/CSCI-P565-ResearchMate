@@ -1,28 +1,29 @@
 <!DOCTYPE html>
-<html >
+<html lang="en">
 
 <head>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
         crossorigin="anonymous">
-    <link rel="stylesheet" href="./components/profile/profile.css">
+    <link rel="stylesheet" href="profile.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular-cookies.js"></script>
 
 </head>
-<body>
-<div class="container">
+<body ng-app="myApp">
+<div ng-controller="profileController" class="container col-lg-8">
 <div class="row bg-white">
-    <div class="col-lg-6 col-sm-12">
-        <img src="./components/profile/studious-girl.jpg" class="img-responsive rounded-circle" alt="Cinque Terre" width="304" height="236">     
+    <div class="col-lg-3 col-sm-12">
+        <img src="" class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
     </div>
-    <div class="col-lg-6 col-sm-12">
+    <div class="col-lg-9 col-sm-12">
         <div class="row">
             <div class="col-12 text-truncate">
-             Prtricia alkalge
+             {{firstname}} {{lastname}}
             </div>
           </div>
           <div class="row">
             <div class="col-12 text-truncate">
-                3901 E Hagan St # F, Bloomington, IN 47401
+                {{address}} {{city}} {{state}} {{country}}
             </div>
           </div>
           <div class="row">
@@ -31,7 +32,7 @@
                  and am known for being a great listener and clear communicator, whether I’m engaging with colleagues or employers.
             </div>
           </div>
-          
+
     </div>
 </div>
 <div class="row bg-white">
@@ -43,8 +44,8 @@
             <li>Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi.</li>
             <li>Pellentesque fermentum dolor. Aliquam quam lectus, facilisis auctor, ultrices ut, elementum vulputate, nunc.</li>
          </ul>
-                     
-          
+
+
     </div>
 </div>
 <div class="row bg-white">
@@ -55,8 +56,8 @@
             <li>Aliquam tincidunt mauris eu risus.</li>
             <li>Vestibulum auctor dapibus neque.</li>
          </ul>
-         
-          
+
+
     </div>
 </div>
 <div class="row bg-white">
@@ -67,8 +68,8 @@
             <li>Aliquam tincidunt mauris eu risus.</li>
             <li>Vestibulum auctor dapibus neque.</li>
          </ul>
-         
-          
+
+
     </div>
 </div>
 <div class="row bg-white">
@@ -79,8 +80,8 @@
             <li>Aliquam tincidunt mauris eu risus.</li>
             <li>Vestibulum auctor dapibus neque.</li>
          </ul>
-         
-          
+
+
     </div>
 </div>
 </div>

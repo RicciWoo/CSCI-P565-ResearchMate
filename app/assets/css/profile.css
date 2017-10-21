@@ -2,8 +2,8 @@ body{
     background-color: rgb(244, 246, 246);
 }
 .row{
-    padding: 20px;
-    margin-top: 20px;
+    padding: 10px 20px;
+    margin-top: 10px;
 }
 .container{
     padding-top: 60px;

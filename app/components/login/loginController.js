@@ -1,6 +1,6 @@
 myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','$cookieStore','URL', function ($scope, $http, $location, $cookies, $cookieStore,URL) {
   var self = $scope;
-  
+
   $scope.submit = function () {
     var username = self.username;
     var password = self.pwd;
@@ -19,7 +19,8 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
             alert(response.data.msg);
         }
         else {
-         // $cookies.put('sessionString', response.data.msg)
+          $cookies.remove('sessionString');
+          $cookies.put('sessionString', response.data.msg)
           $location.path('/profile');
         }
       }
@@ -47,7 +48,7 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
         },
 
       }).then(function success(response) {
-      
+
         if (response.status == 200) {
           if (response.data.status == "false") {
             if (response.data.msg != "")
@@ -59,7 +60,7 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
         }
       },
         function error(response) {
-        
+
           alert("Error occured while sending username");
         }
         );
@@ -74,12 +75,12 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
    * @type {[type]}
    */
   $scope.sendPassword = function () {
-   
+
     var username = $scope.pwdusername.trim();
-    
+
     console.log("send password");
-    
-      
+
+
       $http({
         url: URL+"/forgetPassword",
         method: "POST",
@@ -102,12 +103,12 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
           alert("Error occured while sending password");
         }
         );
-    
-   
+
+
   };
 
   $scope.redirectSignup = function(){
-    
+
     $location.path('/signup');
   } // end of redirectSignup fucntion
     /**
@@ -197,4 +198,3 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
 
   };
 }]);
-
