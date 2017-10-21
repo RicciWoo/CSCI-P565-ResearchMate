@@ -1,5 +1,5 @@
-var myApp = angular.module('myApp',['ngRoute','ngCookies']);
-myApp.constant('URL','http://silo.soic.indiana.edu:48167');
+var myApp = angular.module('myApp', ['ngRoute', 'ngCookies']);
+myApp.constant('URL', 'http://silo.soic.indiana.edu:48167');
 myApp.config(function ($routeProvider) {
   $routeProvider
     .when("/", {
@@ -17,7 +17,7 @@ myApp.config(function ($routeProvider) {
     }).when("/verifyuser", {
       templateUrl: "components/login/verifyuser.html"
     });
-  
 
-   
+
+
 });
