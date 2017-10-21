@@ -1,6 +1,6 @@
 
-myApp.controller('signupController',['$scope', '$http',function($scope,$http) {
- console.log("hello");
+myApp.controller('signupController',['$scope','$http','URL','$location',function($scope,$http,URL,$location) {
+ 
   $scope.submit = function(){
     debugger
     var firstname = $scope.fname;
@@ -10,13 +10,15 @@ myApp.controller('signupController',['$scope', '$http',function($scope,$http) {
     var username = $scope.username;
 
     $http({
-      url: "http://silo.soic.indiana.edu:54545/signUp",
+      url: URL+"/signUp",
       method: "POST",
       data: {
         'username':username,
         'password':password,
         'email': email,
-        'password': password
+        'password': password,
+        'firstname':firstname,
+        'lastname':lastname
     },
 
   }).then(function success(response){
@@ -28,6 +30,7 @@ myApp.controller('signupController',['$scope', '$http',function($scope,$http) {
         }
         else{
           alert("User successfully created. Please verify your account");
+          $location.path('/verifyuser');
         }
       }
     },

@@ -5,27 +5,26 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
         crossorigin="anonymous">
     <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"></link>
-    <link rel="stylesheet" href="login.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular-cookies.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
 
-    <script src="loginController.js?ver=1"></script>
+    <script src="loginController.js?ver=2"></script>
 </head>
 
-<body class="background-img" ng-app="loginApp" ng-init="sessionString=''">
+<body class="background-img" ng-app="myApp">
     <div class="container col-lg-5" ng-controller="loginController">
 
-        <form ng-submit="submit()" class="center-block verticle-center form-container">
+        <form  class="center-block verticle-center form-container">
             <h2>Verify Account</h2>
 
 
             <div class="form-group">
-                <input type="text" id="verUsername" class="form-control" placeholder="Username" ng-model="verUsername" >
+                <input type="text" id="verUsername" class="form-control" placeholder="Username" ng-model="verUsername" required/>
             </div>
             <div class="form-group">
 
-                <input type="password" id="verNumber" class="form-control" placeholder="Verification Number" ng-model="verNumber" >
+                <input type="password" id="verNumber" class="form-control" placeholder="Verification Number" ng-model="verNumber" required/>
 
             </div>
             <div class="row">
