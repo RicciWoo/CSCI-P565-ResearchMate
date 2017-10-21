@@ -2,11 +2,9 @@
 
 myApp.controller('profileController',function($scope,$http, $location, $cookies, $cookieStore) {
   var sessionString = $cookies.get('sessionString');
-  console.log("gh");
-  //sessionString = "zvBkd2m1QEy5UiIB";
   var url = $location.path().split('/');
   $scope.username = url[2];
-  console.log($scope.username);
+  
   $http({
         url: "http://silo.soic.indiana.edu:54545/getUserInfo",
         method: "POST",
@@ -32,6 +30,8 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
             $scope.city = userinfo.userInfo.location.city != undefined && userinfo.userInfo.location.city.trim()!=""?userinfo.userInfo.location.city + ',':"";
             $scope.state = userinfo.userInfo.location.state;
             $scope.country = userinfo.userInfo.location.country;
+            $scope.summary =  userinfo.userInfo.summary;
+            console.log(userinfo);
           }
         }
       },

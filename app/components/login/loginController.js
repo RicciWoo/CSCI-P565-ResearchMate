@@ -21,7 +21,7 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
         else {
           $cookies.remove('sessionString');
           $cookies.put('sessionString', response.data.msg)
-          $location.path('/profile');
+          $location.path('/profile/'+username);
         }
       }
     },
