@@ -11,3 +11,8 @@ body{
 ul{
     list-style-type: none;
 }
+.btnEdit
+{
+  margin-left:5px;
+  cursor: pointer;
+}

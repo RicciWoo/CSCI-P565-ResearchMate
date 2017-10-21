@@ -19,5 +19,4 @@ myApp.config(function ($routeProvider) {
     });
 
 
-
 });

@@ -4,12 +4,13 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
   var sessionString = $cookies.get('sessionString');
   var url = $location.path().split('/');
   $scope.username = url[2];
-  
+
   $http({
         url: "http://silo.soic.indiana.edu:54545/getUserInfo",
         method: "POST",
         data: {
           'username':$scope.username,
+          'sessionstring': sessionString
       },
 
       }).then(function success(response){
@@ -19,13 +20,21 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
               alert(response.data.msg)
           }
           else{
-            
-            
-           
+
+
+
             var userinfo = response.data.msg;
+            var sessString = userinfo.user.sessionString;
+
+            if(sessString!=undefined && sessString!="" && sessString == sessionString)
+              $scope.allowEdit = true;
+            else {
+              $scope.allowEdit = false;
+            }
             console.log(userinfo);
             $scope.firstname = userinfo.user.firstName;
             $scope.lastname = userinfo.user.lastName;
+            $scope.imgLocation = "http://simpleicon.com/wp-content/uploads/user1.png";
             $scope.address = userinfo.userInfo.location.address != undefined && userinfo.userInfo.location.address.trim()!=""?userinfo.userInfo.location.address + ',':"";
             $scope.city = userinfo.userInfo.location.city != undefined && userinfo.userInfo.location.city.trim()!=""?userinfo.userInfo.location.city + ',':"";
             $scope.state = userinfo.userInfo.location.state;
