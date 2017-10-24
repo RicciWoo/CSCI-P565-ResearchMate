@@ -22,11 +22,11 @@ console.log("Server running at silo.soic.indiana.edu:"+portNumber);
 
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static('public'))
+app.use(express.static('public'));
 mongoose.Promise = global.Promise;
 
 // Connect to MongoDB on localhost:27017
-var connection = mongoose.connect('mongodb://localhost:27018/researchMate', { useMongoClient: true });
+var connection = mongoose.connect('mongodb://localhost:27017/researchMate', { useMongoClient: true });
 
 //  importing pre-defined model
 var User = require('./app/userModel');
@@ -915,7 +915,7 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, userName
         finalPath = './public/papers/' + req.body.ISSN + '.pdf',
         file = req.files.file,
         tmp_path = file.path;
-        fs.rename(tmp_path, finalPath, function (err) {
+    fs.rename(tmp_path, finalPath, function (err) {
         if (err) throw err;
         fs.unlink(tmp_path, function () {
             if (err) {
@@ -938,10 +938,65 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, userName
                         res.send(response);
                     }
                     else {
-                        response["status"] = "true";
-                        response["msg"] = "user paperPDF uploaded.";
-                        console.log(response["msg"]);
-                        res.send(response);
+                        var query = {"name": req.body.name};
+                        Publications.findOne(query, function (err, publics) {
+                            if (publics != null) {
+                                response["msg"] = "Publication already exists.";
+                                response["status"] = "false";
+                                console.log(response["msg"]);
+                                res.send(response);
+                            }
+                            else {
+                                var maxCount = 1;
+                                Publications.findOne().sort('-publicationID').exec(function (err, entry) {
+                                    if (entry == null) {
+                                        maxCount = 1;
+                                    }
+                                    else {
+                                        maxCount = entry.publicationID + 1;
+                                    }
+
+                                    var publishDate = new Date(req.body.publishDate);
+                                    var newPublication = new Publications({
+                                        publicationID: maxCount,
+                                        name: req.body.name,
+                                        ISSN: req.body.ISSN,
+                                        abstract: req.body.abstract,
+                                        publishedAt: req.body.publishedAt,
+                                        publishDate: publishDate,
+                                        where: pathVar
+                                    });
+                                    newPublication.save(function (err) {
+                                        if (err) {
+                                            response["status"] = "false";
+                                            response["msg"] = "cannot save publication.";
+                                            res.send(response);
+                                            console.log(err);
+                                        }
+                                        else {
+                                            var setUserPublicationDoc = new UserPublications({
+                                                userID: user.userID,
+                                                publicationID: req.body.publicationID
+                                            });
+                                            setUserPublicationDoc.save(function (err) {
+                                                if (err) {
+                                                    response["status"] = "false";
+                                                    response["msg"] = "unable to save";
+                                                    res.send(response);
+                                                    console.log(response["msg"]);
+                                                }
+                                                else {
+                                                    response["msg"] = "publication added.";
+                                                    response["status"] = "true";
+                                                    res.send(response);
+                                                    console.log(response["msg"]);
+                                                }
+                                            });
+                                        }
+                                    });
+                                });
+                            }
+                        });
                     }
                 });
             }
