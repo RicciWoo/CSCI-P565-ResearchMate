@@ -22,7 +22,7 @@ var publicationSchema = mongoose.Schema({
     publishDate:{
         type: Date
     },
-    link:{
+    where:{
         type : String,
         default: null
     }

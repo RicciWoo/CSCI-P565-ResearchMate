@@ -1,5 +1,5 @@
 {
-  "name": "mongooseTest",
+  "name": "ResearchMate",
   "version": "0.0.1",
   "description": "ResearchMate CSCI-P565-SoftwareEngineering Project Fall 2017",
   "repository": {
@@ -15,6 +15,8 @@
     "nodemailer": "~4.1.1",
     "nodemailer-smtp-transport": "~2.7.4",
     "randomstring": "~1.1.5",
-    "cors": "~2.8.4"
+    "cors": "~2.8.4",
+    "connect-multiparty": "~2.1.0",
+    "path": "~0.12.7"
   }
 }

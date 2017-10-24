@@ -7,8 +7,13 @@ var groupSchema = mongoose.Schema({
     },
     groupID:{
         type: Number,
-        required: true,
-        autoincrement: true
+        required: true
+    },
+    createdOn:{
+        type: Date
+    },
+    admin:{
+        type: String
     }
 });
 

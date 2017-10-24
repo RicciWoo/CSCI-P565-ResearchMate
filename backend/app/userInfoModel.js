@@ -7,35 +7,48 @@ var userInfoSchema = mongoose.Schema({
         unique:true
     },
     university:{
-        type: String
+        type: String,
+	default: "(University)"
     },
     location:{
         address:{
-            type: String
+            type: String,
+	    default: "(Location)"
         },
         city:{
-            type: String
+            type: String,
+	    default: "(City)"
         },
         state:{
-            type: String
+            type: String,
+	    default: "(State)"
         },
         country:{
-            type: String
+            type: String,
+	    default: "(Country)"
         }
     },
     dob:{
-        type:Date
+        type:Date,
+	default: "10/15/2017"
     },
     advisor: {
         primary: {
-            type: String
+            type: String,
+	    default: "(Primary Advisor)"
         },
         secondary: {
-            type: String
+            type: String,
+	    default: "(Secondary Advisor)"
         }
     },
     picture:{
-        type : String
+        type : String,
+	default: "(Profile picture)"
+    },
+    summary:{
+        type : String,
+	default: "(summary)"
     }
 });
 
