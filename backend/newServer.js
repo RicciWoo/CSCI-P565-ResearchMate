@@ -11,7 +11,6 @@ var express = require('express'),
     randomstring = require("randomstring"),
     nodemailer = require('nodemailer'),
     smtpTransport = require('nodemailer-smtp-transport'),
-    randomstring = require("randomstring"),
     multipart = require('connect-multiparty'),
     path = require('path');
 
@@ -849,60 +848,58 @@ function addPublication(req,res,next) {
     });
 }
 
-
-app.use(multipart({uploadDir:'./public'}));
-
-app.post('/uploadProfilePic',uploadProfilePic);
+app.use(multipart({uploadDir: './public'}));
+app.post('/uploadProfilePic', uploadProfilePic);
 function uploadProfilePic(req, res, next) {
     var data = req.body.type,
-        finalPath = './public/' + req.body.username +'.jpg',
+        finalPath = './public/images/profilePics/' + req.body.userName + '.jpg',
         file = req.files.file,
         tmp_path = file.path;
-    fs.rename(tmp_path, finalPath, function(err) {
+        fs.rename(tmp_path, finalPath, function (err) {
         if (err) throw err;
-        fs.unlink(tmp_path, function() {
-            if (err){
-                response["status"]="false";
-                response["msg"]="user picture upload failed.";
+        fs.unlink(tmp_path, function () {
+            if (err) {
+                response["status"] = "false";
+                response["msg"] = "user picture upload failed.";
                 console.log(response["msg"]);
                 res.send(response);
             }
-            else{
+            else {
                 var host = "http://silo.soic.indiana.edu:";
-                response["status"]="true";
-                var pathVar = path.join(host,portNumber.toString(),finalPath);
-                pathVar = pathVar.replace("edu:/","edu:");
+                response["status"] = "true";
+                var pathVar = path.join(host, portNumber.toString(), finalPath);
+                pathVar = pathVar.replace("edu:/", "edu:");
                 console.log(response["msg"]);
-                User.findOne({"userName":req.body.username},function (err, user) {
-                    if(err){
-                        response["status"]="false";
-                        response["msg"]="user picture upload failed. unable to find user info.";
+                User.findOne({"userName": req.body.userName}, function (err, user) {
+                    if (err) {
+                        response["status"] = "false";
+                        response["msg"] = "user picture upload failed. unable to find user info.";
                         console.log(response["msg"]);
                         res.send(response);
                     }
-                    else{
-                        UserInfo.findOne({"userID":user.userID},function (err,userinf) {
-                            if(err){
-                                response["status"]="false";
-                                response["msg"]="user picture upload failed. unable to find user info. please verify your account.";
+                    else {
+                        UserInfo.findOne({"userID": user.userID}, function (err, userinf) {
+                            if (err) {
+                                response["status"] = "false";
+                                response["msg"] = "user picture upload failed. unable to find user info. please verify your account.";
                                 res.send(response);
                             }
                             else {
-                                    userinf.set({picture:pathVar});
-                                    userinf.save(function (err) {
-                                        if(err){
-                                            response["status"]="false";
-                                            response["msg"]="user picture upload failed. unable to find user info.";
-                                            console.log(response["msg"]);
-                                            res.send(response);
-                                        }
-                                        else {
-                                            response["status"]="true";
-                                            response["msg"]="user picture upload successful.";
-                                            console.log(response["msg"]);
-                                            res.send(response);
-                                        }
-                                    });
+                                userinf.set({picture: pathVar});
+                                userinf.save(function (err) {
+                                    if (err) {
+                                        response["status"] = "false";
+                                        response["msg"] = "user picture upload failed. unable to find user info.";
+                                        console.log(response["msg"]);
+                                        res.send(response);
+                                    }
+                                    else {
+                                        response["status"] = "true";
+                                        response["msg"] = "user picture upload successful.";
+                                        console.log(response["msg"]);
+                                        res.send(response);
+                                    }
+                                });
                             }
                         });
                     }
@@ -912,36 +909,42 @@ function uploadProfilePic(req, res, next) {
     });
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.post('/uploadPaperPDF', uploadPaperPDF);
+function uploadPaperPDF(req, res, next) {       // requires ISSN, userName
+    var data = req.body.type,
+        finalPath = './public/papers/' + req.body.ISSN + '.pdf',
+        file = req.files.file,
+        tmp_path = file.path;
+        fs.rename(tmp_path, finalPath, function (err) {
+        if (err) throw err;
+        fs.unlink(tmp_path, function () {
+            if (err) {
+                response["status"] = "false";
+                response["msg"] = "user paperPDF upload failed.";
+                console.log(response["msg"]);
+                res.send(response);
+            }
+            else {
+                var host = "http://silo.soic.indiana.edu:";
+                response["status"] = "true";
+                var pathVar = path.join(host, portNumber.toString(), finalPath);
+                pathVar = pathVar.replace("edu:/", "edu:");
+                console.log(response["msg"]);
+                User.findOne({"userName": req.body.userName}, function (err, user) {
+                    if (err) {
+                        response["status"] = "false";
+                        response["msg"] = "user paperPDF upload failed. unable to find user info.";
+                        console.log(response["msg"]);
+                        res.send(response);
+                    }
+                    else {
+                        response["status"] = "true";
+                        response["msg"] = "user paperPDF uploaded.";
+                        console.log(response["msg"]);
+                        res.send(response);
+                    }
+                });
+            }
+        });
+    });
+}
