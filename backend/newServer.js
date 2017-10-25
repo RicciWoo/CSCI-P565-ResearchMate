@@ -22,11 +22,14 @@ console.log("Server running at silo.soic.indiana.edu:"+portNumber);
 
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static('public'));
+app.use(express.static('public/'));
+app.use(express.static('public/images/profilePics/'));
+app.use(express.static('public/papers/'));
+
 mongoose.Promise = global.Promise;
 
 // Connect to MongoDB on localhost:27017
-var connection = mongoose.connect('mongodb://localhost:27017/researchMate', { useMongoClient: true });
+var connection = mongoose.connect('mongodb://localhost:27018/researchMate', { useMongoClient: true });
 
 //  importing pre-defined model
 var User = require('./app/userModel');
@@ -36,6 +39,8 @@ var UserGroup = require('./app/userGroupInfoModel');
 var Publications = require('./app/publicationsInfoModel');
 var UserPublications = require('./app/userPublicationInfoModel');
 var UserFollowee = require('./app/userFolloweeModel');
+var UserSkills = require('./app/userSkillModel');
+var Skills = require('./app/skillModel');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -852,7 +857,7 @@ app.use(multipart({uploadDir: './public'}));
 app.post('/uploadProfilePic', uploadProfilePic);
 function uploadProfilePic(req, res, next) {
     var data = req.body.type,
-        finalPath = './public/images/profilePics/' + req.body.userName + '.jpg',
+        finalPath = './public/images/profilePics/' + req.body.username + '.jpg',
         file = req.files.file,
         tmp_path = file.path;
         fs.rename(tmp_path, finalPath, function (err) {
@@ -869,8 +874,9 @@ function uploadProfilePic(req, res, next) {
                 response["status"] = "true";
                 var pathVar = path.join(host, portNumber.toString(), finalPath);
                 pathVar = pathVar.replace("edu:/", "edu:");
-                console.log(response["msg"]);
-                User.findOne({"userName": req.body.userName}, function (err, user) {
+                pathVar = pathVar.replace("ttp:","ttp:/");
+		pathVar = pathVar.replace("/public","");
+                User.findOne({"userName": req.body.username}, function (err, user) {
                     if (err) {
                         response["status"] = "false";
                         response["msg"] = "user picture upload failed. unable to find user info.";
@@ -878,6 +884,7 @@ function uploadProfilePic(req, res, next) {
                         res.send(response);
                     }
                     else {
+			console.log("user: "+user);
                         UserInfo.findOne({"userID": user.userID}, function (err, userinf) {
                             if (err) {
                                 response["status"] = "false";
@@ -910,13 +917,20 @@ function uploadProfilePic(req, res, next) {
 }
 
 app.post('/uploadPaperPDF', uploadPaperPDF);
-function uploadPaperPDF(req, res, next) {       // requires ISSN, userName
+function uploadPaperPDF(req, res, next) {       // requires ISSN, username
     var data = req.body.type,
-        finalPath = './public/papers/' + req.body.ISSN + '.pdf',
+        finalPath = './public/papers/' + req.body.ISSN.toString() + '.pdf',
         file = req.files.file,
         tmp_path = file.path;
-    fs.rename(tmp_path, finalPath, function (err) {
-        if (err) throw err;
+	console.log(req.body.sessionString);
+        fs.rename(tmp_path, finalPath, function (err) {
+        if (err){
+                response["status"] = "false";
+                response["msg"] = "user paperPDF upload failed.";
+                console.log(response["msg"]);
+                res.send(response);
+        }
+	else{
         fs.unlink(tmp_path, function () {
             if (err) {
                 response["status"] = "false";
@@ -929,9 +943,12 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, userName
                 response["status"] = "true";
                 var pathVar = path.join(host, portNumber.toString(), finalPath);
                 pathVar = pathVar.replace("edu:/", "edu:");
-                console.log(response["msg"]);
-                User.findOne({"userName": req.body.userName}, function (err, user) {
-                    if (err) {
+		pathVar = pathVar.replace("ttp:","ttp:/");
+                pathVar = pathVar.replace("/public","");
+		console.log(req.body.sessionString);
+                User.findOne({"sessionString": req.body.sessionString}, function (err, user) {
+			console.log("error: "+user);
+                    if (err||user==null) {
                         response["status"] = "false";
                         response["msg"] = "user paperPDF upload failed. unable to find user info.";
                         console.log(response["msg"]);
@@ -957,14 +974,15 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, userName
                                     }
 
                                     var publishDate = new Date(req.body.publishDate);
+				    console.log(user.userID);
                                     var newPublication = new Publications({
                                         publicationID: maxCount,
                                         name: req.body.name,
                                         ISSN: req.body.ISSN,
-                                        abstract: req.body.abstract,
+                                        paperAbstract: req.body.paperAbstract,
                                         publishedAt: req.body.publishedAt,
                                         publishDate: publishDate,
-                                        where: pathVar
+                                        filePath: pathVar
                                     });
                                     newPublication.save(function (err) {
                                         if (err) {
@@ -976,7 +994,7 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, userName
                                         else {
                                             var setUserPublicationDoc = new UserPublications({
                                                 userID: user.userID,
-                                                publicationID: req.body.publicationID
+                                                publicationID: maxCount
                                             });
                                             setUserPublicationDoc.save(function (err) {
                                                 if (err) {
@@ -992,14 +1010,217 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, userName
                                                     console.log(response["msg"]);
                                                 }
                                             });
+					var otherUsernames = req.body.otherUsernames;
+					if(otherUsernames != undefined && otherUsernames.length>0)
+					{
+						for(var i = 0;i<otherUsernames.length;i++){
+							User.findOne({"userName": otherUsernames[i]}, function(err, otherUser){
+								var publicationMapping = new UserPublications({		
+									userID: otherUser.userID,
+									publicationID: maxCount
+								});
+								publicationMapping.save();
+							});
+						}
                                         }
+                                            }
+                                        });
                                     });
-                                });
-                            }
-                        });
-                    }
-                });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+} 
+
+app.post('/getAllGroups', getAllGroups);
+function getAllGroups(req, res, next) {
+    GroupInfo.find().exec(function (err,groups) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "No Groups created yet.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            var groupInfo = [];
+            for(var i = 0;i < groups.length;i++){
+                groupInfo.push(groups[i]);
             }
-        });
+	    response["msg"] = {"groupInfo":groupInfo};
+            response["status"] = "true";
+            res.send(response);
+        }
+
     });
 }
+
+app.post('/getPublicationByID', getPublicationByID);
+function getPublicationByID(req, res, next) {       // publicationID
+    var query = {"publicationID":req.body.publicationID};
+    Publications.findOne(query,function (err,publication) {
+        if(err||publication==null){
+            response["status"] = "false";
+            response["msg"] = "Publication not found.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            response["msg"] = publication;
+            response["status"] = "true";
+            res.send(response);
+        }
+    });
+}
+
+app.post('/addSkill', addSkill);
+function addSkill(req, res, next) {       // SessionString, skillName
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (err || user == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid sessionString.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            var query = {"skillName": req.body.skillName};
+            Skills.findOne(query, function (err, skillentry) {
+                if (skillentry == null) {
+                    var maxCount = 1;
+                    Skills.findOne().sort('-skillID').exec(function (err, entry) {
+                        if (entry == null) {
+                            maxCount = 1;
+                        }
+                        else {
+                            maxCount = entry.skillID + 1;
+                        }
+
+                        var thisSkill = new Skills({
+                            skillID: maxCount,
+                            skillName: req.body.skillName
+                        });
+
+                        thisSkill.save();
+                    });
+                    var userThisSkill = new UserSkills({
+                        skillID: maxCount,
+                        userID: user.userID
+                    });
+                    userThisSkill.save();
+                    response["status"] = "true";
+                    response["msg"] = "skill added";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var query = {"userID": user.userID};
+                    UserSkills.find(query).where("skillID").equals(skillentry.skillID).exec(function (err,another) {
+                        if(another==null){
+                            var maxCount = 1;
+                            Skills.findOne().sort('-skillID').exec(function (err, entry) {
+                                if (entry == null) {
+                                    maxCount = 1;
+                                }
+                                else {
+                                    maxCount = entry.skillID + 1;
+                                }
+                                var userThisSkill = new UserSkills({
+                                    skillID: maxCount,
+                                    userID: user.userID
+                                });
+                                userThisSkill.save();
+                            });
+                            response["status"] = "true";
+                            response["msg"] = "skill added";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else{
+                            response["status"] = "false";
+                            response["msg"] = "user already has this skill";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+
+                    });
+               }
+            });
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            

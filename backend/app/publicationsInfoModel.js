@@ -14,7 +14,7 @@ var publicationSchema = mongoose.Schema({
         type: Number,
         required : true
     },
-    abstract:{
+    paperAbstract:{
         type: String
     },
     publishedAt:{
@@ -23,7 +23,7 @@ var publicationSchema = mongoose.Schema({
     publishDate:{
         type: Date
     },
-    link:{
+    filePath:{
         type : String,
         default: null
     }

@@ -14,6 +14,9 @@ var groupSchema = mongoose.Schema({
     },
     admin:{
         type: String
+    },
+    description:{
+        type: String
     }
 });
 
