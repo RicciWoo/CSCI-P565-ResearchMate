@@ -1211,6 +1211,7 @@ function getUserSkills(req, res, next) {       // SessionString
     });
 }
 
+/*
 app.post('/searchUser', searchUser);
 function searchUser(req, res, next) {       // string
     var searchString = req.body.searchString;
@@ -1244,6 +1245,42 @@ function searchUser(req, res, next) {       // string
         else {
             response["status"] = "false";
             response["msg"] = users_username;
+            res.send(response);
+        }
+    });
+}
+*/
+
+app.post('/searchUser', searchUser);
+function searchUser(req, res, next) {       // searchString
+    var searchString = req.body.searchString;
+    if(searchString == undefined || searchString.trim() == "")
+    {
+        response["status"] = "false";
+        response["msg"] = "Invalid input!";
+        res.send(response);
+        return;
+    }
+    searchString = searchString.toLowerCase();
+//    var query = {userName:searchString};
+    var result = [];
+    User.find({},function (err,users_username) {
+        if(err ){
+            response["status"]="false";
+            response["msg"] = "Error encountered while searching";
+            res.send(response);
+        }
+        else {
+            for(var i = 0;i<users_username.length;i++){
+                if(searchString == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchString)!=-1)
+                    result.push(users_username[i]);
+                else if(searchString == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchString)!=-1)
+                    result.push(users_username[i]);
+                else if(searchString== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchString)!=-1)
+                    result.push(users_username[i]);
+            }
+            response["status"] = "true";
+            response["msg"] = result;
             res.send(response);
         }
     });
