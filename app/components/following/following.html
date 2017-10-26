@@ -1,0 +1,13 @@
+<div class=" bg-white" ng-controller="followingController" style="padding:10px">
+ 
+<h3 style="color:#558C89;font:bold">Connections</h3>
+<div class="row" style="background-color:#558C89"></div>
+<hr style="height:20px;background-color:#D9853B">
+<div class="row " > 
+   <div class="col-lg-3" ng-repeat="followuser in followUsernames">
+       <a href="http://localhost/ResearchMate/#/profile/{{followuser}}">
+       <img src="./components/following/UserFollow.png" height="100px" width="100px" style="padding-top:10px"/>
+       </a>
+   </div>
+</div>
+</div>

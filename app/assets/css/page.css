@@ -6,12 +6,23 @@
     padding:inherit;
     }
     .background-img{
-        background:	darkgray;
+        background:	#ECECEA;
 
     }
     .translucent{
       background-color: white;
       opacity: .5;
      }
+     .navbar-fixed-top {
+       position: fixed !important;
+       height: 50px;
+       width: 100%;
+       display: block;
+       top:0;
+       left:0;
+      
+       margin-bottom: 50px;
+     }
 
+     
     

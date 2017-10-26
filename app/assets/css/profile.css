@@ -1,12 +1,10 @@
 body{
     background-color: rgb(244, 246, 246);
 }
-.row{
-    padding: 10px 20px;
-    margin-top: 10px;
-}
+
 .container{
-    padding-top: 60px;
+    padding-top: 0px;
+   
 }
 ul{
     list-style-type: none;
@@ -16,3 +14,27 @@ ul{
   margin-left:5px;
   cursor: pointer;
 }
+
+.divpad{
+  
+   padding: 20px;
+   background:#74AFAD;
+   word-wrap: break-word;
+}
+.following{
+    padding: 40px;
+}
+a{
+    text-decoration: none;
+    color:white;
+  }
+a:hover{
+    color:#D9853B;
+}
+input[type=text] {
+    border: 2px solid #D9853B;
+    border-radius: 4px;
+    height: 30px;
+}
+
+
