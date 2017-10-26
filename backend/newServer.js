@@ -466,7 +466,7 @@ function setUserInfo(req,res,next) {
                             secondary: req.body.secondaryAdvisor
                         }
                     });
-		    userInfo.set({summary: req.body.summary});
+		            userInfo.set({summary: req.body.summary});
                     userInfo.save(function (err, updatedUser) {
                         if(err) {
                             response["status"] = "false";
