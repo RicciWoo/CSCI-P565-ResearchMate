@@ -393,7 +393,7 @@ function getUserInfo(req,res,next) {
     var query = {"userName": username};
     User.findOne(query, function(err, user) {
         if (user == null) {
-	    console.log(req.body);
+            console.log(req.body);
             response["status"] = "false";
             response["msg"] = "Error: User not found!";
             res.send(response);
@@ -410,8 +410,8 @@ function getUserInfo(req,res,next) {
                 }
                 else {
                     if(sessionString == undefined || sessionString == ""){
-                       // user.sessionString = "";
-                       console.log("check");
+                        // user.sessionString = "";
+                        console.log("check");
                     }
                     response["msg"] = {"user":user,"userInfo":userInfo};
 
@@ -438,8 +438,8 @@ function setUserInfo(req,res,next) {
             console.log("Error: Update failed. User not found!")
         }
         else{
-	    user.set({firstName: req.body.firstname, lastName: req.body.lastname});
-	    user.save(function(err, userSaveObj){});
+            user.set({firstName: req.body.firstname, lastName: req.body.lastname});
+            user.save(function(err, userSaveObj){});
             var queryInfo = {"userID": user.userID};
             UserInfo.findOne(queryInfo, function(err, userInfo) {
                 if (userInfo == null) {
@@ -466,7 +466,7 @@ function setUserInfo(req,res,next) {
                             secondary: req.body.secondaryAdvisor
                         }
                     });
-		            userInfo.set({summary: req.body.summary});
+                    userInfo.set({summary: req.body.summary});
                     userInfo.save(function (err, updatedUser) {
                         if(err) {
                             response["status"] = "false";
@@ -485,6 +485,7 @@ function setUserInfo(req,res,next) {
         }
     });
 }
+
 // basic function for testing
 app.post('/sayHello',sayHello);                         //username and (opt)sessionString
 function sayHello(req,res,next){
@@ -872,7 +873,7 @@ function uploadProfilePic(req, res, next) {
         finalPath = './public/images/profilePics/' + req.body.username + '.jpg',
         file = req.files.file,
         tmp_path = file.path;
-        fs.rename(tmp_path, finalPath, function (err) {
+    fs.rename(tmp_path, finalPath, function (err) {
         if (err) throw err;
         fs.unlink(tmp_path, function () {
             if (err) {
@@ -887,7 +888,7 @@ function uploadProfilePic(req, res, next) {
                 var pathVar = path.join(host, portNumber.toString(), finalPath);
                 pathVar = pathVar.replace("edu:/", "edu:");
                 pathVar = pathVar.replace("ttp:","ttp:/");
-		pathVar = pathVar.replace("/public","");
+                pathVar = pathVar.replace("/public","");
                 User.findOne({"userName": req.body.username}, function (err, user) {
                     if (err) {
                         response["status"] = "false";
@@ -896,7 +897,7 @@ function uploadProfilePic(req, res, next) {
                         res.send(response);
                     }
                     else {
-			console.log("user: "+user);
+                        console.log("user: "+user);
                         UserInfo.findOne({"userID": user.userID}, function (err, userinf) {
                             if (err) {
                                 response["status"] = "false";
@@ -934,107 +935,107 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
         finalPath = './public/papers/' + req.body.ISSN.toString() + '.pdf',
         file = req.files.file,
         tmp_path = file.path;
-	console.log(req.body.sessionString);
-        fs.rename(tmp_path, finalPath, function (err) {
+    console.log(req.body.sessionString);
+    fs.rename(tmp_path, finalPath, function (err) {
         if (err){
-                response["status"] = "false";
-                response["msg"] = "user paperPDF upload failed.";
-                console.log(response["msg"]);
-                res.send(response);
+            response["status"] = "false";
+            response["msg"] = "user paperPDF upload failed.";
+            console.log(response["msg"]);
+            res.send(response);
         }
-	else{
-        fs.unlink(tmp_path, function () {
-            if (err) {
-                response["status"] = "false";
-                response["msg"] = "user paperPDF upload failed.";
-                console.log(response["msg"]);
-                res.send(response);
-            }
-            else {
-                var host = "http://silo.soic.indiana.edu:";
-                response["status"] = "true";
-                var pathVar = path.join(host, portNumber.toString(), finalPath);
-                pathVar = pathVar.replace("edu:/", "edu:");
-		pathVar = pathVar.replace("ttp:","ttp:/");
-                pathVar = pathVar.replace("/public","");
-		console.log(req.body.sessionString);
-                User.findOne({"sessionString": req.body.sessionString}, function (err, user) {
-			console.log("error: "+user);
-                    if (err||user==null) {
-                        response["status"] = "false";
-                        response["msg"] = "user paperPDF upload failed. unable to find user info.";
-                        console.log(response["msg"]);
-                        res.send(response);
-                    }
-                    else {
-                        var query = {"name": req.body.name};
-                        Publications.findOne(query, function (err, publics) {
-                            if (publics != null) {
-                                response["msg"] = "Publication already exists.";
-                                response["status"] = "false";
-                                console.log(response["msg"]);
-                                res.send(response);
-                            }
-                            else {
-                                var maxCount = 1;
-                                Publications.findOne().sort('-publicationID').exec(function (err, entry) {
-                                    if (entry == null) {
-                                        maxCount = 1;
-                                    }
-                                    else {
-                                        maxCount = entry.publicationID + 1;
-                                    }
-
-                                    var publishDate = new Date(req.body.publishDate);
-				    console.log(user.userID);
-                                    var newPublication = new Publications({
-                                        publicationID: maxCount,
-                                        name: req.body.name,
-                                        ISSN: req.body.ISSN,
-                                        paperAbstract: req.body.paperAbstract,
-                                        publishedAt: req.body.publishedAt,
-                                        publishDate: publishDate,
-                                        filePath: pathVar
-                                    });
-                                    newPublication.save(function (err) {
-                                        if (err) {
-                                            response["status"] = "false";
-                                            response["msg"] = "cannot save publication.";
-                                            res.send(response);
-                                            console.log(err);
+        else{
+            fs.unlink(tmp_path, function () {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "user paperPDF upload failed.";
+                    console.log(response["msg"]);
+                    res.send(response);
+                }
+                else {
+                    var host = "http://silo.soic.indiana.edu:";
+                    response["status"] = "true";
+                    var pathVar = path.join(host, portNumber.toString(), finalPath);
+                    pathVar = pathVar.replace("edu:/", "edu:");
+                    pathVar = pathVar.replace("ttp:","ttp:/");
+                    pathVar = pathVar.replace("/public","");
+                    console.log(req.body.sessionString);
+                    User.findOne({"sessionString": req.body.sessionString}, function (err, user) {
+                        console.log("error: "+user);
+                        if (err||user==null) {
+                            response["status"] = "false";
+                            response["msg"] = "user paperPDF upload failed. unable to find user info.";
+                            console.log(response["msg"]);
+                            res.send(response);
+                        }
+                        else {
+                            var query = {"name": req.body.name};
+                            Publications.findOne(query, function (err, publics) {
+                                if (publics != null) {
+                                    response["msg"] = "Publication already exists.";
+                                    response["status"] = "false";
+                                    console.log(response["msg"]);
+                                    res.send(response);
+                                }
+                                else {
+                                    var maxCount = 1;
+                                    Publications.findOne().sort('-publicationID').exec(function (err, entry) {
+                                        if (entry == null) {
+                                            maxCount = 1;
                                         }
                                         else {
-                                            var setUserPublicationDoc = new UserPublications({
-                                                userID: user.userID,
-                                                publicationID: maxCount
-                                            });
-                                            setUserPublicationDoc.save(function (err) {
-                                                if (err) {
-                                                    response["status"] = "false";
-                                                    response["msg"] = "unable to save";
-                                                    res.send(response);
-                                                    console.log(response["msg"]);
-                                                }
-                                                else {
-                                                    response["msg"] = "publication added.";
-                                                    response["status"] = "true";
-                                                    res.send(response);
-                                                    console.log(response["msg"]);
-                                                }
-                                            });
-					var otherUsernames = req.body.otherUsernames;
-					if(otherUsernames != undefined && otherUsernames.length>0)
-					{
-						for(var i = 0;i<otherUsernames.length;i++){
-							User.findOne({"userName": otherUsernames[i]}, function(err, otherUser){
-								var publicationMapping = new UserPublications({		
-									userID: otherUser.userID,
-									publicationID: maxCount
-								});
-								publicationMapping.save();
-							});
-						}
+                                            maxCount = entry.publicationID + 1;
                                         }
+
+                                        var publishDate = new Date(req.body.publishDate);
+                                        console.log(user.userID);
+                                        var newPublication = new Publications({
+                                            publicationID: maxCount,
+                                            name: req.body.name,
+                                            ISSN: req.body.ISSN,
+                                            paperAbstract: req.body.paperAbstract,
+                                            publishedAt: req.body.publishedAt,
+                                            publishDate: publishDate,
+                                            filePath: pathVar
+                                        });
+                                        newPublication.save(function (err) {
+                                            if (err) {
+                                                response["status"] = "false";
+                                                response["msg"] = "cannot save publication.";
+                                                res.send(response);
+                                                console.log(err);
+                                            }
+                                            else {
+                                                var setUserPublicationDoc = new UserPublications({
+                                                    userID: user.userID,
+                                                    publicationID: maxCount
+                                                });
+                                                setUserPublicationDoc.save(function (err) {
+                                                    if (err) {
+                                                        response["status"] = "false";
+                                                        response["msg"] = "unable to save";
+                                                        res.send(response);
+                                                        console.log(response["msg"]);
+                                                    }
+                                                    else {
+                                                        response["msg"] = "publication added.";
+                                                        response["status"] = "true";
+                                                        res.send(response);
+                                                        console.log(response["msg"]);
+                                                    }
+                                                });
+                                                var otherUsernames = req.body.otherUsernames;
+                                                if(otherUsernames != undefined && otherUsernames.length>0)
+                                                {
+                                                    for(var i = 0;i<otherUsernames.length;i++){
+                                                        User.findOne({"userName": otherUsernames[i]}, function(err, otherUser){
+                                                            var publicationMapping = new UserPublications({
+                                                                userID: otherUser.userID,
+                                                                publicationID: maxCount
+                                                            });
+                                                            publicationMapping.save();
+                                                        });
+                                                    }
+                                                }
                                             }
                                         });
                                     });
@@ -1046,7 +1047,7 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
             });
         }
     });
-} 
+}
 
 app.post('/getAllGroups', getAllGroups);
 function getAllGroups(req, res, next) {
@@ -1062,7 +1063,7 @@ function getAllGroups(req, res, next) {
             for(var i = 0;i < groups.length;i++){
                 groupInfo.push(groups[i]);
             }
-	    response["msg"] = {"groupInfo":groupInfo};
+            response["msg"] = {"groupInfo":groupInfo};
             response["status"] = "true";
             res.send(response);
         }
@@ -1117,12 +1118,13 @@ function addSkill(req, res, next) {       // SessionString, skillName
                         });
 
                         thisSkill.save();
+
+                        var userThisSkill = new UserSkills({
+                            skillID: maxCount,
+                            userID: user.userID
+                        });
+                        userThisSkill.save();
                     });
-                    var userThisSkill = new UserSkills({
-                        skillID: maxCount,
-                        userID: user.userID
-                    });
-                    userThisSkill.save();
                     response["status"] = "true";
                     response["msg"] = "skill added";
                     res.send(response);
@@ -1159,8 +1161,142 @@ function addSkill(req, res, next) {       // SessionString, skillName
                         }
 
                     });
-               }
+                }
             });
         }
     });
 }
+
+app.post('/getUserSkills', getUserSkills);
+function getUserSkills(req, res, next) {       // SessionString
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (err || user == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid sessionString.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            var userID = user.userID;
+            UserSkills.find({"userID": userID}, {'_id':0}).select("skillID").exec(function (err, docs) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "No skills";
+                    res.send(response);
+                }
+                else {
+                    var ids = [];
+                    for(var i = 0; i<docs.length; i++){
+                        ids.push(docs[i].skillID)
+                    }
+                    Skills.find({'skillID':{$in:ids}}, function(err, skillNames) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = "Skill not found.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = skillNames;
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
