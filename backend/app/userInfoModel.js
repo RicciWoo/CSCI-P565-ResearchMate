@@ -44,7 +44,7 @@ var userInfoSchema = mongoose.Schema({
     },
     picture:{
         type : String,
-	default: "(Profile picture)"
+	default: ""
     },
     summary:{
         type : String,

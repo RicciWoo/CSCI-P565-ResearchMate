@@ -436,7 +436,7 @@ function setUserInfo(req,res,next) {
             res.send(response);
             console.log("Error: Update failed. User not found!")
         }
-        else {
+        else{
 	    user.set({firstName: req.body.firstname, lastName: req.body.lastname});
 	    user.save(function(err, userSaveObj){});
             var queryInfo = {"userID": user.userID};
@@ -465,7 +465,6 @@ function setUserInfo(req,res,next) {
                             secondary: req.body.secondaryAdvisor
                         }
                     });
-                    userInfo.set({picture: req.body.picture});
 		    userInfo.set({summary: req.body.summary});
                     userInfo.save(function (err, updatedUser) {
                         if(err) {
