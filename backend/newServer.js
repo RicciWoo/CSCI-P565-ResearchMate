@@ -410,7 +410,8 @@ function getUserInfo(req,res,next) {
                 }
                 else {
                     if(sessionString == undefined || sessionString == ""){
-                        user.sessionString = "";
+                       // user.sessionString = "";
+                       console.log("check");
                     }
                     response["msg"] = {"user":user,"userInfo":userInfo};
 
