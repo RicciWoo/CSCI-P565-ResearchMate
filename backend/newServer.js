@@ -1211,92 +1211,40 @@ function getUserSkills(req, res, next) {       // SessionString
     });
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.post('/searchUser', searchUser);
+function searchUser(req, res, next) {       // string
+    var searchString = req.body.searchString;
+    var query = {userName:searchString};
+    User.find(query,function (err,users_username) {
+        if(err || users==null){
+            query = {firstName:searchString};
+            User.find(query,function (err,users_firstname) {
+                if (err || users_firstname == null) {
+                    query = {lastName: searchString};
+                    User.find(query, function (err, users_lastname) {
+                        if (err || users_lastname == null) {
+                            response["status"] = "false";
+                            response["msg"] = "Nothing found in user table.";
+                            res.send(response);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = users_lastname;
+                            res.send(response);
+                        }
+                    });
+                }
+                else {
+                    response["status"] = "true";
+                    response["msg"] = users_firstname;
+                    res.send(response);
+                }
+            });
+        }
+        else {
+            response["status"] = "false";
+            response["msg"] = users_username;
+            res.send(response);
+        }
+    });
+}
