@@ -702,6 +702,7 @@ app.post('/getUserFollowers', getUserFollowers);           //username + (opt)ses
 function getUserFollowers(req,res,next) {
     var sessionString = req.body.sessionString;
     var query = {"userName": req.body.username};
+    console.log(req.body.username);
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
@@ -723,21 +724,32 @@ function getUserFollowers(req,res,next) {
                         ids.push(docs[i].followeeID)
                     }
                     User.find({'userID':{$in:ids}}, function(err,followers){
-                            var followerUsername = [];
-                            var followerFirstname = [];
-                            var followerLastname = [];
+                        UserInfo.find({'userID':{$in:ids}}, function(infoErr, userInfo){
+                            var follower = [];
+
                             for(var i = 0;i<followers.length;i++){
-                                followerUsername.push(followers[i].userName);
-                                followerFirstname.push(followers[i].firstName);
-                                followerLastname.push(followers[i].lastName);
+                                var tempObj = {};
+                                tempObj["firstname"] = followers[i].firstName;
+                                tempObj["lastname"] = followers[i].lastName;
+                                tempObj["username"] = followers[i].userName;
+                                for(var j=0;j<userInfo.length;j++){
+                                    if(userInfo[j].userID == followers[i].userID){
+                                        tempObj["imgLocation"] = userInfo[j].picture;
+                                        break;
+                                    }
+                                }
+                                follower.push(tempObj);
                             }
+
                             if(sessionString == undefined || sessionString == "")
-                                response["msg"] = {"sessionString": "", "userInfo":{"usernames":followerUsername,"lastnames":followerLastname,"firstnames":followerFirstname}};
+                                response["msg"] = {"sessionString": "", "userInfo":follower};
                             else
-                                response["msg"] = {"sessionString": user.sessionString, "userInfo":{"usernames":followerUsername,"lastnames":followerLastname,"firstnames":followerFirstname}};
+                                response["msg"] = {"sessionString": user.sessionString, "userInfo":follower};
                             response["status"] = "true";
                             res.send(response);
                             console.log("followeeInfo sent for "+req.body.username);
+                        });
+
                     });
                 }
             });
@@ -1152,75 +1164,3 @@ function addSkill(req, res, next) {       // SessionString, skillName
         }
     });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
