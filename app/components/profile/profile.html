@@ -1,3 +1,4 @@
+
 <link rel="stylesheet" href="assets/css/profile.css">
 <div>
 <div class="row">
@@ -9,7 +10,147 @@
 
     </div>
     <div id="aboutme" class="col-lg-6 following" ng-include="'./components/group/group.html'">
+    </div>
+</div>
+<div class="container-fluid row" >
+
+    <div ng-controller="profileController" class="bg-white col-lg-5" style="margin-left:20px">
+        <h2>Publications</h2>
+        <div class="col-lg-12 col-sm-12">
+            <ul>
+                <li ng-repeat="publication in publicationInfo"><a href="{{publication.filePath}}">{{publication.name}}</a></li>
+             </ul>
+             <div class="row col-lg-6">
+                 <input type="button" class="btn btn-primary" value="Add Publications" ng-show="allowEdit" ng-click="redirectAddPublication()" />
+             </div>
+      </div>
+    </div>
+
+    <div ng-controller="profileController" class="bg-white col-lg-5" style="margin-left:200px">
+      <div class="col-lg-12">
+        <div class="col-lg-12 col-sm-2 text-right"><i ng-show="allowEdit" ng-click="editProfile('genInfo')" class="fa fa-pencil-square-o btnEdit" aria-hidden="true"></i></div>
+          <h2>Skills</h2>
+          <div class="col-lg-12 col-sm-12">
+              <ul>
+                <li style="display:inline; padding: 5px 20px; margin: 5px 10px; border: 1px solid #ccc; border-radius:5px;" ng-repeat="skill in userSkills">{{skill.skillName}}</li>
+               </ul>
+               <input type="text" ng-model="addSkill" placeholder="Add skills" ng-blur="addUserSkill($event)" class="form-control col-lg-6" />
+
+          </div>
+      </div>
+    </div>
+</div>
+<!--=======
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="profile.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular-cookies.js"></script>
+
+</head>
+<body ng-app="myApp" ng-model="allowEdit">
+<div ng-controller="profileController" class="container col-lg-8">
+<div class="row bg-white">
+  <div class="col-lg-12 col-sm-2 text-right"><i ng-show="allowEdit" ng-click="editProfile('genInfo')" class="{{icon}}" aria-hidden="true"></i></div>
+    <div class="col-lg-3 col-sm-12">
+      <label class="btn btn-default" title="Click to upload new">
+        <img ng-src={{imgLocation}} class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
+        <input type="file" hidden ngf-select = "uploadProfilePic($file)" /><label>
+    </div>
+    <div class="col-lg-9 col-sm-12">
+        <div class="row">
+
+            <div class="col-12 text-truncate">
+            <div ng-show="edit">
+            <input ng-model="firstname">
+            <input ng-model="lastname">
+            </div>
+            <div ng-show="!edit">
+             {{firstname}} {{lastname}}
+            </div>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+            <div ng-show="edit" class="col-12 text-truncate">
+                   <div>
+                   <input ng-model="address">
+                   </div>
+                   <div>
+                    <input ng-model="city">
+                </div>
+                <div>
+                    <input ng-model="state">
+                </div>
+                <div>
+                    <input ng-model="country">
+                </div>
+                <div>
+                    <input ng-model="university">
+                </div>
+                </div>
+                <div ng-show="!edit">
+                {{address}} {{city}} {{state}} {{country}}
+               </div>
+               <div ng-show="!edit">
+                  {{dob}}
+               </div>
+               <div ng-show="!edit">
+                  {{university}}
+               </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+                <div ng-show="edit">
+                <input ng-model="summary">
+                </div>
+                <div ng-show="!edit">
+                {{summary}}
+                </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+                <input type="button" ng-click="followUser()" class="btn btn-success" value="Follow" ng-show="!allowEdit"/>
+            </div>
+          </div>
+    </div>
+</div>
+<div class="row bg-white">
+  <div class="col-lg-12 col-sm-2 text-right"><i ng-show="allowEdit" ng-click="editProfile('genInfo')" class="fa fa-pencil-square-o btnEdit" aria-hidden="true"></i></div>
+    <h2>Interest</h2>
+    <div class="col-lg-12 col-sm-12">
+        <ul>
+
+         </ul>
+
 
     </div>
 </div>
+<div class="row bg-white">
+    <h2>Following</h2>
+    <div class="col-lg-12 col-sm-12">
+        <ul>
+            <li ng-repeat="username in followUsernames"><a href="http://localhost/researchmate/#/profile/{{username}}">{{username}}</a></li>
+         </ul>
+
+
+    </div>
 </div>
+<div class="row bg-white">
+    <h2>Groups</h2>
+    <div class="col-lg-12 col-sm-12">
+        <ul ng-repeat = "groupName in groupNames">
+            <li>{{groupName}}</li>
+        </ul>
+        <div class="row col-lg-6">
+            <input type="button" class="btn btn-primary" value="Add Groups" ng-show="allowEdit" ng-click="" />
+        </div>
+
+    </div>
+</div> -->

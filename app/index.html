@@ -4,9 +4,8 @@
 
 <head>
 
-
   <link rel="stylesheet" href="assets/css/page.css">
-
+  <link rel="stylesheet" href="assets/css/profile.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
     crossorigin="anonymous">
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
@@ -18,18 +17,26 @@
   <script src="components/group/groupController.js"></script>
   <script src="components/aboutme/aboutmeController.js"></script>
   <script src="components/following/followingCOntroller.js"></script>
+  <script src="components/groups/groupsController.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular-cookies.js"></script>
   <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"></link>
-  
+  <script src="assets/js/ng-file-upload-shim.min.js"> </script>
+  <script src="assets/js/ng-file-upload.min.js"> </script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment-with-locales.js"> </script>
+  <script src="http://cdn.rawgit.com/indrimuska/angular-moment-picker/master/dist/angular-moment-picker.min.js"></script>
+  <link href="//cdn.rawgit.com/indrimuska/angular-moment-picker/master/dist/angular-moment-picker.min.css" rel="stylesheet">
+
+
+
 
 </head>
 
 
 <body class="background-img" style="padding-top:10px">
-   
+
 
   <div ng-app="myApp">
-  
+
   <div ng-view ></div>
   </div>
 </body>

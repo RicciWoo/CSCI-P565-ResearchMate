@@ -10,24 +10,20 @@ myApp.controller('followingController', ['$scope', '$http', 'URL','$cookies','$l
           'username':self.username,
           'sessionString': sessionString
       },
-    
+
     }).then(function success(response){
       if(response.status == 200){
         if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
           alert(response.data.msg);
         else{
-          var followerInfo = response.data.msg.userInfo;
-          self.followUsernames = followerInfo.usernames;
-    
+          self.followerInfo = response.data.msg.userInfo;
+debugger
         }
       }
     },
     function error(response){
-    
+
     }
     );
 
 }]);
-
-
-

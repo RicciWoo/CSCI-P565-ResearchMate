@@ -1,20 +1,65 @@
 
 
-myApp.controller('profileController',function($scope,$http, $location, $cookies, $cookieStore) {
+myApp.controller('profileController',function($scope,$http, $location, $cookies, $cookieStore, Upload) {
   var sessionString = $cookies.get('sessionString');
   var url = $location.path().split('/');
   $scope.username = url[2];
   $scope.edit=false;
   $scope.icon="fa fa-pencil-square-o btnEdit"
-  
+
+  $scope.uploadProfilePic = function($file){
+    Upload.upload({
+      url: 'http://silo.soic.indiana.edu:54545/uploadProfilePic',
+      file: $file,
+      data:{'username': $scope.username},
+    }).progress(function(e){}).then(function(data, status, headers, config){
+      console.log(data);
+    });
+  }
+
+  /**
+   * [Function to redirect user to add publications page]
+   * @return {[type]} [description]
+   */
+  $scope.redirectAddPublication = function(){
+    $location.path('/publication');
+  }
+
   $scope.editProfile=function(){
-    
+
     $scope.edit=!$scope.edit;
     if($scope.edit)
     $scope.icon="fa fa-floppy-o btnEdit"
     else
     $scope.icon="fa fa-pencil-square-o btnEdit"
   }
+
+
+  $scope.followUser = function(){
+    $http({
+          url: "http://silo.soic.indiana.edu:54545/followSomeone",
+          method: "POST",
+          data: {
+            'username':$scope.username,
+            'sessionString': sessionString
+        },
+
+      }).then(function success(response){
+        if(response.status == 200){
+          if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
+            alert(response.data.msg);
+          else{
+            alert("Followed Successfully");
+
+          }
+        }
+      },
+    function error(response){
+
+    }
+    );
+  }
+
   $http({
         url: "http://silo.soic.indiana.edu:54545/getUserInfo",
         method: "POST",
@@ -48,6 +93,12 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
             $scope.state = userinfo.userInfo.location.state;
             $scope.country = userinfo.userInfo.location.country;
             $scope.summary =  userinfo.userInfo.summary;
+            $scope.university = userinfo.userInfo.university;
+            debugger
+            if(userinfo.userInfo.picture!=""){
+              $scope.imgLocation = userinfo.userInfo.picture;
+            }
+            $scope.dob = new Date(userinfo.userInfo.dob).toLocaleDateString("en");
             console.log(userinfo);
           }
         }
@@ -94,7 +145,7 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
 
       }).then(function success(response){
         if(response.status == 200){
-          if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
+          if(response.data.status == "false" && response.data.msg!=undefined && response.data.msg!="")
             alert(response.data.msg);
           else{
             var groupInfo = response.data.msg.groupInfo
@@ -103,6 +154,29 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
               groupNames.push(groupInfo[i].groupName)
             }
             $scope.groupNames = groupNames;
+          }
+        }
+      },
+    function error(response){
+
+    }
+    );
+
+
+    $http({
+          url: "http://silo.soic.indiana.edu:54545/getUserSkills",
+          method: "POST",
+          data: {
+            'username':$scope.username,
+            'sessionString': sessionString
+        },
+
+      }).then(function success(response){
+        if(response.status == 200){
+          if(response.data.status == "false" && response.data.msg!=undefined && response.data.msg!="")
+            alert(response.data.msg);
+          else{
+            $scope.userSkills = response.data.msg;
           }
         }
       },
@@ -126,20 +200,45 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
           if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
             alert(response.data.msg);
           else{
-            var publicationInfo = response.data.msg.publicationInfo
-            var publicationNames = []
-            for(var i = 0; i<publicationInfo.length;i++){
-              publicationNames.push(publicationInfo[i].name)
-            }
-            $scope.publicationNames = publicationNames;
+
+            var publicationInfo = response.data.msg.publicationInfo;
+
+            $scope.publicationInfo = publicationInfo;
           }
         }
       },
     function error(response){
-
+debugger
     }
     );
 
+
+    $scope.addUserSkill = function(event){
+      var skillName = event.currentTarget.value;
+      if(skillName!=undefined && skillName.trim()!=""){
+        $http({
+              url: "http://silo.soic.indiana.edu:54545/addSkill",
+              method: "POST",
+              data: {
+                'sessionString': sessionString,
+                'skillName': skillName
+            },
+
+          }).then(function success(response){
+            if(response.status == 200){
+              if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
+                alert(response.data.msg);
+              else{
+                  console.log("skill added");
+              }
+            }
+          },
+        function error(response){
+    debugger
+        }
+        );
+      }
+    }
 
 
 }); //end of controller

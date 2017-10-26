@@ -20,7 +20,9 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
         }
         else {
           $cookies.remove('sessionString');
-          $cookies.put('sessionString', response.data.msg)
+          $cookies.remove('username');
+          $cookies.put('sessionString', response.data.msg);
+          $cookies.put('username', username);
           $location.path('/profile/'+username);
         }
       }
@@ -118,7 +120,8 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
   $scope.updatePassword = function () {
     var password = $scope.password.trim();
     var repassword = $scope.repassword.trim();
-    var sessionStr = $location.search().sessionstring;
+    var sessionStr = $location.search().sessionStr;
+
     if (sessionStr == undefined || sessionStr.trim() == "") {
       alert("Unable to get session string");
       return;
@@ -129,7 +132,7 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
           url: URL+"/updatePassword",
           method: "POST",
           data: {
-            'sessionString': sessionString,
+            'sessionString': sessionStr,
             'password': password
           },
 
@@ -140,7 +143,7 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
                 alert(response.data.msg)
             }
             else {
-              alert("Please check your email to reset your password")
+              alert(response.data.msg);
             }
           }
         },

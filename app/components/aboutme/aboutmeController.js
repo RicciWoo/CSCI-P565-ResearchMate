@@ -1,38 +1,68 @@
-myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$location', function ($scope, $http, URL,$cookies,$location) {
+myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$location', 'Upload', function ($scope, $http, URL,$cookies,$location, Upload) {
     var self = $scope;
     self.abc = "abc";
     self.allowedit=false;
     self.sessionString = $cookies.get('sessionString');
-    
+
+    $scope.uploadProfilePic = function($file){
+      Upload.upload({
+        url: 'http://silo.soic.indiana.edu:54545/uploadProfilePic',
+        file: $file,
+        data:{'username': $scope.username},
+      }).progress(function(e){}).then(function(data, status, headers, config){
+        console.log(data);
+      });
+    }
+
     var url = $location.path().split('/');
     $scope.username = url[2];
     $http({
-        url: "http://silo.soic.indiana.edu:54545/getUserInfo",
-        method: "POST",
-        data: {
-          'username':$scope.username ,
-          'sessionstring': self.sessionString
-      },
-    }).then(function Success(response) {
-      console.log();
-      if(response.status==200)
-      {
-       var user = response.data.msg.user;
-       var userInfo = response.data.msg.userInfo;
-       self.firstname = user.firstName;
-       self.lastname = user.lastName;
-       self.address=userInfo.location.address;
-       self.country=userInfo.location.country;
-       self.state=userInfo.location.state;
-       self.city=userInfo.location.city;
-       self.university=userInfo.university;
-       self.summary=userInfo.summary;
-      }
-      else
-      console.error(response.status);
-    }, function Error(response) {
-        console.log(response);
-    });
+          url: "http://silo.soic.indiana.edu:54545/getUserInfo",
+          method: "POST",
+          data: {
+            'username':$scope.username,
+            'sessionstring': self.sessionString
+        },
+
+        }).then(function success(response){
+          if(response.status==200){
+            if(response.data.status=="false"){
+              if(response.data.msg!="")
+                alert(response.data.msg)
+            }
+            else{
+              var userinfo = response.data.msg;
+              var sessString = userinfo.user.sessionString;
+
+              if(sessString!=undefined && sessString!="" && sessString == self.sessionString)
+                $scope.allowEdit = true;
+              else {
+                $scope.allowEdit = false;
+              }
+              console.log(userinfo);
+              $scope.firstname = userinfo.user.firstName;
+              $scope.lastname = userinfo.user.lastName;
+              $scope.name=$scope.firstname+" "+$scope.lastname;
+              $scope.imgLocation = "http://simpleicon.com/wp-content/uploads/user1.png";
+              $scope.address = userinfo.userInfo.location.address != undefined && userinfo.userInfo.location.address.trim()!=""?userinfo.userInfo.location.address + ',':"";
+              $scope.city = userinfo.userInfo.location.city != undefined && userinfo.userInfo.location.city.trim()!=""?userinfo.userInfo.location.city + ',':"";
+              $scope.state = userinfo.userInfo.location.state;
+              $scope.country = userinfo.userInfo.location.country;
+              $scope.summary =  userinfo.userInfo.summary;
+              $scope.university = userinfo.userInfo.university;
+              debugger
+              if(userinfo.userInfo.picture!=""){
+                $scope.imgLocation = userinfo.userInfo.picture;
+              }
+              $scope.dob = new Date(userinfo.userInfo.dob).toLocaleDateString("en");
+              console.log(userinfo);
+            }
+          }
+        },
+        function error(response){
+          alert("Error occured while authenticating user");
+        }
+      );
     self.edit=false;
    self.save= function(){
         self.edit=!self.edit;
@@ -52,12 +82,13 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
                 "dob":"03/09/1991",
                 "primaryAdvisor":"HiteshKumar",
                 "secondaryAdvisor":"RahulVelayutham",
-                "picture":"location",
+                
+                "university": self.university,
                 "summary":self.summary
           },
         }).then(function Success(response) {
           console.log(response);
         });
     }
-    
+
 }]);
