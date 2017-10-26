@@ -1,116 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
-        crossorigin="anonymous">
-    <link rel="stylesheet" href="profile.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular-cookies.js"></script>
-
-</head>
-<body ng-app="myApp" ng-model="allowEdit">
-<div ng-controller="profileController" class="container col-lg-8">
-<div class="row bg-white">
-  <div class="col-lg-12 col-sm-2 text-right"><i ng-show="allowEdit" ng-click="editProfile('genInfo')" class="{{icon}}" aria-hidden="true"></i></div>
-    <div class="col-lg-3 col-sm-12">
-        <img ng-src="{{imgLocation}}" class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
-    </div>
-    <div class="col-lg-9 col-sm-12">
-        <div class="row">
-
-            <div class="col-12 text-truncate">
-            <div ng-show="edit">
-            <input ng-model="firstname">
-            <input ng-model="lastname">
-            </div>
-            <div ng-show="!edit">
-             {{firstname}} {{lastname}}
-            </div>
-            </div>
-          </div>
-          <div class="row">
-            <div>
-            <div ng-show="edit" class="col-12 text-truncate">
-                   <div>
-                   <input ng-model="address">
-                   </div>
-                   <div>
-                    <input ng-model="city">
-                </div>
-                <div>
-                    <input ng-model="state">
-                </div>
-                <div>
-                    <input ng-model="country">
-                </div>
-                </div>
-                <div ng-show="!edit">
-                {{address}} {{city}} {{state}} {{country}}
-               </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-12">
-                <div ng-show="edit">
-                <input ng-model="summary">
-                </div>
-                <div ng-show="!edit">
-                {{summary}}
-                </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-12">
-                <input type="button" class="btn btn-success" value="Follow" ng-show="!allowEdit"/>
-            </div>
-          </div>
+<link rel="stylesheet" href="assets/css/profile.css">
+<div>
+<div class="row">
+    <div id="aboutme" class="col-lg-12" ng-include="'./components/aboutme/aboutme.html'">
     </div>
 </div>
-<div class="row bg-white">
-  <div class="col-lg-12 col-sm-2 text-right"><i ng-show="allowEdit" ng-click="editProfile('genInfo')" class="fa fa-pencil-square-o btnEdit" aria-hidden="true"></i></div>
-    <h2>Interest</h2>
-    <div class="col-lg-12 col-sm-12">
-        <ul>
-            <li>Morbi in sem quis dui placerat ornare. Pellentesque odio nisi, euismod in, pharetra a, ultricies in, diam. Sed arcu. Cras consequat.</li>
-            <li>Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus.</li>
-            <li>Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi.</li>
-            <li>Pellentesque fermentum dolor. Aliquam quam lectus, facilisis auctor, ultrices ut, elementum vulputate, nunc.</li>
-         </ul>
-
+<div class="row ">
+    <div id="aboutme" class="col-lg-6 following" ng-include="'./components/following/following.html'">
 
     </div>
-</div>
-<div ng-show="followUsernames.length>0" class="row bg-white">
-    <h2>Following</h2>
-    <div class="col-lg-12 col-sm-12">
-        <ul>
-            <li ng-repeat="username in followUsernames"><a href="http://localhost/researchmate/#/profile/{{username}}">{{username}}</a></li>
-         </ul>
-
-
-    </div>
-</div>
-<div class="row bg-white" ng-show = "groupNames.length>0">
-    <h2>Groups</h2>
-    <div class="col-lg-12 col-sm-12">
-        <ul ng-repeat = "groupName in groupNames">
-            <li>{{groupName}}</li>
-         </ul>
-
-
-    </div>
-</div>
-<div class="row bg-white" ng-show = "publicationNames.length>0">
-    <h2>Publications</h2>
-    <div class="col-lg-12 col-sm-12">
-        <ul>
-            <li ng-repeat="name in publicationNames">{{name}}</li>
-         </ul>
-
+    <div id="aboutme" class="col-lg-6 following" ng-include="'./components/group/group.html'">
 
     </div>
 </div>
 </div>
-</body>
-</html>
