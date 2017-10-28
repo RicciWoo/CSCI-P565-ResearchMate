@@ -50,7 +50,7 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
               $scope.country = userinfo.userInfo.location.country;
               $scope.summary =  userinfo.userInfo.summary;
               $scope.university = userinfo.userInfo.university;
-              debugger
+             
               if(userinfo.userInfo.picture!=""){
                 $scope.imgLocation = userinfo.userInfo.picture;
               }

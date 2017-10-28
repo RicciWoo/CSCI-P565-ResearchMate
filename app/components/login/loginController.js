@@ -1,6 +1,6 @@
-myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','$cookieStore','URL', function ($scope, $http, $location, $cookies, $cookieStore,URL) {
+myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','$cookieStore','URL','$rootScope', function ($scope, $http, $location, $cookies, $cookieStore,URL,$rootScope) {
   var self = $scope;
-
+  $rootScope.loggedIn=false;
   $scope.submit = function () {
     var username = self.username;
     var password = self.pwd;

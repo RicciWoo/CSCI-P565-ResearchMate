@@ -1,12 +1,10 @@
-
-
-myApp.controller('profileController',function($scope,$http, $location, $cookies, $cookieStore, Upload) {
+myApp.controller('profileController',function($scope,$http, $location, $cookies, $cookieStore, Upload,$rootScope) {
   var sessionString = $cookies.get('sessionString');
   var url = $location.path().split('/');
   $scope.username = url[2];
   $scope.edit=false;
   $scope.icon="fa fa-pencil-square-o btnEdit"
-
+  $rootScope.loggedIn=true;
   $scope.uploadProfilePic = function($file){
     Upload.upload({
       url: 'http://silo.soic.indiana.edu:54545/uploadProfilePic',
@@ -94,7 +92,7 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
             $scope.country = userinfo.userInfo.location.country;
             $scope.summary =  userinfo.userInfo.summary;
             $scope.university = userinfo.userInfo.university;
-            debugger
+           
             if(userinfo.userInfo.picture!=""){
               $scope.imgLocation = userinfo.userInfo.picture;
             }
@@ -208,7 +206,7 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
         }
       },
     function error(response){
-debugger
+
     }
     );
 
@@ -234,7 +232,7 @@ debugger
             }
           },
         function error(response){
-    debugger
+    
         }
         );
       }
