@@ -40,7 +40,7 @@ Upload.upload({
     'otherUsernames': otherUsers
  },
 }).progress(function(e){console.log("progress: " + e)}).then(function(data, status, headers, config){
-  console.log(data);
+  $location.path("/profile/"+$scope.username)
 });
 
 }

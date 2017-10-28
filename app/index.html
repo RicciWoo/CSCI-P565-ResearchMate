@@ -14,7 +14,8 @@
   <script src="components/login/loginController.js"></script>
   <script src="components/signup/signupController.js"></script>
   <script src="components/profile/profileController.js"></script>
-  <script src="components/group/groupController.js"></script>
+  <script src="components/group/groupController.js?ver=1"></script>
+  <script src="components/publication/publicationController.js"></script>
   <script src="components/aboutme/aboutmeController.js"></script>
   <script src="components/following/followingCOntroller.js"></script>
   <script src="components/groups/groupsController.js"></script>
@@ -36,8 +37,22 @@
 
 
   <div ng-app="myApp">
+    <nav class="navbar navbar-default navbar-fixed-top" style="background:#D9853B;z-index: 10;">
+          <div class="container-fluid text-white">
+                 <h2>ResearchMate</h2>
 
-  <div ng-view ></div>
+                     <form class="navbar-form" role="search">
+                         <div class="input-group">
+                             <input type="text" class="form-control" placeholder="Search" name="q">
+                             <div class="input-group-btn">
+                                 <button class="btn btn-default" type="submit"><i class="fa fa-search-small"></i></button>
+                             </div>
+                         </div>
+                         </form>
+
+            </div>
+       </nav>
+  <div ng-view style="padding-top:50px;"></div>
   </div>
 </body>
 

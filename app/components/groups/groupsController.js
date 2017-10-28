@@ -32,6 +32,29 @@ $http({
 function error(response){
 
 });
+
+$scope.addNewGroup = function(){
+  $http({
+    url: URL+"/createGroup",
+    method: "POST",
+    data:{'sessionString': $scope.sessionString, 'groupname': $scope.newGroupName},
+  }).then(function success(response){debugger
+    if(response.status == 200){
+      if(response.data.status == "true" && response.data.msg == "group entry added."){
+        alert(response.data.msg)
+      }
+      else{
+        window.location.reload();
+      }
+    }
+    else{
+      alert("Error encountered while joining the group. Please try again!")
+    }
+  },
+  function error(response){
+  });
+}
+
   $scope.joinGroup = function(event, groupName){
     if(event.currentTarget.value == "Joined")
       return; //user is already in the group.
@@ -43,7 +66,8 @@ function error(response){
       }).then(function success(response){debugger
         if(response.status == 200){
           if(response.data.status == "true" && response.data.msg == "group entry added."){
-            event.currentTarget.value = "Joined"
+            debugger
+            event.target.value = "Joined"
           }
           else{
             alert(response.data.msg);
