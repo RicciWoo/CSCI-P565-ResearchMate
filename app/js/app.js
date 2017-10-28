@@ -1,12 +1,12 @@
-var myApp = angular.module('myApp', ['ngRoute', 'ngCookies']);
-myApp.constant('URL', 'http://silo.soic.indiana.edu:48167');
+var myApp = angular.module('myApp',['ngRoute','ngCookies', 'ngFileUpload','moment-picker']);
+myApp.constant('URL','http://silo.soic.indiana.edu:54545');
 myApp.config(function ($routeProvider) {
   $routeProvider
     .when("/", {
       templateUrl: "components/login/login.html"
     }).when("/signup", {
       templateUrl: "components/signup/signup.html"
-    }).when("/profile", {
+    }).when("/profile/:username", {
       templateUrl: "components/profile/profile.html"
     }).when("/forgetpassword", {
       templateUrl: "components/login/forgetpassword.html"
@@ -16,8 +16,11 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/login/updatepassword.html"
     }).when("/verifyuser", {
       templateUrl: "components/login/verifyuser.html"
+    }).when("/publication", {
+      templateUrl: "components/publication/publication.html"
+    }).when("/groups", {
+      templateUrl: "components/groups/groups.html"
     });
-
 
 
 });

@@ -1,0 +1,45 @@
+body{
+    background-color: darkgray;
+}
+
+.container{
+    padding-top: 0px;
+
+}
+ul{
+    list-style-type: none;
+}
+.btnEdit
+{
+  margin-left:5px;
+  cursor: pointer;
+}
+.no-padding{
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+}
+.btn{
+  cursor: pointer !important;
+}
+
+.divpad{
+
+   padding: 20px;
+   background:#74AFAD;
+   word-wrap: break-word;
+}
+.following{
+    padding: 40px;
+}
+a .fa{
+    text-decoration: none;
+    color:white;
+  }
+a:hover{
+    color:#D9853B;
+}
+input[type=text] {
+    border: 2px solid #D9853B;
+    border-radius: 4px;
+    height: 30px;
+}

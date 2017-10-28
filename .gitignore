@@ -1,4 +1,0 @@
-app/*.js
-app/*.json
-app/node_modules
-*.log
