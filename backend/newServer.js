@@ -1356,6 +1356,7 @@ function searchSkill(req, res, next) {
         });
     }
 }
+
 app.post('/searchInput', searchInput);
 function searchInput(req, res, next){
     var searchString = req.body.searchString;
@@ -1440,49 +1441,131 @@ function searchUserGroup(res, searchString, resultObj){
 
 function searchUserSkill(res, searchString, resultObj){
     Skills.find({},function (err,skill) {
-    var skillResponse = {};
-    if(err || skill==null){
-        skillResponse["status"] = "false";
-        skillResponse["msg"] = "This skill is not registered";
-        resultObj['skillSearch'] = skillResponse;
-        sendSearchResponse(res, resultObj);
-    }
-    else {
-        var skillID = [];
-        for(var i=0;i<skill.length;i++){
-            var skillName = skill[i].skillName;
-            if(skillName.toLowerCase() == searchString || skillName.indexOf(searchString)!=-1){
-                skillID.push(skill[i].skillID);
-            }
+        var skillResponse = {};
+        if(err || skill==null){
+            skillResponse["status"] = "false";
+            skillResponse["msg"] = "This skill is not registered";
+            resultObj['skillSearch'] = skillResponse;
+            sendSearchResponse(res, resultObj);
         }
-        UserSkills.find({"skillID":{$in: skillID}},function (err, users) {
-            if(err||users==null){
-                skillResponse["status"] = "false";
-                skillResponse["msg"] = "Nobody has this skill.";
-                resultObj['skillSearch'] = skillResponse;
-                sendSearchResponse(res, resultObj);
-            }
-            else {
-                var ids = [];
-                for (var i = 0; i < users.length; i++) {
-                    ids.push(users[i].userID)
+        else {
+            var skillID = [];
+            for(var i=0;i<skill.length;i++){
+                var skillName = skill[i].skillName;
+                if(skillName.toLowerCase() == searchString || skillName.indexOf(searchString)!=-1){
+                    skillID.push(skill[i].skillID);
                 }
-                User.find({"userID": {$in: ids}}, function (err, userInfos) {
-                    skillResponse["status"] = "true";
-                    skillResponse["msg"] = userInfos;
+            }
+            UserSkills.find({"skillID":{$in: skillID}},function (err, users) {
+                if(err||users==null){
+                    skillResponse["status"] = "false";
+                    skillResponse["msg"] = "Nobody has this skill.";
                     resultObj['skillSearch'] = skillResponse;
                     sendSearchResponse(res, resultObj);
-                });
-            }
+                }
+                else {
+                    var ids = [];
+                    for (var i = 0; i < users.length; i++) {
+                        ids.push(users[i].userID)
+                    }
+                    User.find({"userID": {$in: ids}}, function (err, userInfos) {
+                        skillResponse["status"] = "true";
+                        skillResponse["msg"] = userInfos;
+                        resultObj['skillSearch'] = skillResponse;
+                        sendSearchResponse(res, resultObj);
+                    });
+                }
 
-        });
+            });
 
-    }
+        }
 
-});
+    });
 }
 
 function sendSearchResponse(res, resultObj){
     res.send(resultObj)
 }
 
+app.post('/setRating', setRating);      //sessionString, publicationID, rating
+function setRating(req,res,next) {
+    var rating = parseInt(req.body.rating);
+    if(rating>5||rating<1){
+        response["status"] = "false";
+        response["msg"] = "Invalid rating";
+        res.send(response);
+        console.log(response["msg"]);
+    }
+    var pubID = req.body.publicationID;
+    var query = {"sessionString": req.body.sessionString};
+
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid sessionString.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else if (err) {
+            console.log("error");
+            response["status"] = "false";
+            response["msg"] = "Error in finding user";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            PublicationRatings.find({"userID": user.userID}, function (err, entry) {
+                var ids = [];
+
+                for (var i = 0; i < entry.length; i++) {
+                    if (entry[i].publicationID == parseInt(pubID)) {
+                        ids.push(entry[i]);
+                        break;
+                    }
+                }
+                if (ids[0] != null) {
+                    //update existing
+                    ids[0].set({ratings: rating});
+                    ids[0].set({givenOn: Date.now()});
+                    ids[0].save(function (err, updatedEntry) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = " Update failed while saving.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["msg"] = "Rating updated.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+                else {
+                    //add new entry
+                    var thisRating = new PublicationRatings({
+                        publicationID: req.body.publicationID,
+                        userID: user.userID,
+                        ratings: rating,
+                        givenOn:Date.now()
+                    });
+                    thisRating.save(function (err, savedEntry) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = " Update failed while saving.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["msg"] = "Rating saved.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
