@@ -1179,12 +1179,12 @@ function addSkill(req, res, next) {       // SessionString, skillName
 }
 
 app.post('/getUserSkills', getUserSkills);
-function getUserSkills(req, res, next) {       // SessionString
-    var query = {"sessionString": req.body.sessionString};
+function getUserSkills(req, res, next) {       // userName
+    var query = {"userName": req.body.userName};
     User.findOne(query, function (err, user) {
         if (err || user == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid sessionString.";
+            response["msg"] = "Invalid user.";
             res.send(response);
             console.log(response["msg"]);
         }
@@ -1369,42 +1369,48 @@ function searchInput(req, res, next){
         res.send(resultObj);
         return;
     }
-    searchString = searchString.toLowerCase();
+    searchString = searchString.toLowerCase().trim();
+    var searchStr = searchString.split(' ');
     var result = [];
     User.find({},function (err,users_username) {
         if(err ){
             response["status"]="false";
             response["msg"] = "Error encountered while searching";
             resultObj['userSearch'] = response;
-            searchUserGroup(res, searchString, resultObj);
+            searchUserGroup(res, searchStr, resultObj);
         }
         else {
-            for(var i = 0;i<users_username.length;i++){
-                if(searchString == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchString)!=-1)
-                    result.push(users_username[i]);
-                else if(searchString == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchString)!=-1)
-                    result.push(users_username[i]);
-                else if(searchString== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchString)!=-1)
-                    result.push(users_username[i]);
+            for(var j = 0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for(var i = 0;i<users_username.length;i++){
+                    if(searchStr[j] == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchStr[j])!=-1)
+                        result.push(users_username[i]);
+                    else if(searchStr[j] == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1)
+                        result.push(users_username[i]);
+                    else if(searchStr[j]== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1)
+                        result.push(users_username[i]);
+                }
             }
+
             if(result.length>0) {
                 response["status"] = "true";
                 response["msg"] = result;
                 resultObj['userSearch'] = response;
-                searchUserGroup(res, searchString, resultObj);
+                searchUserGroup(res, searchStr, resultObj);
             }
             else{
                 response["status"] = "false";
                 response["msg"] = "no data found in the users that matches the string.";
                 resultObj['userSearch'] = response;
-                searchUserGroup(res, searchString, resultObj);
+                searchUserGroup(res, searchStr, resultObj);
             }
         }
     });
 }
 
 
-function searchUserGroup(res, searchString, resultObj){
+function searchUserGroup(res, searchStr, resultObj){
     var result  = [];
     var tempResponse = {};
     GroupInfo.find({}, function (err, groups) {
@@ -1412,34 +1418,39 @@ function searchUserGroup(res, searchString, resultObj){
             response["status"] = "false";
             response["msg"] = "Error encountered while searching for group!";
             resultObj['groupSearch'] = response;
-            searchUserSkill(res, searchString, resultObj);
+            searchUserSkill(res, searchStr, resultObj);
         }
         else {
-            for (var i = 0; i < groups.length; i++) {
-                if(searchString == groups[i].groupName.toLowerCase() || groups[i].groupName.toLowerCase().indexOf(searchString) != -1) {
-                    result.push(groups[i]);
-                }
-                else if(groups[i].description.toLowerCase().indexOf(searchString)!=-1){
-                    result.push(groups[i]);
+            for(var j=0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for (var i = 0; i < groups.length; i++) {
+                    if(searchStr[j] == groups[i].groupName.toLowerCase() || groups[i].groupName.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        result.push(groups[i]);
+                    }
+                    else if(searchStr[j] == groups[i].description.toLowerCase() || groups[i].description.toLowerCase().indexOf(searchStr[j])!=-1){
+                        result.push(groups[i]);
+                    }
                 }
             }
+
             if (result.length > 0) {
                 tempResponse["status"] = "true";
                 tempResponse["msg"] = result;
                 resultObj['groupSearch'] = tempResponse;
-                searchUserSkill(res, searchString, resultObj);
+                searchUserSkill(res, searchStr, resultObj);
             }
             else {
                 tempResponse["status"] = "false";
                 tempResponse["msg"] = "No data found in groups that matches the string.";
                 resultObj['groupSearch'] = tempResponse;
-                searchUserSkill(res, searchString, resultObj);
+                searchUserSkill(res, searchStr, resultObj);
             }
         }
     });
 }
 
-function searchUserSkill(res, searchString, resultObj){
+function searchUserSkill(res, searchStr, resultObj){
     Skills.find({},function (err,skill) {
         var skillResponse = {};
         if(err || skill==null){
@@ -1450,12 +1461,17 @@ function searchUserSkill(res, searchString, resultObj){
         }
         else {
             var skillID = [];
-            for(var i=0;i<skill.length;i++){
-                var skillName = skill[i].skillName;
-                if(skillName.toLowerCase() == searchString || skillName.indexOf(searchString)!=-1){
-                    skillID.push(skill[i].skillID);
+            for(var j=0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for(var i=0;i<skill.length;i++){
+                    var skillName = skill[i].skillName;
+                    if(skillName.toLowerCase() == searchStr[j] || skillName.indexOf(searchStr[j])!=-1){
+                        skillID.push(skill[i].skillID);
+                    }
                 }
             }
+
             UserSkills.find({"skillID":{$in: skillID}},function (err, users) {
                 if(err||users==null){
                     skillResponse["status"] = "false";
