@@ -1145,20 +1145,11 @@ function addSkill(req, res, next) {       // SessionString, skillName
                     var query = {"userID": user.userID};
                     UserSkills.find(query).where("skillID").equals(skillentry.skillID).exec(function (err,another) {
                         if(another==null){
-                            var maxCount = 1;
-                            Skills.findOne().sort('-skillID').exec(function (err, entry) {
-                                if (entry == null) {
-                                    maxCount = 1;
-                                }
-                                else {
-                                    maxCount = entry.skillID + 1;
-                                }
-                                var userThisSkill = new UserSkills({
-                                    skillID: maxCount,
-                                    userID: user.userID
-                                });
-                                userThisSkill.save();
+                            var userThisSkill = new UserSkills({
+                                skillID: another.skillID,
+                                userID: user.userID
                             });
+                            userThisSkill.save();
                             response["status"] = "true";
                             response["msg"] = "skill added";
                             res.send(response);
