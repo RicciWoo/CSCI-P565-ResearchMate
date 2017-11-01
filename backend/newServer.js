@@ -221,6 +221,12 @@ app.post('/login',login);
 function login(req,res,next) {
     var username = req.body.username;
     var pw = req.body.password;
+
+    if(username==null||pw==null||pw==undefined||username==undefined||username==""||pw==""){
+        response["status"] = "false";
+        response["msg"] = "Wrong input";
+        res.send(response);
+    }
     var query = {'userName':username};
     User.findOne(query, function(err, seeUser) {
         if (seeUser == null) {
@@ -1482,11 +1488,8 @@ function searchUserSkill(res, searchStr, resultObj){
                         sendSearchResponse(res, resultObj);
                     });
                 }
-
             });
-
         }
-
     });
 }
 
@@ -1602,6 +1605,174 @@ function getPublicationRatings(req, res, next) {       // publicationID or publi
             response["msg"] = {"avgRating":avgRating,"ratings":allRatings};
             res.send(response);
             console.log(response["msg"]);
+        }
+    });
+}
+
+app.post('/removeUserSkill', removeUserSkill);
+function removeUserSkill(req, res, next) {          //sessionString, skillID
+    var sessionString = req.body.sessionString;
+    var query = {'sessionString': sessionString};
+    User.findOne(query, function(err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "User does not exist!";
+            res.send(response);
+        }
+        else {
+            var userID = user.userID;
+            var query = {'userID': userID};
+            UserSkills.find(query, function(err, userSkills) {
+                if (userSkills == null||userSkills.length==0) {
+                    response["status"] = "false";
+                    response["msg"] = "Can not find user ID in user skill table!";
+                    res.send(response);
+                }
+                else {
+                    var skillID = req.body.skillID;
+                    var deleted = false;
+                    for (var i = 0; i < userSkills.length; i++) {
+                        if (userSkills[i].skillID == skillID) {
+                            userSkills[i].remove();
+                            deleted = true;
+                            break;
+                        }
+                    }
+                    if (deleted) {
+                        response["status"] = "true";
+                        response["msg"] = "Skill " + skillID + " of user " + userID + " removed successfully!";
+                        console.log(response["msg"]);
+                        res.send(response);
+                    }
+                    else {
+                        response["status"] = "false";
+                        response["msg"] = "Cannot find Skill " + skillID + " of user " + userID + " in user skill table!";
+                        console.log(response["msg"]);
+                        res.send(response);
+                    }
+                }
+            });
+        }
+    });
+}
+
+app.post('/removeUserFromGroup', removeUserFromGroup);
+function removeUserFromGroup(req, res, next) {          //sessionString,groupID
+    var sessionString = req.body.sessionString;
+    var query = {'sessionString': sessionString};
+    User.findOne(query, function(err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "User does not exist!";
+            res.send(response);
+        }
+        else {
+            var userID = user.userID;
+            var query = {'userID': userID};
+            UserGroup.find(query, function(err, userGroups) {
+                if (userGroups == null||userGroups.length == 0) {
+                    response["status"] = "false";
+                    response["msg"] = "Can not find user ID in user group table!";
+                    res.send(response);
+                }
+                else {
+                    var groupID = req.body.groupID;
+                    var deleted = false;
+                    for (var i = 0; i < userGroups.length; i++) {
+                        if (userGroups[i].groupID == groupID) {
+                            userGroups[i].remove();
+                            deleted = true;
+                            break;
+                        }
+                    }
+                    if (deleted) {
+                        response["status"] = "true";
+                        response["msg"] = "Group " + groupID + " of user " + userID + " removed successfully!";
+                        console.log(response["msg"]);
+                        res.send(response);
+                    }
+                    else {
+                        response["status"] = "false";
+                        response["msg"] = "Cannot find group " + groupID + " of user " + userID + " in user group table!";
+                        console.log(response["msg"]);
+                        res.send(response);
+                    }
+                }
+            });
+        }
+    });
+}
+
+app.post('/removeUserPublication', removeUserPublication);
+function removeUserPublication(req, res, next) {
+    var sessionString = req.body.sessionString;
+    var query = {'sessionString': sessionString};
+    User.findOne(query, function(err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "User does not exist!";
+            res.send(response);
+        }
+        else {
+            var userID = user.userID;
+            var query = {'userID': userID};
+            UserPublications.find(query, function(err, userPublications) {
+                if (userPublications == null||userPublications.length==0) {
+                    response["status"] = "false";
+                    response["msg"] = "Can not find user ID in user publication table!";
+                    res.send(response);
+                }
+                else {
+                    var publicationID = req.body.publicationID;
+                    var deleted = false;
+                    for (var i = 0; i < userPublications.length; i++) {
+                        if (userPublications[i].publicationID == publicationID) {
+                            userPublications[i].remove();
+                            deleted = true;
+                            break;
+                        }
+                    }
+                    if (deleted) {
+
+                        var query = {'publicationID': publicationID};
+                        Publications.findOne(query, function(err, publication){
+                            if (publication == null) {
+                                response["status"] = "false";
+                                response["msg"] = "Cannot find the publication in publication info table!";
+                                console.log(response["msg"]);
+                                res.send(response);
+                            }
+                            else {
+                                publication.remove();
+                                var query = {'publicationID': publicationID};
+                                PublicationRatings.find(query, function (err, ratings) {
+                                    if (ratings == null||ratings.length==0){
+                                        response["status"] = "false";
+                                        response["msg"] = "Cannot find the ratings in publication ratings table!";
+                                        console.log(response["msg"]);
+                                        res.send(response);
+                                    }
+                                    else {
+                                        for (var i = 0; i < ratings.length; i ++) {
+                                            ratings[i].remove();
+                                        }
+                                        response["status"] = "true";
+                                        response["msg"] = "Publication and all ratings of publication " + publicationID + " removed successfully!";
+                                        console.log(response["msg"]);
+                                        res.send(response);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else {
+                        response["status"] = "false";
+                        response["msg"] = "User is not authorized to delete the publication";
+                        console.log("User is not authorized to delete this publication.");
+                        res.send(response);
+                    }
+                }
+            });
         }
     });
 }
