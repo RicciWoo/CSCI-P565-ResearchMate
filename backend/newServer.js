@@ -1144,9 +1144,9 @@ function addSkill(req, res, next) {       // SessionString, skillName
                 else {
                     var query = {"userID": user.userID};
                     UserSkills.find(query).where("skillID").equals(skillentry.skillID).exec(function (err,another) {
-                        if(another==null){
+                        if(another.length == 0){
                             var userThisSkill = new UserSkills({
-                                skillID: another.skillID,
+                                skillID: skillentry.skillID,
                                 userID: user.userID
                             });
                             userThisSkill.save();
