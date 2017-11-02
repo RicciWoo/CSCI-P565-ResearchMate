@@ -1411,7 +1411,6 @@ function searchInput(req, res, next){
     });
 }
 
-
 function searchUserGroup(res, searchStr, resultObj){
     var result  = [];
     var tempResponse = {};
@@ -1427,7 +1426,6 @@ function searchUserGroup(res, searchStr, resultObj){
                 if(searchStr[j] == undefined || searchStr[j].trim()=="")
                     continue;
                 for (var i = 0; i < groups.length; i++) {
-		
                     if(searchStr[j] == groups[i].groupName.toLowerCase() || groups[i].groupName.toLowerCase().indexOf(searchStr[j]) != -1) {
                         result.push(groups[i]);
                     }
@@ -1615,53 +1613,6 @@ function getPublicationRatings(req, res, next) {       // publicationID or publi
     });
 }
 
-app.post('/removeUserSkill', removeUserSkill);
-function removeUserSkill(req, res, next) {          //sessionString, skillID
-    var sessionString = req.body.sessionString;
-    var query = {'sessionString': sessionString};
-    User.findOne(query, function(err, user) {
-        if (user == null) {
-            response["status"] = "false";
-            response["msg"] = "User does not exist!";
-            res.send(response);
-        }
-        else {
-            var userID = user.userID;
-            var query = {'userID': userID};
-            UserSkills.find(query, function(err, userSkills) {
-                if (userSkills == null||userSkills.length==0) {
-                    response["status"] = "false";
-                    response["msg"] = "Can not find user ID in user skill table!";
-                    res.send(response);
-                }
-                else {
-                    var skillID = req.body.skillID;
-                    var deleted = false;
-                    for (var i = 0; i < userSkills.length; i++) {
-                        if (userSkills[i].skillID == skillID) {
-                            userSkills[i].remove();
-                            deleted = true;
-                            break;
-                        }
-                    }
-                    if (deleted) {
-                        response["status"] = "true";
-                        response["msg"] = "Skill " + skillID + " of user " + userID + " removed successfully!";
-                        console.log(response["msg"]);
-                        res.send(response);
-                    }
-                    else {
-                        response["status"] = "false";
-                        response["msg"] = "Cannot find Skill " + skillID + " of user " + userID + " in user skill table!";
-                        console.log(response["msg"]);
-                        res.send(response);
-                    }
-                }
-            });
-        }
-    });
-}
-
 app.post('/removeUserFromGroup', removeUserFromGroup);
 function removeUserFromGroup(req, res, next) {          //sessionString,groupID
     var sessionString = req.body.sessionString;
@@ -1777,6 +1728,65 @@ function removeUserPublication(req, res, next) {
                         console.log("User is not authorized to delete this publication.");
                         res.send(response);
                     }
+                }
+            });
+        }
+    });
+}
+
+app.post('/removeUserSkill', removeUserSkill);
+function removeUserSkill(req, res, next) {
+    var sessionString = req.body.sessionString;
+    var query = {'sessionString': sessionString};
+    User.findOne(query, function(err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "User does not exist!";
+            res.send(response);
+        }
+        else {
+            var userID = user.userID;
+            var query = {'userID': userID};
+            UserSkills.find(query, function(err, userSkills) {
+                if (userSkills == null) {
+                    response["status"] = "false";
+                    response["msg"] = "Can not find user ID in user skill table!";
+                    res.send(response);
+                }
+                else {
+                    var skillName = req.body.skillName;
+                    var query = {'skillName': skillName};
+                    Skills.findOne(query, function(err, skill) {
+                        if (skill == null) {
+                            response["status"] = "false";
+                            response["msg"] = "Cannot find skillName in skill table!";
+                            console.log(response["msg"]);
+                            res.send(response);
+                        }
+                        else {
+                            var skillID = skill.skillID;
+                            var deleted = false;
+                            for (var i = 0; i < userSkills.length; i++) {
+                                if (userSkills[i].skillID == skillID) {
+                                    userSkills[i].remove();
+                                    deleted = true;
+                                    break;
+                                }
+                            }
+                            if (deleted) {
+                                response["status"] = "true";
+                                response["msg"] = "Skill " + skillID + " of user " + userID + " removed successfully!";
+                                console.log(response["msg"]);
+                                res.send(response);
+                            }
+                            else {
+                                response["status"] = "false";
+                                response["msg"] = "Cannot find Skill " + skillID + " of user " + userID + " in user skill table!";
+                                console.log(response["msg"]);
+                                res.send(response);
+                            }
+                        }
+                    });
                 }
             });
         }
