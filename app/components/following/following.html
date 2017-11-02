@@ -4,7 +4,7 @@
 <div class="row" style="background-color:#558C89"></div>
 <hr style="height:20px;background-color:#D9853B">
 <div class="row " >
-   <div class="col-lg-3" ng-repeat="user in followerInfo">
+   <div class="col-lg-2" ng-repeat="user in followerInfo">
        <a href="http://localhost/ResearchMate/#/profile/{{user.username}}">
        <img ng-src={{user.imgLocation==""?'http://simpleicon.com/wp-content/uploads/user1.png':user.imgLocation}} title="{{user.firstname +' ' + user.lastname}}" height="100px" width="100px" style="padding:10px"/>
        </a>

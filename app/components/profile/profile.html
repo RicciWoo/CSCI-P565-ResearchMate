@@ -20,10 +20,10 @@
               <div class="col-lg-3">Journal Name</div>
             </div>
               <div style="padding:5px 0px;" ng-repeat="publication in publicationInfo" class="row col-lg-12">
-                  <div class="col-lg-6">
+                  <div class="col-lg-6 text-ellipsis">
                     <a href="{{publication.filePath}}">{{publication.name}}</a>
                   </div>
-                  <div class="col-lg-3 col-md-6 float-md-left float-lg-right">{{publication.publishedAt}}</div>
+                  <div class="text-ellipsis col-lg-3 col-md-6 float-md-left float-lg-right">{{publication.publishedAt}}</div>
               </div>
 
                 <div class="row col-lg-6">
@@ -37,7 +37,7 @@
                 <input type="text" ng-model="skillName" placeholder="Add Skills" class="form-control" ng-enter="addUserSkill()"/>
             </div>
             <div class="row">
-            <div class=" col-lg-2 " ng-repeat="userSkillName in skillNameArr" style="margin:10px;padding:5px;border-radius:4px;background-color:#D9853B;color:white">
+            <div class=" col-lg-2 text-ellipsis" ng-repeat="userSkillName in skillNameArr" style="margin:10px;padding:8px 15px;border-radius:4px;background-color:#D9853B;color:white">
                {{userSkillName}}<a href="" ng-click="deleteSkills($index)" ng-show="allowEdit"> <i class="fa fa-times pull-right" ></i> </a>
 
             </div>
