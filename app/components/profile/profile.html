@@ -13,12 +13,21 @@
     </div>
 </div>
 <div class="container-fluid row" >
-  
+
     <div ng-controller="profileController" class="bg-white col-lg-5" style="margin-left:20px">
-        <h2>Publications</h2>
+        <h3 style="color:#558C89;font:bold;margin-top:10px;">Publications</h3>
         <div class="col-lg-12 col-sm-12">
             <ul>
-                <li ng-repeat="publication in publicationInfo"><a href="{{publication.filePath}}">{{publication.name}}</a></li>
+                <li class="row" ng-repeat="publication in publicationInfo">
+                  <div class="col-lg-5"><a href="{{publication.filePath}}">{{publication.name}}</a></div>
+                  <div class="col-lg-4 col-md-6 float-md-left float-lg-right">{{publication.publishedAt}}</div>
+                  <div class="col-lg-3 col-md-6 float-md-right float-lg-right">
+                    <span ng-repeat="rating in ratings">{{rating.current}} out of
+        {{rating.max}}
+    <div star-rating rating-value="rating.current" max="rating.max" on-rating-selected="getSelectedRating(rating)"></div>
+    </span>
+                  </div>
+                </li>
              </ul>
              <div class="row col-lg-6">
                  <input type="button" class="btn btn-primary" value="Add Publications" ng-show="allowEdit" ng-click="redirectAddPublication()" />
@@ -29,7 +38,7 @@
     <div ng-controller="profileController" class="bg-white col-lg-5" style="margin-left:200px">
       <div class="col-lg-12">
         <div class="col-lg-12 col-sm-2 text-right"><i ng-show="allowEdit" ng-click="editProfile('genInfo')" class="fa fa-pencil-square-o btnEdit" aria-hidden="true"></i></div>
-          <h2>Skills</h2>
+          <h3 style="color:#558C89;font:bold; margin-top:10px;">Skills</h3>
           <div class="col-lg-12 col-sm-12">
               <ul>
                 <li style="display:inline; padding: 5px 20px; margin: 5px 10px; border: 1px solid #ccc; border-radius:5px;" ng-repeat="skill in userSkills">{{skill.skillName}}</li>

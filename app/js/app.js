@@ -20,6 +20,10 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/publication/publication.html"
     }).when("/groups", {
       templateUrl: "components/groups/groups.html"
+    }).when("/search", {
+      templateUrl: "components/search/search.html"
+    }).when("/login", {
+      templateUrl: "components/login/login.html"
     });
 
 

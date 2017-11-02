@@ -8,10 +8,13 @@
     body{
       margin: 0;
    padding: 0;
-   background-image: url(../img/background.jpg);
+   /*background-image: url(../img/background.jpg);*/
+   background-image: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%,rgba(0,0,0,0.6) 100%), url(../img/background.jpg);
+
    background-size: cover; /* <------ */
    background-repeat: no-repeat;
     }
+
     .translucent{
       background-color: white;
       opacity: .5;

@@ -47,7 +47,7 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
           if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
             alert(response.data.msg);
           else{
-            alert("Followed Successfully");
+            console.log("Followed Successfully");
 
           }
         }
@@ -92,7 +92,7 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
             $scope.country = userinfo.userInfo.location.country;
             $scope.summary =  userinfo.userInfo.summary;
             $scope.university = userinfo.userInfo.university;
-           
+
             if(userinfo.userInfo.picture!=""){
               $scope.imgLocation = userinfo.userInfo.picture;
             }
@@ -160,12 +160,11 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
     }
     );
 
-
     $http({
           url: "http://silo.soic.indiana.edu:54545/getUserSkills",
           method: "POST",
           data: {
-            'username':$scope.username,
+            'userName':$scope.username,
             'sessionString': sessionString
         },
 
@@ -198,9 +197,7 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
           if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
             alert(response.data.msg);
           else{
-
             var publicationInfo = response.data.msg.publicationInfo;
-
             $scope.publicationInfo = publicationInfo;
           }
         }
@@ -232,11 +229,69 @@ myApp.controller('profileController',function($scope,$http, $location, $cookies,
             }
           },
         function error(response){
-    
+
         }
         );
       }
     }
 
+/**
+ * ratings
+ */
+
+ $scope.rating = 0;
+     $scope.ratings = [{
+         current: 3,
+         max: 5
+     }];
+
+     $scope.getSelectedRating = function (rating) {
+         console.log(rating);
+     }
+
+
+
 
 }); //end of controller
+
+
+
+myApp.directive('starRating', function () {
+   return {
+       restrict: 'A',
+       template: '<ul class="rating">' +
+           '<li ng-repeat="star in stars" ng-class="star" ng-click="toggle($index)">' +
+           '\u2605' +
+           '</li>' +
+           '</ul>',
+       scope: {
+           ratingValue: '=',
+           max: '=',
+           onRatingSelected: '&'
+       },
+       link: function (scope, elem, attrs) {
+
+           var updateStars = function () {
+               scope.stars = [];
+               for (var i = 0; i < scope.max; i++) {
+                   scope.stars.push({
+                       filled: i < scope.ratingValue
+                   });
+               }
+           };
+
+           scope.toggle = function (index) {
+               scope.ratingValue = index + 1;
+               scope.onRatingSelected({
+                   rating: index + 1
+               });
+           };
+
+           scope.$watch('ratingValue', function (oldVal, newVal) {
+               if (newVal) {
+                   updateStars();
+               }
+           });
+       }
+   }
+});
