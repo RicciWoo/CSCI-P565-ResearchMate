@@ -1,21 +1,52 @@
-myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$location', 'Upload', function ($scope, $http, URL,$cookies,$location, Upload) {
+myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$location', 'Upload','$rootScope', function ($scope, $http, URL,$cookies,$location, Upload,$rootScope) {
     var self = $scope;
     self.abc = "abc";
     self.allowedit=false;
     self.sessionString = $cookies.get('sessionString');
 
     $scope.uploadProfilePic = function($file){
+      if($scope.allowEdit==true)
+      {
       Upload.upload({
         url: 'http://silo.soic.indiana.edu:54545/uploadProfilePic',
         file: $file,
         data:{'username': $scope.username},
       }).progress(function(e){}).then(function(data, status, headers, config){
-        console.log(data);
+        
       });
     }
-
+    else
+    {
+      alert("you do not have permission!");
+    }
+    }
+   
     var url = $location.path().split('/');
     $scope.username = url[2];
+    $scope.followUser = function () {
+      $http({
+        url: "http://silo.soic.indiana.edu:54545/followSomeone",
+        method: "POST",
+        data: {
+          'username': $scope.username,
+          'sessionString': $scope.sessionString
+        },
+  
+      }).then(function success(response) {
+        if (response.status == 200) {
+          if (response.data.status == false && response.data.msg != undefined && response.data.msg != "")
+            alert(response.data.msg);
+          else {
+            alert("Followed Successfully");
+  
+          }
+        }
+      },
+        function error(response) {
+  
+        }
+        );
+    }
     $http({
           url: "http://silo.soic.indiana.edu:54545/getUserInfo",
           method: "POST",

@@ -3,6 +3,7 @@ myApp.controller('followingController', ['$scope', '$http', 'URL','$cookies','$l
     var sessionString = $cookies.get('sessionString');
     var url = $location.path().split('/');
     self.username = url[2];
+    
     $http({
         url: "http://silo.soic.indiana.edu:54545/getUserFollowers",
         method: "POST",
@@ -17,7 +18,7 @@ myApp.controller('followingController', ['$scope', '$http', 'URL','$cookies','$l
           alert(response.data.msg);
         else{
           self.followerInfo = response.data.msg.userInfo;
-debugger
+
         }
       }
     },

@@ -23,7 +23,7 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
           $cookies.remove('username');
           $cookies.put('sessionString', response.data.msg);
           $cookies.put('username', username);
-          $location.path('/profile/'+username);
+           $location.path('/profile/'+username);
         }
       }
     },
