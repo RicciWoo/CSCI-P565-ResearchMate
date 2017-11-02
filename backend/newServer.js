@@ -1370,7 +1370,7 @@ function searchInput(req, res, next){
     var searchStr = searchString.split(' ');
     var result = [];
     User.find({},function (err,users_username) {
-        if(err ){
+        if(err || users_username == undefined || users_username.length == 0){
             response["status"]="false";
             response["msg"] = "Error encountered while searching";
             resultObj['userSearch'] = response;
@@ -1381,15 +1381,20 @@ function searchInput(req, res, next){
                 if(searchStr[j] == undefined || searchStr[j].trim()=="")
                     continue;
                 for(var i = 0;i<users_username.length;i++){
-                    if(searchStr[j] == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchStr[j])!=-1)
-                        result.push(users_username[i]);
-                    else if(searchStr[j] == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1)
-                        result.push(users_username[i]);
-                    else if(searchStr[j]== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1)
-                        result.push(users_username[i]);
+                        if(searchStr[j] == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users_username[i])
+                        }
+
+                        else if(searchStr[j] == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users_username[i])
+                        }
+                        else if(searchStr[j]== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                          result.push(users_username[i])
+
+                        }
+                   
                 }
             }
-
             if(result.length>0) {
                 response["status"] = "true";
                 response["msg"] = result;
@@ -1422,10 +1427,11 @@ function searchUserGroup(res, searchStr, resultObj){
                 if(searchStr[j] == undefined || searchStr[j].trim()=="")
                     continue;
                 for (var i = 0; i < groups.length; i++) {
+		
                     if(searchStr[j] == groups[i].groupName.toLowerCase() || groups[i].groupName.toLowerCase().indexOf(searchStr[j]) != -1) {
                         result.push(groups[i]);
                     }
-                    else if(searchStr[j] == groups[i].description.toLowerCase() || groups[i].description.toLowerCase().indexOf(searchStr[j])!=-1){
+                    else if((groups[i].description!=undefined && groups[i].description!="") &&  searchStr[j] == groups[i].description.toLowerCase() || groups[i].description.toLowerCase().indexOf(searchStr[j])!=-1){
                         result.push(groups[i]);
                     }
                 }
