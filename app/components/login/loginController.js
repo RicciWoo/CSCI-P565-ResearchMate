@@ -1,39 +1,81 @@
 myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','$cookieStore','URL','$rootScope', function ($scope, $http, $location, $cookies, $cookieStore,URL,$rootScope) {
+    //for more options visit https://developers.google.com/identity/sign-in/web/reference#gapisignin2renderwzxhzdk114idwzxhzdk115_wzxhzdk116optionswzxhzdk117
+    $scope.options = {
+      theme:'dark',
+      'onsuccess': function(response) {
+        var profile = response.getBasicProfile();
+        var username = profile.getEmail().replace("@gmail.com","");
+        var password = "googlepassword";
+        loginUser(username, password);
+      }
+    }
+
   var self = $scope;
   $rootScope.loggedIn=false;
   $scope.submit = function () {
     var username = self.username;
     var password = self.pwd;
-    $http({
-      url: URL+"/login",
-      method: "POST",
-      data: {
-        'username': username,
-        'password': password
-      },
-
-    }).then(function success(response) {
-      if (response.status == 200) {
-        if (response.data.status == "false") {
-          if (response.data.msg != "")
-            alert(response.data.msg);
-        }
-        else {
-          $cookies.remove('sessionString');
-          $cookies.remove('username');
-          $cookies.put('sessionString', response.data.msg);
-          $cookies.put('username', username);
-           $location.path('/profile/'+username);
-        }
-      }
-    },
-      function error(response) {
-        alert("Error occured while authenticating user");
-      }
-      );
-
+    // $http({
+    //   url: URL+"/login",
+    //   method: "POST",
+    //   data: {
+    //     'username': username,
+    //     'password': password
+    //   },
+    //
+    // }).then(function success(response) {
+    //   if (response.status == 200) {
+    //     if (response.data.status == "false") {
+    //       if (response.data.msg != "")
+    //         alert(response.data.msg);
+    //     }
+    //     else {
+    //       $cookies.remove('sessionString');
+    //       $cookies.remove('username');
+    //       $cookies.put('sessionString', response.data.msg);
+    //       $cookies.put('username', username);
+    //       $location.path('/profile/'+username);
+    //     }
+    //   }
+    // },
+    //   function error(response) {
+    //     alert("Error occured while authenticating user");
+    //   }
+    //   );
+    loginUser(username,password);
 
   }
+
+function loginUser(username, password){
+  $http({
+    url: URL+"/login",
+    method: "POST",
+    data: {
+      'username': username,
+      'password': password
+    },
+
+  }).then(function success(response) {
+    if (response.status == 200) {
+      if (response.data.status == "false") {
+        if (response.data.msg != "")
+          alert(response.data.msg);
+      }
+      else {
+        $cookies.remove('sessionString');
+        $cookies.remove('username');
+        $cookies.put('sessionString', response.data.msg);
+        $cookies.put('username', username);
+        $location.path('/profile/'+username);
+      }
+    }
+  },
+    function error(response) {
+      console.log("Error occured while authenticating user");
+    }
+    );
+}
+
   /**
    * [sendUsername Function that accepts email address and sends username if authentic user]
    * @type {[Useremail]}
@@ -201,3 +243,19 @@ myApp.controller('loginController', ['$scope', '$http', '$location','$cookies','
 
   };
 }]);
+
+
+myApp.directive('googleSignInButton', function() {
+  return {
+    scope: {
+      buttonId: '@',
+      options: '&'
+    },
+    template: '<div>sign up</div>',
+    link: function(scope, element, attrs) {
+      var div = element.find('div')[0];
+      div.id = attrs.buttonId;
+      gapi.signin2.render(div.id, scope.options()); //render a google button, first argument is an id, second options
+    }
+  };
+});

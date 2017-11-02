@@ -1,8 +1,8 @@
 myApp.controller('profileController', function ($scope, $http, $location, $cookies, $cookieStore, Upload, $rootScope) {
-  
+
   var sessionString = $cookies.get('sessionString');
-  
-  
+
+
   var url = $location.path().split('/');
   $scope.username = url[2];
   $scope.edit = false;
@@ -38,7 +38,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
   $scope.deleteSkills = function(index){
      console.log("skill deleted"+$scope.skillNameArr[index]);
      console.log(sessionString);
-     
+
      $http({
       url: "http://silo.soic.indiana.edu:54545/removeUserSKill",
       method: "POST",
@@ -73,12 +73,12 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
         'sessionString': sessionString
       },
 
-    }).then(function success(response) {
-      if (response.status == 200) {
-        if (response.data.status == false && response.data.msg != undefined && response.data.msg != "")
-          alert(response.data.msg);
-        else {
-          alert("Followed Successfully");
+      }).then(function success(response){
+        if(response.status == 200){
+          if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
+            alert(response.data.msg);
+          else{
+            console.log("Followed Successfully");
 
         }
       }
@@ -106,7 +106,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
       else {
         var userinfo = response.data.msg;
         var sessString = userinfo.user.sessionString;
-       
+
         if (sessString != undefined && sessString != "" && sessString == sessionString)
           $rootScope.allowEdit = true;
         else {
@@ -197,7 +197,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
     method: "POST",
     data: {
       'userName': $scope.username,
-      
+
     },
 
   }).then(function success(response) {
@@ -208,11 +208,11 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
         $scope.userSkills = response.data.msg;
         for(i=0;i<$scope.userSkills.length;i++)
         {
-          
+
           $scope.skillNameArr.push($scope.userSkills[i].skillName)
         }
-      
-        
+
+
       }
     }
   },
@@ -273,11 +273,69 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
         }
       },
         function error(response) {
-               
+
         }
         );
     }
   }
 
+/**
+ * ratings
+ */
+
+ $scope.rating = 0;
+     $scope.ratings = [{
+         current: 3,
+         max: 5
+     }];
+
+     $scope.getSelectedRating = function (rating) {
+         console.log(rating);
+     }
+
+
+
 
 }); //end of controller
+
+
+
+myApp.directive('starRating', function () {
+   return {
+       restrict: 'A',
+       template: '<ul class="rating">' +
+           '<li ng-repeat="star in stars" ng-class="star" ng-click="toggle($index)">' +
+           '\u2605' +
+           '</li>' +
+           '</ul>',
+       scope: {
+           ratingValue: '=',
+           max: '=',
+           onRatingSelected: '&'
+       },
+       link: function (scope, elem, attrs) {
+
+           var updateStars = function () {
+               scope.stars = [];
+               for (var i = 0; i < scope.max; i++) {
+                   scope.stars.push({
+                       filled: i < scope.ratingValue
+                   });
+               }
+           };
+
+           scope.toggle = function (index) {
+               scope.ratingValue = index + 1;
+               scope.onRatingSelected({
+                   rating: index + 1
+               });
+           };
+
+           scope.$watch('ratingValue', function (oldVal, newVal) {
+               if (newVal) {
+                   updateStars();
+               }
+           });
+       }
+   }
+});
