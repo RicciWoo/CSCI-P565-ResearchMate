@@ -71,7 +71,7 @@ function loginUser(username, password){
     }
   },
     function error(response) {
-      alert("Error occured while authenticating user");
+      console.log("Error occured while authenticating user");
     }
     );
 }

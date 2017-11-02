@@ -28,3 +28,31 @@ myApp.config(function ($routeProvider) {
 
 
 });
+myApp.run(function ($rootScope, $location, $cookieStore,$cookies) {
+  $rootScope.$on("$locationChangeStart", function (event, next, current) {
+    var sessionString = $cookies.get('sessionString');
+    
+     if($location.path().includes("/profile/") || $location.path().includes("/group")|| $location.path().includes("/publication"))
+     {
+       if(sessionString==undefined)
+       {
+         alert("not authorize");
+         $location.path("/");
+       }
+     }
+  });
+ });
+
+
+myApp.directive('ngEnter', function() {
+  return function(scope, element, attrs) {
+      element.bind("keydown", function(e) {
+          if(e.which === 13) {
+              scope.$apply(function(){
+                  scope.$eval(attrs.ngEnter, {'e': e});
+              });
+              e.preventDefault();
+          }
+      });
+  };
+});
