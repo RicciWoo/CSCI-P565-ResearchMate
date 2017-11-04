@@ -13,11 +13,21 @@ var express = require('express'),
     smtpTransport = require('nodemailer-smtp-transport'),
     multipart = require('connect-multiparty'),
     path = require('path'),
-    async = require('async');
+    async = require('async'),
+    morgan = require('morgan');
 
 var portNumber = 54545;
 app.listen(portNumber);
 console.log("Server running at silo.soic.indiana.edu:"+portNumber);
+
+// For saving logs
+app.use(express.static('../app/'));
+app.use(express.static('log/'));
+// create a write stream (in append mode)
+var accessLogStream = fs.createWriteStream('./log/access.log', {flags: 'a'});
+// setup the logger
+app.use(morgan('combined', {stream: accessLogStream}));
+
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -25,8 +35,8 @@ app.use(express.static('public/'));
 app.use(express.static('public/images/profilePics/'));
 app.use(express.static('public/papers/'));
 
-mongoose.Promise = global.Promise;
 
+mongoose.Promise = global.Promise;
 // Connect to MongoDB on localhost:27017
 var connection = mongoose.connect('mongodb://localhost:27018/researchMate', { useMongoClient: true });
 
@@ -41,6 +51,10 @@ var UserFollowee = require('./app/userFolloweeModel');
 var UserSkills = require('./app/userSkillModel');
 var Skills = require('./app/skillModel');
 var PublicationRatings = require('./app/publicationRatings');
+var DiscussionPosts = require('./app/discussionPosts');
+var DiscussionReplies = require('./app/discussionReplies');
+var PostTags = require('./app/postTags');
+var PostTagsMapping = require('./app/postTagMapping');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -1788,6 +1802,163 @@ function removeUserSkill(req, res, next) {
                         }
                     });
                 }
+            });
+        }
+    });
+}
+
+app.post('/postQuestion', postQuestion);        // sessionString, postString, groupID, tagArray
+function postQuestion(req, res, next) {
+    var sessionString = req.body.sessionString;
+    var tagArray = req.body.tagArray;
+    var query = {'sessionString': sessionString};
+    console.log("tagArray =" + tagArray);
+
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "user not registered.";
+            console.log(response["msg"]);
+            res.send(response);
+        }
+        else {
+            var maxCount = 1;
+            DiscussionPosts.findOne().sort('-postID').exec(function (err, entry) {
+                if (entry == null) {
+                    maxCount = 1;
+                }
+                else {
+                    maxCount = entry.postID + 1;
+                }
+
+                var newPost = new DiscussionPosts({
+                    postID: maxCount,
+                    postString: req.body.postString,
+                    userID: user.userID,
+                    groupID: req.body.groupID,
+                    postedOn: Date.now()
+                });
+                newPost.save(function (err, savedPost) {
+                    if (err) {
+                        response["status"] = "false";
+                        response["msg"] = "Not Posted";
+                        res.send(response);
+                        console.log(response["msg"]);
+                    }
+                    else{
+                        tagging(res,tagArray,savedPost.postID)
+                    }
+                });
+            });
+        }
+    });
+}
+
+function tagging(res,tagArray,postID) {
+    var tagIDs = [];
+    PostTags.find({"tagName": {$in: tagArray}}, function (err, tags) {
+        if (tags.length != 0) {
+            for (var i = 0; i < tags.length; i++) {
+                tagIDs.push(tags[i].tagID);
+                tagArray.splice(i, 1);
+            }
+        }
+        var maxCount = 1;
+        PostTags.findOne().sort('-postID').exec(function (err, entry) {
+            if (entry == null) {
+                maxCount = 1;
+            }
+            else {
+                maxCount = entry.postID + 1;
+            }
+
+            var insertArrayTags = [];
+            for (var j = 0; j < tagArray.length; j++) {
+                insertArrayTags.push({"tagID": maxCount + j, "tagName": tagArray[j]});
+                tagIDs.push(maxCount + j);
+            }
+
+            PostTags.insertMany(insertArrayTags, function (err, saved) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "failed in adding new tags";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    console.log("Tags added in postTags:"+saved);
+                    tagMapping(res,tagIDs,postID);
+                }
+
+            });
+        });
+    });
+}
+
+function tagMapping(res,tagIDs,postID) {
+    var insertArrayPostTag = [];
+    for(var k = 0; k < tagIDs.length;k++){
+        insertArrayPostTag.push({"postID":postID,"tagID":tagIDs[k]});
+    }
+
+    PostTagsMapping.insertMany(insertArrayPostTag, function (err,saved) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "failed in adding in postTagMapping";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            response["status"] = "true";
+            response["msg"] = "Post and tags added successfully.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+    })
+}
+
+app.post('/postReply', postReply);            // postID, replyID, replyString, sessionString
+function postReply(req, res, next) {
+
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "user not registered.";
+            console.log(response["msg"]);
+            res.send(response);
+        }
+        else {
+            var maxCount = 1;
+            DiscussionReplies.findOne().sort('-postID').exec(function (err, entry) {
+                if (entry == null) {
+                    maxCount = 1;
+                }
+                else {
+                    maxCount = entry.postID + 1;
+                }
+
+                var newReply = new DiscussionReplies({
+                    postID: req.body.postID,
+                    replyString: req.body.replyString,
+                    replyID: maxCount,
+                    userID: user.userID,
+                    postedOn: Date.now()
+                });
+
+                newReply.save(function (err) {
+                    if (err) {
+                        response["status"] = "false";
+                        response["msg"] = "Unable to post the reply";
+                        res.send(response);
+                        console.log(response["msg"]);
+                    }
+                    else {
+                        response["status"] = "true";
+                        response["msg"] = "Reply posted successfully.";
+                        res.send(response);
+                        console.log(response["msg"]);
+                    }
+                });
             });
         }
     });
