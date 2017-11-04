@@ -1812,7 +1812,6 @@ function postQuestion(req, res, next) {
     var sessionString = req.body.sessionString;
     var tagArray = req.body.tagArray;
     var query = {'sessionString': sessionString};
-    console.log("tagArray =" + tagArray);
 
     User.findOne(query, function (err, user) {
         if (user == null) {
@@ -1864,14 +1863,13 @@ function tagging(res,tagArray,postID) {
             }
         }
         var maxCount = 1;
-        PostTags.findOne().sort('-postID').exec(function (err, entry) {
+        PostTags.findOne().sort('-tagID').exec(function (err, entry) {
             if (entry == null) {
                 maxCount = 1;
             }
             else {
-                maxCount = entry.postID + 1;
+                maxCount = entry.tagID + 1;
             }
-
             var insertArrayTags = [];
             for (var j = 0; j < tagArray.length; j++) {
                 insertArrayTags.push({"tagID": maxCount + j, "tagName": tagArray[j]});
@@ -1904,7 +1902,7 @@ function tagMapping(res,tagIDs,postID) {
     PostTagsMapping.insertMany(insertArrayPostTag, function (err,saved) {
         if(err){
             response["status"] = "false";
-            response["msg"] = "failed in adding in postTagMapping";
+            response["msg"] = "failed in adding new postTagMapping";
             res.send(response);
             console.log(response["msg"]);
         }
@@ -1960,6 +1958,49 @@ function postReply(req, res, next) {
                     }
                 });
             });
+        }
+    });
+}
+
+app.post('/getAllRepliesByPostID', getAllRepliesByPostID);            // postID
+function getAllRepliesByPostID(req, res, next) {
+    var query = {"postID":req.body.postID};
+    DiscussionReplies.find(query,function (err, replies) {
+        if(replies.length==0){
+            response["status"] = "false";
+            response["msg"] = "No replies posted for postID :"+query.postID;
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            response["status"] = "true";
+            response["msg"] = replies;
+            res.send(response);
+            console.log(response["msg"]);
+        }
+    });
+}
+
+
+app.post('/getAllPostsByGroupID', getAllPostsByGroupID);            // groupID
+function getAllPostsByGroupID(req, res, next) {
+    var groupID = req.body.groupID;
+    DiscussionPosts.find({"groupID":groupID},function (err,posts) {
+        if(posts.length==0){
+            response["status"] = "false";
+            response["msg"] = "No posts for group: " + groupID;
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            var postArr = [];
+            for (var i = 0; i < posts.length; i++){
+                postArr.push(posts[i]);
+            }
+            response["status"] = "true";
+            response["msg"] = postArr;
+            res.send(response);
+            console.log(response["msg"]);
         }
     });
 }
