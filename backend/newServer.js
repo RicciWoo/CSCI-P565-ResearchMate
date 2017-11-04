@@ -1917,9 +1917,9 @@ function tagMapping(res,tagIDs,postID) {
     })
 }
 
-app.post('/postReply', postReply);            // postID, replyID, replyString, sessionString
+app.post('/postReply', postReply);            // postID, replyString, sessionString
 function postReply(req, res, next) {
-
+    var query = {"sessionString":req.body.sessionString};
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
@@ -1938,7 +1938,7 @@ function postReply(req, res, next) {
                 }
 
                 var newReply = new DiscussionReplies({
-                    postID: req.body.postID,
+                    postID: parseInt(req.body.postID),
                     replyString: req.body.replyString,
                     replyID: maxCount,
                     userID: user.userID,
