@@ -1938,7 +1938,7 @@ function postReply(req, res, next) {
                     maxCount = 1;
                 }
                 else {
-                    maxCount = entry.postID + 1;
+                    maxCount = entry.replyID + 1;
                 }
 
                 var newReply = new DiscussionReplies({
@@ -1979,6 +1979,10 @@ function getAllRepliesByPostID(req, res, next) {
             console.log(response["msg"]);
         }
         else {
+            var userIDs = [];
+            for(var i = 0; i < replies.length; i++){
+                userIDs.push(replies[i].userID);
+            }
             DiscussionPosts.findOne(query,function (err, post) {
                if(err){
                    response["status"] = "false";
@@ -1987,11 +1991,20 @@ function getAllRepliesByPostID(req, res, next) {
                    console.log(response["msg"]);
                }
                else{
-
-                   response["status"] = "true";
-                   response["msg"] = {"postInfo":post, "allRepliesInfo":replies};
-                   res.send(response);
-                   console.log(response["msg"]);
+                   User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
+                       if(err){
+                           response["status"] = "false";
+                           response["msg"] = "Something is really wrong here once again.";
+                           res.send(response);
+                           console.log(response["msg"]);
+                       }
+                       else {
+                           response["status"] = "true";
+                           response["msg"] = {"postInfo": post, "allRepliesInfo": replies,"allUsers":users};
+                           res.send(response);
+                           console.log(response["msg"]);
+                       }
+                   });
                }
             });
         }
