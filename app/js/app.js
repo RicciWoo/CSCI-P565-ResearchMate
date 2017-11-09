@@ -24,6 +24,8 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/search/search.html"
     }).when("/login", {
       templateUrl: "components/login/login.html"
+    }).when("/gendiscussion", {
+      templateUrl: "components/discussion/generaldiscussion.html"
     });
 
 
@@ -31,7 +33,7 @@ myApp.config(function ($routeProvider) {
 myApp.run(function ($rootScope, $location, $cookieStore,$cookies) {
   $rootScope.$on("$locationChangeStart", function (event, next, current) {
     var sessionString = $cookies.get('sessionString');
-    
+
      if($location.path().includes("/profile/") || $location.path().includes("/group")|| $location.path().includes("/publication"))
      {
        if(sessionString==undefined)
