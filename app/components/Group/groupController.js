@@ -10,7 +10,7 @@ myApp.controller('groupController', ['$scope', '$http', 'URL','$cookies','$locat
           'username':self.username,
           'sessionString': sessionString
       },
-    
+
     }).then(function success(response){
       if(response.status == 200){
         if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
@@ -22,16 +22,17 @@ myApp.controller('groupController', ['$scope', '$http', 'URL','$cookies','$locat
               groupNames.push(groupInfo[i].groupName)
             }
             $scope.groupNames = groupNames;
-    
+
         }
       }
     },
     function error(response){
-    
+
     }
     );
 
+$scope.redirectAddGroup = function(){
+  $location.path("/groups");
+}
+
 }]);
-
-
-

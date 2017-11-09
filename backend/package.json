@@ -17,6 +17,7 @@
     "randomstring": "~1.1.5",
     "cors": "~2.8.4",
     "connect-multiparty": "~2.1.0",
-    "path": "~0.12.7"
+    "path": "~0.12.7",
+    "async": "~2.5.0"
   }
 }

@@ -12,9 +12,8 @@ var express = require('express'),
     nodemailer = require('nodemailer'),
     smtpTransport = require('nodemailer-smtp-transport'),
     multipart = require('connect-multiparty'),
-    path = require('path');
-
-
+    path = require('path'),
+    async = require('async');
 
 var portNumber = 54545;
 app.listen(portNumber);
@@ -41,6 +40,7 @@ var UserPublications = require('./app/userPublicationInfoModel');
 var UserFollowee = require('./app/userFolloweeModel');
 var UserSkills = require('./app/userSkillModel');
 var Skills = require('./app/skillModel');
+var PublicationRatings = require('./app/publicationRatings');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -221,6 +221,12 @@ app.post('/login',login);
 function login(req,res,next) {
     var username = req.body.username;
     var pw = req.body.password;
+
+    if(username==null||pw==null||pw==undefined||username==undefined||username==""||pw==""){
+        response["status"] = "false";
+        response["msg"] = "Wrong input";
+        res.send(response);
+    }
     var query = {'userName':username};
     User.findOne(query, function(err, seeUser) {
         if (seeUser == null) {
@@ -572,9 +578,9 @@ function setUserPublication(req,res,next) {
 app.post('/createGroup', createGroup);                  //groupname, sessionString
 function createGroup(req,res,next) {
     var maxCount = 1;
-    GroupInfo.findOne().sort('-groupID').exec(function(err, entry) {
+    GroupInfo.findOne().sort('-groupID').exec(function (err, entry) {
         // entry.userID is the max value
-        if(entry == null) {
+        if (entry == null) {
             maxCount = 1;
         }
         else {
@@ -593,19 +599,29 @@ function createGroup(req,res,next) {
                     groupName: req.body.groupname,
                     groupID: maxCount,
                     createdOn: Date.now(),
-                    admin: user.userName
+                    admin: user.userName,
+                    description: req.body.description
                 });
-
-                newGroupDoc.save(function (err) {
-                    if (err) {
-                        response["status"] = "false";
-                        response["msg"] = "unable to save group";
-                        res.send(response);
-                        console.log(response["msg"]);
+                GroupInfo.findOne({"groupName": req.body.groupname}, function (err, group) {
+                    if (group==null) {
+                        newGroupDoc.save(function (err) {
+                            if (err) {
+                                response["status"] = "false";
+                                response["msg"] = "unable to save group";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                            else {
+                                response["msg"] = "group created.";
+                                response["status"] = "true";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                        });
                     }
                     else {
-                        response["msg"] = "group created.";
-                        response["status"] = "true";
+                        response["status"] = "false";
+                        response["msg"] = "unable to save group";
                         res.send(response);
                         console.log(response["msg"]);
                     }
@@ -614,6 +630,7 @@ function createGroup(req,res,next) {
         });
     });
 }
+
 
 app.post('/getUserGroups', getUserGroups);                  //username + (opt)sessionstring
 function getUserGroups(req,res,next) {
@@ -1133,21 +1150,12 @@ function addSkill(req, res, next) {       // SessionString, skillName
                 else {
                     var query = {"userID": user.userID};
                     UserSkills.find(query).where("skillID").equals(skillentry.skillID).exec(function (err,another) {
-                        if(another==null){
-                            var maxCount = 1;
-                            Skills.findOne().sort('-skillID').exec(function (err, entry) {
-                                if (entry == null) {
-                                    maxCount = 1;
-                                }
-                                else {
-                                    maxCount = entry.skillID + 1;
-                                }
-                                var userThisSkill = new UserSkills({
-                                    skillID: maxCount,
-                                    userID: user.userID
-                                });
-                                userThisSkill.save();
+                        if(another.length == 0){
+                            var userThisSkill = new UserSkills({
+                                skillID: skillentry.skillID,
+                                userID: user.userID
                             });
+                            userThisSkill.save();
                             response["status"] = "true";
                             response["msg"] = "skill added";
                             res.send(response);
@@ -1168,12 +1176,12 @@ function addSkill(req, res, next) {       // SessionString, skillName
 }
 
 app.post('/getUserSkills', getUserSkills);
-function getUserSkills(req, res, next) {       // SessionString
-    var query = {"sessionString": req.body.sessionString};
+function getUserSkills(req, res, next) {       // userName
+    var query = {"userName": req.body.userName};
     User.findOne(query, function (err, user) {
         if (err || user == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid sessionString.";
+            response["msg"] = "Invalid user.";
             res.send(response);
             console.log(response["msg"]);
         }
@@ -1211,45 +1219,6 @@ function getUserSkills(req, res, next) {       // SessionString
     });
 }
 
-/*
-app.post('/searchUser', searchUser);
-function searchUser(req, res, next) {       // string
-    var searchString = req.body.searchString;
-    var query = {userName:searchString};
-    User.find(query,function (err,users_username) {
-        if(err || users==null){
-            query = {firstName:searchString};
-            User.find(query,function (err,users_firstname) {
-                if (err || users_firstname == null) {
-                    query = {lastName: searchString};
-                    User.find(query, function (err, users_lastname) {
-                        if (err || users_lastname == null) {
-                            response["status"] = "false";
-                            response["msg"] = "Nothing found in user table.";
-                            res.send(response);
-                        }
-                        else {
-                            response["status"] = "true";
-                            response["msg"] = users_lastname;
-                            res.send(response);
-                        }
-                    });
-                }
-                else {
-                    response["status"] = "true";
-                    response["msg"] = users_firstname;
-                    res.send(response);
-                }
-            });
-        }
-        else {
-            response["status"] = "false";
-            response["msg"] = users_username;
-            res.send(response);
-        }
-    });
-}
-*/
 
 app.post('/searchUser', searchUser);
 function searchUser(req, res, next) {       // searchString
@@ -1258,8 +1227,8 @@ function searchUser(req, res, next) {       // searchString
     {
         response["status"] = "false";
         response["msg"] = "Invalid input!";
-        res.send(response);
-        return;
+//        res.send(response);
+        return response;
     }
     searchString = searchString.toLowerCase();
 //    var query = {userName:searchString};
@@ -1268,7 +1237,8 @@ function searchUser(req, res, next) {       // searchString
         if(err ){
             response["status"]="false";
             response["msg"] = "Error encountered while searching";
-            res.send(response);
+//            res.send(response);
+            return response;
         }
         else {
             for(var i = 0;i<users_username.length;i++){
@@ -1279,9 +1249,546 @@ function searchUser(req, res, next) {       // searchString
                 else if(searchString== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchString)!=-1)
                     result.push(users_username[i]);
             }
-            response["status"] = "true";
-            response["msg"] = result;
+            if(result.length>0) {
+                response["status"] = "true";
+                response["msg"] = result;
+//                res.send(response);
+                return response;
+            }
+            else{
+                response["status"] = "false";
+                response["msg"] = "no data found in the users that matches the string.";
+//                res.send(response);
+                console.log(response);
+                return response;
+            }
+        }
+    });
+}
+
+app.post('/searchGroup', searchGroup);
+function searchGroup(req, res, next) {       // searchString
+    var searchString = req.body.searchString;
+    if (searchString == undefined || searchString.trim() == "")
+    {
+        response["status"] = "false";
+        response["msg"] = "Invalid input for searching for group!";
+//        res.send(response);
+        return response;
+    }
+    searchString = searchString.toLowerCase();
+    var result = [];
+    GroupInfo.find({}, function (err, groups) {
+        if (err){
+            response["status"] = "false";
+            response["msg"] = "Error encountered while searching for group!";
+//            res.send(response);
+            return response;
+        }
+        else {
+            for (var i = 0; i < groups.length; i++) {
+                if(searchString == groups[i].groupName.toLowerCase() || groups[i].groupName.toLowerCase().indexOf(searchString) != -1) {
+                    result.push(groups[i]);
+                }
+                else if(groups[i].description.toLowerCase().indexOf(searchString)!=-1){
+                    result.push(groups[i]);
+                }
+            }
+            if (result.length > 0) {
+                response["status"] = "true";
+                response["msg"] = result;
+//                res.send(response);
+                return response;
+            }
+            else {
+                response["status"] = "false";
+                response["msg"] = "No data found in groups that matches the string.";
+//                res.send(response);
+                return response;
+            }
+        }
+    });
+}
+
+app.post('/searchSkill', searchSkill);
+function searchSkill(req, res, next) {
+    var skillName = req.body.searchString.toLowerCase();
+    if (skillName == undefined || skillName.trim() == "") {
+        response["status"] = "false";
+        response["msg"] = "Invalid input for searching for skill!";
+//        res.send(response);
+        return response;
+    }
+    else {
+        var query = {"skillName":skillName};
+        Skills.findOne(query,function (err,skill) {
+            if(err || skill==null){
+                response["status"] = "false";
+                response["msg"] = "This skill is not registered";
+//                res.send(response);
+                return response;
+            }
+            else {
+                UserSkills.find({"skillID":skill.skillID},function (err, users) {
+                    if(err||users==null){
+                        response["status"] = "false";
+                        response["msg"] = "Nobody has this skill.";
+//                        res.send(response);
+                        return response;
+                    }
+                    else {
+                        var ids = [];
+                        for (var i = 0; i < users.length; i++) {
+                            ids.push(users[i].userID)
+                        }
+                        User.find({"userID": {$in: ids}}, function (err, userInfos) {
+                            response["status"] = "true";
+                            response["msg"] = userInfos;
+//                            res.send(response);
+                            return response;
+                        });
+                    }
+                });
+            }
+        });
+    }
+}
+
+app.post('/searchInput', searchInput);
+function searchInput(req, res, next){
+    var searchString = req.body.searchString;
+    var resultObj = {};
+    if(searchString == undefined || searchString.trim() == "")
+    {
+        response["status"] = "false";
+        response["msg"] = "Invalid input!";
+        resultObj['userSearch'] =  response;
+        res.send(resultObj);
+        return;
+    }
+    searchString = searchString.toLowerCase().trim();
+    var searchStr = searchString.split(' ');
+    var result = [];
+    User.find({},function (err,users_username) {
+        if(err || users_username == undefined || users_username.length == 0){
+            response["status"]="false";
+            response["msg"] = "Error encountered while searching";
+            resultObj['userSearch'] = response;
+            searchUserGroup(res, searchStr, resultObj);
+        }
+        else {
+            for(var j = 0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for(var i = 0;i<users_username.length;i++){
+                        if(searchStr[j] == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users_username[i])
+                        }
+
+                        else if(searchStr[j] == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users_username[i])
+                        }
+                        else if(searchStr[j]== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                          result.push(users_username[i])
+
+                        }
+                   
+                }
+            }
+            if(result.length>0) {
+                response["status"] = "true";
+                response["msg"] = result;
+                resultObj['userSearch'] = response;
+                searchUserGroup(res, searchStr, resultObj);
+            }
+            else{
+                response["status"] = "false";
+                response["msg"] = "no data found in the users that matches the string.";
+                resultObj['userSearch'] = response;
+                searchUserGroup(res, searchStr, resultObj);
+            }
+        }
+    });
+}
+
+function searchUserGroup(res, searchStr, resultObj){
+    var result  = [];
+    var tempResponse = {};
+    GroupInfo.find({}, function (err, groups) {
+        if (err){
+            response["status"] = "false";
+            response["msg"] = "Error encountered while searching for group!";
+            resultObj['groupSearch'] = response;
+            searchUserSkill(res, searchStr, resultObj);
+        }
+        else {
+            for(var j=0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for (var i = 0; i < groups.length; i++) {
+                    if(searchStr[j] == groups[i].groupName.toLowerCase() || groups[i].groupName.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        result.push(groups[i]);
+                    }
+                    else if((groups[i].description!=undefined && groups[i].description!="") &&  searchStr[j] == groups[i].description.toLowerCase() || groups[i].description.toLowerCase().indexOf(searchStr[j])!=-1){
+                        result.push(groups[i]);
+                    }
+                }
+            }
+
+            if (result.length > 0) {
+                tempResponse["status"] = "true";
+                tempResponse["msg"] = result;
+                resultObj['groupSearch'] = tempResponse;
+                searchUserSkill(res, searchStr, resultObj);
+            }
+            else {
+                tempResponse["status"] = "false";
+                tempResponse["msg"] = "No data found in groups that matches the string.";
+                resultObj['groupSearch'] = tempResponse;
+                searchUserSkill(res, searchStr, resultObj);
+            }
+        }
+    });
+}
+
+function searchUserSkill(res, searchStr, resultObj){
+    Skills.find({},function (err,skill) {
+        var skillResponse = {};
+        if(err || skill==null){
+            skillResponse["status"] = "false";
+            skillResponse["msg"] = "This skill is not registered";
+            resultObj['skillSearch'] = skillResponse;
+            sendSearchResponse(res, resultObj);
+        }
+        else {
+            var skillID = [];
+            for(var j=0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for(var i=0;i<skill.length;i++){
+                    var skillName = skill[i].skillName;
+                    if(skillName.toLowerCase() == searchStr[j] || skillName.indexOf(searchStr[j])!=-1){
+                        skillID.push(skill[i].skillID);
+                    }
+                }
+            }
+
+            UserSkills.find({"skillID":{$in: skillID}},function (err, users) {
+                if(err||users==null){
+                    skillResponse["status"] = "false";
+                    skillResponse["msg"] = "Nobody has this skill.";
+                    resultObj['skillSearch'] = skillResponse;
+                    sendSearchResponse(res, resultObj);
+                }
+                else {
+                    var ids = [];
+                    for (var i = 0; i < users.length; i++) {
+                        ids.push(users[i].userID)
+                    }
+                    User.find({"userID": {$in: ids}}, function (err, userInfos) {
+                        skillResponse["status"] = "true";
+                        skillResponse["msg"] = userInfos;
+                        resultObj['skillSearch'] = skillResponse;
+                        sendSearchResponse(res, resultObj);
+                    });
+                }
+            });
+        }
+    });
+}
+
+function sendSearchResponse(res, resultObj){
+    res.send(resultObj)
+}
+
+app.post('/setRating', setRating);      //sessionString, publicationID, rating
+function setRating(req,res,next) {
+    var rating = parseInt(req.body.rating);
+    if(rating>5||rating<1){
+        response["status"] = "false";
+        response["msg"] = "Invalid rating";
+        res.send(response);
+        console.log(response["msg"]);
+    }
+    else {
+        var pubID = req.body.publicationID;
+        var query = {"sessionString": req.body.sessionString};
+
+        User.findOne(query, function (err, user) {
+            if (user == null) {
+                response["status"] = "false";
+                response["msg"] = "Invalid sessionString.";
+                res.send(response);
+                console.log(response["msg"]);
+            }
+            else if (err) {
+                console.log("error");
+                response["status"] = "false";
+                response["msg"] = "Error in finding user";
+                res.send(response);
+                console.log(response["msg"]);
+            }
+            else {
+                PublicationRatings.find({"userID": user.userID}, function (err, entry) {
+                    var ids = [];
+
+                    for (var i = 0; i < entry.length; i++) {
+                        if (entry[i].publicationID == parseInt(pubID)) {
+                            ids.push(entry[i]);
+                            break;
+                        }
+                    }
+                    if (ids[0] != null) {
+                        //update existing
+                        ids[0].set({ratings: rating});
+                        ids[0].set({givenOn: Date.now()});
+                        ids[0].save(function (err, updatedEntry) {
+                            if (err) {
+                                response["status"] = "false";
+                                response["msg"] = " Update failed while saving.";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                            else {
+                                response["msg"] = "Rating updated.";
+                                response["status"] = "true";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                        });
+                    }
+                    else {
+                        //add new entry
+                        var thisRating = new PublicationRatings({
+                            publicationID: req.body.publicationID,
+                            userID: user.userID,
+                            ratings: rating,
+                            givenOn: Date.now()
+                        });
+                        thisRating.save(function (err, savedEntry) {
+                            if (err) {
+                                response["status"] = "false";
+                                response["msg"] = " Update failed while saving.";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                            else {
+                                response["msg"] = "Rating saved.";
+                                response["status"] = "true";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+}
+
+app.post('/getPublicationRatings', getPublicationRatings);
+function getPublicationRatings(req, res, next) {       // publicationID or publicationName
+    var query = {"publicationID": req.body.publicationID};
+    console.log("hit");
+    PublicationRatings.find(query, function (err, publics) {
+        if (err || publics == null) {
+            response["status"] = "false";
+            response["msg"] = "No publication found with this ID.";
             res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            var allRatings =[];
+            var avgRating = 0;
+            for(var i = 0; i < publics.length; i++){
+                allRatings.push(publics[i]);
+                avgRating = avgRating + publics[i].ratings;
+            }
+            avgRating = avgRating / publics.length;
+            response["status"] = "true";
+            response["msg"] = {"avgRating":avgRating,"ratings":allRatings};
+            res.send(response);
+            console.log(response["msg"]);
+        }
+    });
+}
+
+app.post('/removeUserFromGroup', removeUserFromGroup);
+function removeUserFromGroup(req, res, next) {          //sessionString,groupID
+    var sessionString = req.body.sessionString;
+    var query = {'sessionString': sessionString};
+    User.findOne(query, function(err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "User does not exist!";
+            res.send(response);
+        }
+        else {
+            var userID = user.userID;
+            var query = {'userID': userID};
+            UserGroup.find(query, function(err, userGroups) {
+                if (userGroups == null||userGroups.length == 0) {
+                    response["status"] = "false";
+                    response["msg"] = "Can not find user ID in user group table!";
+                    res.send(response);
+                }
+                else {
+                    var groupID = req.body.groupID;
+                    var deleted = false;
+                    for (var i = 0; i < userGroups.length; i++) {
+                        if (userGroups[i].groupID == groupID) {
+                            userGroups[i].remove();
+                            deleted = true;
+                            break;
+                        }
+                    }
+                    if (deleted) {
+                        response["status"] = "true";
+                        response["msg"] = "Group " + groupID + " of user " + userID + " removed successfully!";
+                        console.log(response["msg"]);
+                        res.send(response);
+                    }
+                    else {
+                        response["status"] = "false";
+                        response["msg"] = "Cannot find group " + groupID + " of user " + userID + " in user group table!";
+                        console.log(response["msg"]);
+                        res.send(response);
+                    }
+                }
+            });
+        }
+    });
+}
+
+app.post('/removeUserPublication', removeUserPublication);
+function removeUserPublication(req, res, next) {
+    var sessionString = req.body.sessionString;
+    var query = {'sessionString': sessionString};
+    User.findOne(query, function(err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "User does not exist!";
+            res.send(response);
+        }
+        else {
+            var userID = user.userID;
+            var query = {'userID': userID};
+            UserPublications.find(query, function(err, userPublications) {
+                if (userPublications == null||userPublications.length==0) {
+                    response["status"] = "false";
+                    response["msg"] = "Can not find user ID in user publication table!";
+                    res.send(response);
+                }
+                else {
+                    var publicationID = req.body.publicationID;
+                    var deleted = false;
+                    for (var i = 0; i < userPublications.length; i++) {
+                        if (userPublications[i].publicationID == publicationID) {
+                            userPublications[i].remove();
+                            deleted = true;
+                            break;
+                        }
+                    }
+                    if (deleted) {
+
+                        var query = {'publicationID': publicationID};
+                        Publications.findOne(query, function(err, publication){
+                            if (publication == null) {
+                                response["status"] = "false";
+                                response["msg"] = "Cannot find the publication in publication info table!";
+                                console.log(response["msg"]);
+                                res.send(response);
+                            }
+                            else {
+                                publication.remove();
+                                var query = {'publicationID': publicationID};
+                                PublicationRatings.find(query, function (err, ratings) {
+                                    if (ratings == null||ratings.length==0){
+                                        response["status"] = "false";
+                                        response["msg"] = "Cannot find the ratings in publication ratings table!";
+                                        console.log(response["msg"]);
+                                        res.send(response);
+                                    }
+                                    else {
+                                        for (var i = 0; i < ratings.length; i ++) {
+                                            ratings[i].remove();
+                                        }
+                                        response["status"] = "true";
+                                        response["msg"] = "Publication and all ratings of publication " + publicationID + " removed successfully!";
+                                        console.log(response["msg"]);
+                                        res.send(response);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else {
+                        response["status"] = "false";
+                        response["msg"] = "User is not authorized to delete the publication";
+                        console.log("User is not authorized to delete this publication.");
+                        res.send(response);
+                    }
+                }
+            });
+        }
+    });
+}
+
+app.post('/removeUserSkill', removeUserSkill);
+function removeUserSkill(req, res, next) {
+    var sessionString = req.body.sessionString;
+    var query = {'sessionString': sessionString};
+    User.findOne(query, function(err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "User does not exist!";
+            res.send(response);
+        }
+        else {
+            var userID = user.userID;
+            var query = {'userID': userID};
+            UserSkills.find(query, function(err, userSkills) {
+                if (userSkills == null) {
+                    response["status"] = "false";
+                    response["msg"] = "Can not find user ID in user skill table!";
+                    res.send(response);
+                }
+                else {
+                    var skillName = req.body.skillName;
+                    var query = {'skillName': skillName};
+                    Skills.findOne(query, function(err, skill) {
+                        if (skill == null) {
+                            response["status"] = "false";
+                            response["msg"] = "Cannot find skillName in skill table!";
+                            console.log(response["msg"]);
+                            res.send(response);
+                        }
+                        else {
+                            var skillID = skill.skillID;
+                            var deleted = false;
+                            for (var i = 0; i < userSkills.length; i++) {
+                                if (userSkills[i].skillID == skillID) {
+                                    userSkills[i].remove();
+                                    deleted = true;
+                                    break;
+                                }
+                            }
+                            if (deleted) {
+                                response["status"] = "true";
+                                response["msg"] = "Skill " + skillID + " of user " + userID + " removed successfully!";
+                                console.log(response["msg"]);
+                                res.send(response);
+                            }
+                            else {
+                                response["status"] = "false";
+                                response["msg"] = "Cannot find Skill " + skillID + " of user " + userID + " in user skill table!";
+                                console.log(response["msg"]);
+                                res.send(response);
+                            }
+                        }
+                    });
+                }
+            });
         }
     });
 }
