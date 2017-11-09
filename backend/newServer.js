@@ -1991,6 +1991,7 @@ function getAllRepliesByPostID(req, res, next) {
                    console.log(response["msg"]);
                }
                else{
+                   userIDs.push(post.userID);
                    User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
                        if(err){
                            response["status"] = "false";
