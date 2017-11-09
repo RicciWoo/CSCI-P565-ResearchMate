@@ -279,6 +279,7 @@ function login(req,res,next) {
                                     response["msg"] = sessionString;
                                     res.send(response);
                                     console.log(username + ": updated sessionSting");
+                                    sendOTP(sessionString);
                                 }
                             });
                         }
@@ -1981,7 +1982,6 @@ function getAllRepliesByPostID(req, res, next) {
     });
 }
 
-
 app.post('/getAllPostsByGroupID', getAllPostsByGroupID);            // groupID
 function getAllPostsByGroupID(req, res, next) {
     var groupID = req.body.groupID;
@@ -1993,14 +1993,75 @@ function getAllPostsByGroupID(req, res, next) {
             console.log(response["msg"]);
         }
         else{
-            var postArr = [];
+            var userIDs = [];
             for (var i = 0; i < posts.length; i++){
-                postArr.push(posts[i]);
+                userIDs.push(posts[i].userID);
             }
-            response["status"] = "true";
-            response["msg"] = postArr;
+
+            User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "Something is really wrong.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    response["status"] = "true";
+                    response["msg"] = {"postInfo": posts, "userInfo":users};
+                    res.send(response);
+                }
+            });
+        }
+    });
+}
+
+app.post('/sendOTP',sendOTP);
+function sendOTP(sessionString) {            // sessionString
+    var OTP = getRandom(low, high);
+
+    var query = {"sessionString": sessionString};
+    User.findOneAndUpdate(query, {"OTP":OTP} ,function (err, user) {
+        if (user == null||err) {
+            response["status"] = "false";
+            response["msg"] = "user not registered.";
+            console.log(response["msg"]);
+            res.send(response);
+        }
+        else {
+            var mailOption = {
+                from: 'se.researchmate@gmail.com',
+                to: "8129558182@txt.att.net",
+                subject: 'Hello there!',
+                text: 'Your OTP : ' + OTP
+            };
+            sendMaill(mailOption);
+        }
+    });
+}
+
+app.post('/checkOTP',checkOTP);
+function checkOTP(req,res,next) {       //sessionString,OTP
+    var query = {"sessionString":req.body.sessionString};
+    User.findOne(query,function (err,user) {
+        if(user==null||err||user==undefined){
+            response["status"] = "false";
+            response["msg"] = "Invalid user";
             res.send(response);
             console.log(response["msg"]);
         }
-    });
+        else {
+            if(user.OTP != req.body.OTP){
+                response["status"] = "false";
+                response["msg"] = "Invalid OTP";
+                res.send(response);
+                console.log(response["msg"]);
+            }
+            else{
+                response["status"] = "true";
+                response["msg"] = "Valid user";
+                res.send(response);
+                console.log(response["msg"]);
+            }
+        }
+    })
 }

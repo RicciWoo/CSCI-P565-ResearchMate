@@ -36,6 +36,9 @@ var userSchema = mongoose.Schema({
     },
     sessionString:{
         type:String
+    },
+    OTP:{
+        type:Number
     }
 });
 
