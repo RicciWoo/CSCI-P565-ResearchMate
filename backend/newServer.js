@@ -1979,10 +1979,21 @@ function getAllRepliesByPostID(req, res, next) {
             console.log(response["msg"]);
         }
         else {
-            response["status"] = "true";
-            response["msg"] = replies;
-            res.send(response);
-            console.log(response["msg"]);
+            DiscussionPosts.findOne(query,function (err, post) {
+               if(err){
+                   response["status"] = "false";
+                   response["msg"] = "No post with postID :"+query.postID;
+                   res.send(response);
+                   console.log(response["msg"]);
+               }
+               else{
+
+                   response["status"] = "true";
+                   response["msg"] = {"postInfo":post, "allRepliesInfo":replies};
+                   res.send(response);
+                   console.log(response["msg"]);
+               }
+            });
         }
     });
 }
