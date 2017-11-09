@@ -2033,9 +2033,10 @@ function sendOTP(sessionString) {            // sessionString
             res.send(response);
         }
         else {
+            var carriers={"att":"txt.att.net","sprint":"messaging.sprintpcs.com","t-mobile":"tmomail.net","verizon":"vtext.com"};
             var mailOption = {
                 from: 'se.researchmate@gmail.com',
-                to: user.phone+"@txt.att.net",
+                to: user.phone+"@"+carriers[user.carrier],
                 subject: 'Hello there!',
                 text: 'Your OTP : ' + OTP
             };
