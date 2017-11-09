@@ -108,6 +108,8 @@ function signUp(req,res,next) {
     var firstname = req.body.firstname;
     var lastname = req.body.lastname;
     var pw = req.body.password;
+    var phone = req.body.phone;
+    var carrier = req.body.carrier;
 
     var maxCount = 1;
     User.findOne().sort('-userID').exec(function(err, entry) {
@@ -130,7 +132,9 @@ function signUp(req,res,next) {
             lastName: lastname,
             passWord: pw,
             sessionString: randomstring.generate(16),
-            verificationNumber : getRandom(low,high)
+            verificationNumber : getRandom(low,high),
+            phone:phone,
+            carrier:carrier
         });
 
 //  For sending mail
@@ -494,7 +498,8 @@ function setUserInfo(req,res,next) {
                             response["msg"] = " Update failed while saving.";
                             res.send(response);
                             console.log("Error: Update failed while saving!");
-                        } else {
+                        }
+                        else {
                             response["msg"] = " Update successful.";
                             response["status"] = "true";
                             res.send(response);
@@ -1985,7 +1990,7 @@ function getAllRepliesByPostID(req, res, next) {
 app.post('/getAllPostsByGroupID', getAllPostsByGroupID);            // groupID
 function getAllPostsByGroupID(req, res, next) {
     var groupID = req.body.groupID;
-    DiscussionPosts.find({"groupID":groupID},function (err,posts) {
+    DiscussionPosts.find({"groupID":groupID}).sort("-postedOn").exec(function (err,posts) {
         if(posts.length==0){
             response["status"] = "false";
             response["msg"] = "No posts for group: " + groupID;
@@ -2030,7 +2035,7 @@ function sendOTP(sessionString) {            // sessionString
         else {
             var mailOption = {
                 from: 'se.researchmate@gmail.com',
-                to: "8129558182@txt.att.net",
+                to: user.phone+"@txt.att.net",
                 subject: 'Hello there!',
                 text: 'Your OTP : ' + OTP
             };
