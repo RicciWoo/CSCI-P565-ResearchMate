@@ -1933,7 +1933,7 @@ function postReply(req, res, next) {
         }
         else {
             var maxCount = 1;
-            DiscussionReplies.findOne().sort('-postID').exec(function (err, entry) {
+            DiscussionReplies.findOne().sort('-replyID').exec(function (err, entry) {
                 if (entry == null) {
                     maxCount = 1;
                 }
