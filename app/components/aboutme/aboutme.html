@@ -1,63 +1,133 @@
 <div class="row divpad text-white" ng-controller="aboutmeController">
     <div class="col-lg-3 col-xs-12 ">
-      <label class="btn btn-default" title="Click to upload new">
+        <label class="btn btn-default" title="Click to upload new">
         <img ng-src={{imgLocation}} class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
         <input type="file"  hidden ngf-select = "uploadProfilePic($file)" /><label>
     </div>
     <div class="col-lg-9 col-xs-12 " ng-show="!edit">
         <div class="row">
-         <div class="col-lg-9">
-            <h3  ng-bind="firstname"></h3>
-            <h3  ng-bind="lastname"></h3>
-         </div>
+        <div class="col-lg-9">
+
+            <div class="row">
+                <div class="col-xs-6 col-sm-6">
+                    <div class="form-group">
+                        <h6>
+                        <lable ng-bind="firstname"></lable>
+                        <lable ng-bind="lastname"></lable>
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        </div>
          <div class="col-lg-3" style="text-align:right">
               <a  href="" ng-click="save()" ng-show="allowEdit" >  <i class="fa fa-pencil-square-o" aria-hidden="true"></i> </a>
          </div>
         </div>
-        <div >
-            <h6  ng-bind="address"> </h6>
-            <h6  ng-bind="city"> </h6>
-            <h6  ng-bind="state"> </h6>
-            <h6  ng-bind="country"> </h6>
-            <h6  ng-bind="university"> </h6>
-            
+        <div class="row">
+            <div class="col-xs-12 col-lg-12">
+                <lable ng-bind="address"> </lable>
+            </div>
         </div>
         <div class="row">
-                <h6  ng-bind="summary" class="col-lg-9 content-wrap"> </h6>
-        </div>
-
-        <div class="row pull-right">
-            <div class="col-12">
-                <input type="button" ng-click="followUser()" class="btn btn-success" value="Follow" ng-show="!allowEdit" style="background-color:#D9853B"/>
-            </div>
-          </div>
-
+            <div class="col-xs-12 col-lg-12">
+                <lable ng-bind="city"></lable>
+                <label ng-bind="state"></label>
     </div>
+</div>
+<div class="row">
+    <div class="col-xs-12 col-lg-12">
+        <lable ng-bind="country"></lable>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12 col-lg-12">
+        <label ng-bind="university"></label>
+    </div>
+</div>
+
+<div class="row">
+    <h6 ng-bind="summary" class="col-lg-9 content-wrap"> </h6>
+</div>
+
+<div class="row pull-right">
+    <div class="col-12">
+        <input type="button" ng-click="followUser()" class="btn btn-success" value="Follow" ng-show="!allowEdit" style="background-color:#D9853B"
+        />
+    </div>
+</div>
+
+</div>
 
 
 
-            <div class="col-lg-9 col-xs-12 " ng-show="edit">
-                    <div class="row">
-                     <div class="col-lg-9">
-                        <h3 ><input type="text" ng-model="firstname"></h3>
-                        <h3 ><input type="text" ng-model="lastname"></h3>
-                     </div>
-                     <div class="col-lg-3" style="text-align:right">
-                          <a href="" ng-click="save()">  <i class="fa fa-floppy-o" aria-hidden="true"></i> </a>
-                     </div>
+<div class="col-lg-9 col-xs-12 " ng-show="edit">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6">
+                    <div class="form-group">
+                        <input type="text" class="form-control" ng-model="firstname" />
                     </div>
-                    <div >
-                        <h6> <input type="text" ng-model="address"> </h6>
-                        <h6> <input type="text" ng-model="city"></h6>
-                        <h6> <input type="text" ng-model="state"></h6>
-                        <h6> <input type="text" ng-model="country"></h6>
-                        <h6> <input type="text" ng-model="university"></h6>
-
-                    </div>
-                    <div class="row">
-                            <h6  class="col-lg-9 content-wrap"><input type="text" ng-model="summary"> </h6>
-                    </div>
-
-
-
                 </div>
+                <div class="col-xs-6 col-sm-6">
+                    <div class="form-group">
+                        <input type="text" class="form-control" ng-model="lastname" />
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="col-lg-3" style="text-align:right">
+            <a href="" ng-click="save()">  <i class="fa fa-floppy-o" aria-hidden="true"></i> </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6">
+                    <div class="form-group">
+                        <input type="text" class="form-control" ng-model="address" />
+                    </div>
+                </div>
+                <div class="col-xs-6 col-sm-6">
+                    <div class="form-group">
+                        <input type="text" ng-model="city" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6">
+                    <div class="form-group">
+                        <input type="text" ng-model="state" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-xs-6 col-sm-6">
+                    <div class="form-group">
+                        <input type="text" ng-model="country" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6">
+                    <div class="form-group">
+                        <input type="text" ng-model="university" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-xs-6 col-sm-6">
+                    <div class="form-group">
+                        <input type="text" ng-model="summary" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

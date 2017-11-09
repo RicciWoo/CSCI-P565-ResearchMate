@@ -3,7 +3,7 @@
 <meta name="google-signin-client_id" content="861304437784-82a1j2qqg4vujlo9prrlsra8aqoc8o34.apps.googleusercontent.com">
 
 <head>
-<script src="https://apis.google.com/js/platform.js" async defer></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
   <link rel="stylesheet" href="assets/css/page.css">
   <link rel="stylesheet" href="assets/css/profile.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
@@ -23,10 +23,16 @@
   <script src="components/search/searchController.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular-cookies.js"></script>
   <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"></link>
-  <script src="assets/js/ng-file-upload-shim.min.js"> </script>
-  <script src="assets/js/ng-file-upload.min.js"> </script>
+  <script src="assets/js/ng-file-upload-shim.min.js">
 
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment-with-locales.js"> </script>
+  </script>
+  <script src="assets/js/ng-file-upload.min.js">
+
+  </script>
+
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment-with-locales.js">
+
+  </script>
   <script src="http://cdn.rawgit.com/indrimuska/angular-moment-picker/master/dist/angular-moment-picker.min.js"></script>
   <link href="//cdn.rawgit.com/indrimuska/angular-moment-picker/master/dist/angular-moment-picker.min.css" rel="stylesheet">
 
@@ -36,31 +42,36 @@
 </head>
 
 
-<body class="background-img" style="padding-top:10px">
+<body>
 
+  <div class="background-img">  </div>
+    <div ng-app="myApp" class="outer-div">
+      <nav class="navbar navbar-default navbar-fixed-top" style="background:#D9853B;z-index: 10;">
+        <div ng-controller="indexController" class="container-fluid text-white">
+          <h2>ResearchMate</h2>
+          <div class="menu">
+          <ul>
+            <li><a href="#">Home</a></li>
+          </ul>
+          </div>
+          <form class="navbar-form" role="search" ng-show="loggedIn">
+            <div class="input-group">
+              <input type="text" ng-model="searchStr" class="form-control" placeholder="Search" name="q">
+              <div class="input-group-btn">
+                <button class="btn btn-default" ng-click="searchQuery()" type="button"><i class="fa fa-search"></i></button>
+              </div>
 
-  <div ng-app="myApp">
-    <nav class="navbar navbar-default navbar-fixed-top" style="background:#D9853B;z-index: 10;">
-          <div ng-controller="indexController" class="container-fluid text-white">
-                 <h2>ResearchMate</h2>
-
-                     <form class="navbar-form" role="search" ng-show="loggedIn">
-                         <div class="input-group">
-                             <input type="text" ng-model="searchStr" class="form-control" placeholder="Search" name="q">
-                             <div class="input-group-btn">
-                                 <button class="btn btn-default" ng-click="searchQuery()" type="button"><i class="fa fa-search"></i></button>
-                             </div>
-
-                             <button class="btn btn-primary" style="margin-left:10px;" ng-click="signOut()">Sign out</button>
-
-                         </div>
-
-                         </form>
+              <button class="btn btn-primary" style="margin-left:10px;" ng-click="signOut()">Sign out</button>
 
             </div>
-       </nav>
-  <div ng-view style="padding-top:50px;"></div>
-  </div>
+
+          </form>
+
+        </div>
+      </nav>
+      <div ng-view class="top-margin"></div>
+    </div>
+
 </body>
 
 </html>
