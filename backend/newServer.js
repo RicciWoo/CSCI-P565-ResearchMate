@@ -1532,19 +1532,19 @@ function searchUserInfo(res, searchStr, resultObj){
                     continue;
                 for(var i = 0; i < userInfo.length; i++) {
                     if (userInfo[i].university.toLowerCase() == searchStr[j] || userInfo[i].university.toLowerCase().indexOf(searchStr[j]) != -1) {
-                        users.push(userInfo[i]);
+                        users.push(userInfo[i].userID);
                     }
                     else if (userInfo[i].location.address.toLowerCase() == searchStr[j] || userInfo[i].location.address.toLowerCase().indexOf(searchStr[j]) != -1) {
-                        users.push(userInfo[i]);
+                        users.push(userInfo[i].userID);
                     }
                     else if (userInfo[i].location.city.toLowerCase() == searchStr[j] || userInfo[i].location.city.toLowerCase().indexOf(searchStr[j]) != -1) {
-                        users.push(userInfo[i]);
+                        users.push(userInfo[i].userID);
                     }
                     else if (userInfo[i].location.state.toLowerCase() == searchStr[j] || userInfo[i].location.state.toLowerCase().indexOf(searchStr[j]) != -1) {
-                        users.push(userInfo[i]);
+                        users.push(userInfo[i].userID);
                     }
                     else if (userInfo[i].location.country.toLowerCase() == searchStr[j] || userInfo[i].location.country.toLowerCase().indexOf(searchStr[j]) != -1) {
-                        users.push(userInfo[i]);
+                        users.push(userInfo[i].userID);
                     }
                 }
             }
@@ -1555,10 +1555,24 @@ function searchUserInfo(res, searchStr, resultObj){
                 searchPublicationInfo(res, searchStr, resultObj)
             }
             else{
-                userInfoResponse["status"] = "true";
-                userInfoResponse["msg"] = users;
-                resultObj['userInfoSearch'] = userInfoResponse;
-                searchPublicationInfo(res, searchStr, resultObj)
+                var result=[];
+                User.find({"userID":{$in:users}},function (err,userDatas) {
+                    if(err||userDatas==null||userDatas==undefined){
+                        userInfoResponse["status"] = "false";
+                        userInfoResponse["msg"] = "Something wrong in userInfo";
+                        resultObj['userInfoSearch'] = userInfoResponse;
+                        searchPublicationInfo(res, searchStr, resultObj)
+                    }
+                    else {
+                        for(var i = 0; i < userDatas.length; i++) {
+                            result.push(userDatas[i]);
+                        }
+                        userInfoResponse["status"] = "true";
+                        userInfoResponse["msg"] = result;
+                        resultObj['userInfoSearch'] = userInfoResponse;
+                        searchPublicationInfo(res, searchStr, resultObj)
+                    }
+                });
             }
         }
     });
@@ -2069,6 +2083,7 @@ function postReply(req, res, next) {
     });
 }
 
+/*
 app.post('/getAllRepliesByPostID', getAllRepliesByPostID);            // postID
 function getAllRepliesByPostID(req, res, next) {
     var query = {"postID":req.body.postID};
@@ -2108,6 +2123,48 @@ function getAllRepliesByPostID(req, res, next) {
                        }
                    });
                }
+            });
+        }
+    });
+}
+*/
+app.post('/getAllRepliesByPostID', getAllRepliesByPostID);            // postID
+function getAllRepliesByPostID(req, res, next) {
+    var query = {"postID":req.body.postID};
+    DiscussionPosts.findOne(query,function (err, post) {
+        if(err||post==null||post==null){
+            response["status"] = "false";
+            response["msg"] = "No post with postID :"+query.postID;
+            res.send(response);
+        }
+        else{
+            DiscussionReplies.find(query,function (err, replies) {
+                if(replies.length==0||err){
+                    response["status"] = "true";
+                    response["msg"] = {"postInfo":post,"replyInfo":{"status":"false","msg":"no replies for this post"}};
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var userIDs = [];
+                    for(var i = 0; i < replies.length; i++){
+                        userIDs.push(replies[i].userID);
+                    }
+                    User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "Something is really wrong here once again.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = {"postInfo": post, "allRepliesInfo": replies,"allUsers":users};
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
             });
         }
     });
