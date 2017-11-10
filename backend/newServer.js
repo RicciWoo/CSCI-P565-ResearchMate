@@ -1119,9 +1119,33 @@ function getPublicationByID(req, res, next) {       // publicationID
             console.log(response["msg"]);
         }
         else {
-            response["msg"] = publication;
-            response["status"] = "true";
-            res.send(response);
+            UserPublications.find({"publicationID":publication.publicationID},function (err,userPubs) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "Something Wrong in userPublication.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    var userIDs=[];
+                    for(var i = 0; i < userPubs.length; i++){
+                        userIDs.push(userPubs[i].userID);
+                    }
+                    User.find({"userID":{$in:userIDs}},function (err,users) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "Something Wrong in users.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["msg"] = {"publicationInfo":publication,"userInfo":users};
+                            response["status"] = "true";
+                            res.send(response);
+                        }
+                    });
+                }
+            });
         }
     });
 }
@@ -2083,51 +2107,6 @@ function postReply(req, res, next) {
     });
 }
 
-/*
-app.post('/getAllRepliesByPostID', getAllRepliesByPostID);            // postID
-function getAllRepliesByPostID(req, res, next) {
-    var query = {"postID":req.body.postID};
-    DiscussionReplies.find(query,function (err, replies) {
-        if(replies.length==0){
-            response["status"] = "false";
-            response["msg"] = "No replies posted for postID :"+query.postID;
-            res.send(response);
-            console.log(response["msg"]);
-        }
-        else {
-            var userIDs = [];
-            for(var i = 0; i < replies.length; i++){
-                userIDs.push(replies[i].userID);
-            }
-            DiscussionPosts.findOne(query,function (err, post) {
-               if(err){
-                   response["status"] = "false";
-                   response["msg"] = "No post with postID :"+query.postID;
-                   res.send(response);
-                   console.log(response["msg"]);
-               }
-               else{
-                   userIDs.push(post.userID);
-                   User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
-                       if(err){
-                           response["status"] = "false";
-                           response["msg"] = "Something is really wrong here once again.";
-                           res.send(response);
-                           console.log(response["msg"]);
-                       }
-                       else {
-                           response["status"] = "true";
-                           response["msg"] = {"postInfo": post, "allRepliesInfo": replies,"allUsers":users};
-                           res.send(response);
-                           console.log(response["msg"]);
-                       }
-                   });
-               }
-            });
-        }
-    });
-}
-*/
 app.post('/getAllRepliesByPostID', getAllRepliesByPostID);            // postID
 function getAllRepliesByPostID(req, res, next) {
     var query = {"postID":req.body.postID};
