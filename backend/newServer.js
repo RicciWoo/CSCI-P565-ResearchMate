@@ -1518,7 +1518,7 @@ function searchUserSkill(res, searchStr, resultObj){
             }
 
             UserSkills.find({"skillID":{$in: skillID}},function (err, users) {
-                if(err||users==null){
+                if(err||users==null||users.length==0){
                     skillResponse["status"] = "false";
                     skillResponse["msg"] = "Nobody has this skill.";
                     resultObj['skillSearch'] = skillResponse;
@@ -1529,6 +1529,7 @@ function searchUserSkill(res, searchStr, resultObj){
                     for (var i = 0; i < users.length; i++) {
                         ids.push(users[i].userID)
                     }
+			console.log(ids);
                     User.find({"userID": {$in: ids}}, function (err, userInfos) {
                         skillResponse["status"] = "true";
                         skillResponse["msg"] = userInfos;
@@ -1637,6 +1638,7 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                     for(var i = 0; i < users.length; i++){
                         userIDs.push(users[i].userID);
                     }
+			console.log(userIDs);
                     User.find({"userID":{$in:userIDs}},function (err,userInfo) {
                         if(err||userInfo.length==0){
                             publicsInfoResponse["status"] = "false";
@@ -1646,7 +1648,7 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                         }
                         else {
                             publicsInfoResponse["status"] = "true";
-                            publicsInfoResponse["msg"] = userInfo;
+                            publicsInfoResponse["msg"] = {"userInfo":userInfo,"publicationInfo":publics,"userPublicInfo":users};
                             resultObj['publicsInfoResponse'] = publicsInfoResponse;
                             sendSearchResponse(res, resultObj)
                         }
