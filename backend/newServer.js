@@ -38,7 +38,7 @@ app.use(express.static('public/papers/'));
 
 mongoose.Promise = global.Promise;
 // Connect to MongoDB on localhost:27017
-var connection = mongoose.connect('mongodb://localhost:27018/researchMate', { useMongoClient: true });
+var connection = mongoose.connect('mongodb://silo.soic.indiana.edu:27018/researchMate', { useMongoClient: true });
 
 //  importing pre-defined model
 var User = require('./app/userModel');
@@ -1614,15 +1614,18 @@ function searchPublicationInfo(res, searchStr, resultObj) {
         }
         else {
             var publicIDs = [];
+            var publicationsInfo=[];
             for(var j=0;j<searchStr.length;j++){
                 if(searchStr[j] == undefined || searchStr[j].trim()=="")
                     continue;
                 for(var i = 0; i < publics.length; i++){
                     if(publics[i].name.toLowerCase() == searchStr[j] || publics[i].name.toLowerCase().indexOf(searchStr[j])!=-1){
                         publicIDs.push(publics[i].publicationID);
+                        publicationsInfo.push(publics[i]);
                     }
                     else if(publics[i].paperAbstract.toLowerCase() == searchStr[j] || publics[i].paperAbstract.toLowerCase().indexOf(searchStr[j])!=-1){
                         publicIDs.push(publics[i].publicationID);
+                        publicationsInfo.push(publics[i]);
                     }
                 }
             }
@@ -1635,10 +1638,11 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                 }
                 else{
                     var userIDs = [];
+                    var userPublicMap=[];
                     for(var i = 0; i < users.length; i++){
                         userIDs.push(users[i].userID);
+                        userPublicMap.push(users[i]);
                     }
-			console.log(userIDs);
                     User.find({"userID":{$in:userIDs}},function (err,userInfo) {
                         if(err||userInfo.length==0){
                             publicsInfoResponse["status"] = "false";
@@ -1647,8 +1651,17 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                             sendSearchResponse(res, resultObj)
                         }
                         else {
+                            var userData = [];
+                            for(var i = 0; i < users.length; i++){
+                                userData.push(userInfo[i]);
+                            }
                             publicsInfoResponse["status"] = "true";
-                            publicsInfoResponse["msg"] = {"userInfo":userInfo,"publicationInfo":publics,"userPublicInfo":users};
+                            publicsInfoResponse["msg"] = {"publicationInfo":publicationsInfo,"userPublicMap":userPublicMap,"userData":userData};
+/*
+                            console.log("publications:"+publicationsInfo);
+                            console.log("userpubs:"+userPublicMap+"\n");
+                            console.log("users:"+userData);
+*/
                             resultObj['publicsInfoResponse'] = publicsInfoResponse;
                             sendSearchResponse(res, resultObj)
                         }
