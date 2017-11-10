@@ -1253,7 +1253,7 @@ function searchUser(req, res, next) {       // searchString
     searchString = searchString.toLowerCase();
 //    var query = {userName:searchString};
     var result = [];
-    User.find({},function (err,users_username) {
+    User.find({},function (err,users) {
         if(err ){
             response["status"]="false";
             response["msg"] = "Error encountered while searching";
@@ -1261,13 +1261,13 @@ function searchUser(req, res, next) {       // searchString
             return response;
         }
         else {
-            for(var i = 0;i<users_username.length;i++){
-                if(searchString == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchString)!=-1)
-                    result.push(users_username[i]);
-                else if(searchString == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchString)!=-1)
-                    result.push(users_username[i]);
-                else if(searchString== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchString)!=-1)
-                    result.push(users_username[i]);
+            for(var i = 0;i<users.length;i++){
+                if(searchString == users[i].userName.toLowerCase() || users[i].userName.toLowerCase().indexOf(searchString)!=-1)
+                    result.push(users[i]);
+                else if(searchString == users[i].firstName.toLowerCase() || users[i].firstName.toLowerCase().indexOf(searchString)!=-1)
+                    result.push(users[i]);
+                else if(searchString== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchString)!=-1)
+                    result.push(users[i]);
             }
             if(result.length>0) {
                 response["status"] = "true";
@@ -1389,8 +1389,8 @@ function searchInput(req, res, next){
     searchString = searchString.toLowerCase().trim();
     var searchStr = searchString.split(' ');
     var result = [];
-    User.find({},function (err,users_username) {
-        if(err || users_username == undefined || users_username.length == 0){
+    User.find({},function (err,users) {
+        if(err || users == undefined || users.length == 0){
             response["status"]="false";
             response["msg"] = "Error encountered while searching";
             resultObj['userSearch'] = response;
@@ -1400,19 +1400,19 @@ function searchInput(req, res, next){
             for(var j = 0;j<searchStr.length;j++){
                 if(searchStr[j] == undefined || searchStr[j].trim()=="")
                     continue;
-                for(var i = 0;i<users_username.length;i++){
-                        if(searchStr[j] == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users_username[i])
+                for(var i = 0;i<users.length;i++){
+                        if(searchStr[j] == users[i].userName.toLowerCase() || users[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users[i])
                         }
-
-                        else if(searchStr[j] == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users_username[i])
+                        else if(searchStr[j] == users[i].firstName.toLowerCase() || users[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users[i])
                         }
-                        else if(searchStr[j]== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                          result.push(users_username[i])
-
+                        else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users[i])
                         }
-                   
+                        else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users[i])
+                        }
                 }
             }
             if(result.length>0) {
@@ -1478,7 +1478,7 @@ function searchUserSkill(res, searchStr, resultObj){
             skillResponse["status"] = "false";
             skillResponse["msg"] = "This skill is not registered";
             resultObj['skillSearch'] = skillResponse;
-            sendSearchResponse(res, resultObj);
+            searchUserInfo(res, searchStr, resultObj);
         }
         else {
             var skillID = [];
@@ -1498,7 +1498,7 @@ function searchUserSkill(res, searchStr, resultObj){
                     skillResponse["status"] = "false";
                     skillResponse["msg"] = "Nobody has this skill.";
                     resultObj['skillSearch'] = skillResponse;
-                    sendSearchResponse(res, resultObj);
+                    searchUserInfo(res, searchStr, resultObj);
                 }
                 else {
                     var ids = [];
@@ -1509,14 +1509,115 @@ function searchUserSkill(res, searchStr, resultObj){
                         skillResponse["status"] = "true";
                         skillResponse["msg"] = userInfos;
                         resultObj['skillSearch'] = skillResponse;
-                        sendSearchResponse(res, resultObj);
+                        searchUserInfo(res, searchStr, resultObj);
                     });
                 }
             });
         }
     });
 }
+function searchUserInfo(res, searchStr, resultObj){
+    UserInfo.find({},function (err,userInfo) {
+        var userInfoResponse = {};
+        if (err || userInfo == null) {
+            userInfoResponse["status"] = "false";
+            userInfoResponse["msg"] = "Nothing found in userInfo";
+            resultObj['userInfoSearch'] = userInfoResponse;
+            searchPublicationInfo(res, searchStr, resultObj)
+        }
+        else {
+            var users = [];
+            for(var j=0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for(var i = 0; i < userInfo.length; i++) {
+                    if (userInfo[i].university.toLowerCase() == searchStr[j] || userInfo[i].university.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i]);
+                    }
+                    else if (userInfo[i].location.address.toLowerCase() == searchStr[j] || userInfo[i].location.address.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i]);
+                    }
+                    else if (userInfo[i].location.city.toLowerCase() == searchStr[j] || userInfo[i].location.city.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i]);
+                    }
+                    else if (userInfo[i].location.state.toLowerCase() == searchStr[j] || userInfo[i].location.state.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i]);
+                    }
+                    else if (userInfo[i].location.country.toLowerCase() == searchStr[j] || userInfo[i].location.country.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i]);
+                    }
+                }
+            }
+            if(users.length==0){
+                userInfoResponse["status"] = "false";
+                userInfoResponse["msg"] = "Something wrong in userInfo";
+                resultObj['userInfoSearch'] = userInfoResponse;
+                searchPublicationInfo(res, searchStr, resultObj)
+            }
+            else{
+                userInfoResponse["status"] = "true";
+                userInfoResponse["msg"] = users;
+                resultObj['userInfoSearch'] = userInfoResponse;
+                searchPublicationInfo(res, searchStr, resultObj)
+            }
+        }
+    });
+}
+function searchPublicationInfo(res, searchStr, resultObj) {
 
+    Publications.find({},function (err,publics) {
+        var publicsInfoResponse = {};
+        if (err || publics == null||publics==undefined) {
+            publicsInfoResponse["status"] = "false";
+            publicsInfoResponse["msg"] = "Nothing found in publications";
+            resultObj['publicsInfoResponse'] = publicsInfoResponse;
+            sendSearchResponse(res, resultObj)
+        }
+        else {
+            var publicIDs = [];
+            for(var j=0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for(var i = 0; i < publics.length; i++){
+                    if(publics[i].name.toLowerCase() == searchStr[j] || publics[i].name.toLowerCase().indexOf(searchStr[j])!=-1){
+                        publicIDs.push(publics[i].publicationID);
+                    }
+                    else if(publics[i].paperAbstract.toLowerCase() == searchStr[j] || publics[i].paperAbstract.toLowerCase().indexOf(searchStr[j])!=-1){
+                        publicIDs.push(publics[i].publicationID);
+                    }
+                }
+            }
+            UserPublications.find({"publicationID":{$in:publicIDs}},function (err,users) {
+                if(err||users.length==0){
+                    publicsInfoResponse["status"] = "false";
+                    publicsInfoResponse["msg"] = "Something wrong in publications.";
+                    resultObj['publicsInfoResponse'] = publicsInfoResponse;
+                    sendSearchResponse(res, resultObj)
+                }
+                else{
+                    var userIDs = [];
+                    for(var i = 0; i < users.length; i++){
+                        userIDs.push(users[i].userID);
+                    }
+                    User.find({"userID":{$in:userIDs}},function (err,userInfo) {
+                        if(err||userInfo.length==0){
+                            publicsInfoResponse["status"] = "false";
+                            publicsInfoResponse["msg"] = "Unable to find users for given userIDs";
+                            resultObj['publicsInfoResponse'] = publicsInfoResponse;
+                            sendSearchResponse(res, resultObj)
+                        }
+                        else {
+                            publicsInfoResponse["status"] = "true";
+                            publicsInfoResponse["msg"] = userInfo;
+                            resultObj['publicsInfoResponse'] = publicsInfoResponse;
+                            sendSearchResponse(res, resultObj)
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
 function sendSearchResponse(res, resultObj){
     res.send(resultObj)
 }
@@ -2045,7 +2146,6 @@ function getAllPostsByGroupID(req, res, next) {
     });
 }
 
-app.post('/sendOTP',sendOTP);
 function sendOTP(sessionString) {            // sessionString
     var OTP = getRandom(low, high);
 
@@ -2059,9 +2159,10 @@ function sendOTP(sessionString) {            // sessionString
         }
         else {
             var carriers={"att":"txt.att.net","sprint":"messaging.sprintpcs.com","t-mobile":"tmomail.net","verizon":"vtext.com"};
+            var phone = user.phone.replace(/-/g,'').replace(/\(/g,'').replace(/\)/g,'').replace(/\+/g,'');
             var mailOption = {
                 from: 'se.researchmate@gmail.com',
-                to: user.phone+"@"+carriers[user.carrier],
+                to: phone+"@"+carriers[user.carrier],
                 subject: 'Hello there!',
                 text: 'Your OTP : ' + OTP
             };
