@@ -1657,11 +1657,11 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                             }
                             publicsInfoResponse["status"] = "true";
                             publicsInfoResponse["msg"] = {"publicationInfo":publicationsInfo,"userPublicMap":userPublicMap,"userData":userData};
-/*
-                            console.log("publications:"+publicationsInfo);
-                            console.log("userpubs:"+userPublicMap+"\n");
-                            console.log("users:"+userData);
-*/
+
+//                            console.log("publications:"+publicationsInfo);
+//                            console.log("userpubs:"+userPublicMap+"\n");
+//                            console.log("users:"+userData);
+
                             resultObj['publicsInfoResponse'] = publicsInfoResponse;
                             sendSearchResponse(res, resultObj)
                         }
