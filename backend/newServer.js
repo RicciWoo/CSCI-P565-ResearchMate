@@ -55,6 +55,7 @@ var DiscussionPosts = require('./app/discussionPosts');
 var DiscussionReplies = require('./app/discussionReplies');
 var PostTags = require('./app/postTags');
 var PostTagsMapping = require('./app/postTagMapping');
+var GroupJoinRequest = require('./app/groupJoinRequests');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -588,7 +589,7 @@ function setUserPublication(req,res,next) {
     });
 }
 
-app.post('/createGroup', createGroup);                  //groupname, sessionString
+app.post('/createGroup', createGroup);                  //groupname, sessionString, isPrivate
 function createGroup(req,res,next) {
     var maxCount = 1;
     GroupInfo.findOne().sort('-groupID').exec(function (err, entry) {
@@ -612,8 +613,9 @@ function createGroup(req,res,next) {
                     groupName: req.body.groupname,
                     groupID: maxCount,
                     createdOn: Date.now(),
-                    admin: user.userName,
-                    description: req.body.description
+                    admin: user.userID,
+                    description: req.body.description,
+                    isPrivate:req.body.isPrivate
                 });
                 GroupInfo.findOne({"groupName": req.body.groupname}, function (err, group) {
                     if (group==null) {
@@ -695,34 +697,24 @@ function setUserGroup(req,res,next) {
             console.log("Error: User not found!")
         }
         else {
-            query = {"groupName":req.body.groupname};
-            GroupInfo.findOne(query,function (err, group) {
-                if(err|| group == null){
+
+            console.log(user.userID);
+            var setUserGroupDoc = new UserGroup({
+                userID: user.userID,
+                groupID: req.body.groupID
+            });
+            setUserGroupDoc.save(function (err) {
+                if(err){
                     response["status"] = "false";
-                    response["msg"] = "group not found";
-                    console.log(response["msg"]);
+                    response["msg"] = "unable to add in group";
                     res.send(response);
+                    console.log(response["msg"]);
                 }
                 else{
-                    console.log(user.userID);
-                    var setUserGroupDoc = new UserGroup({
-                        userID: user.userID,
-                        groupID: group.groupID
-                    });
-                    setUserGroupDoc.save(function (err) {
-                        if(err){
-                            response["status"] = "false";
-                            response["msg"] = "unable to add in group";
-                            res.send(response);
-                            console.log(response["msg"]);
-                        }
-                        else{
-                            response["msg"] = "group entry added.";
-                            response["status"] = "true";
-                            res.send(response);
-                            console.log(response["msg"]);
-                        }
-                    });
+                    response["msg"] = "group entry added.";
+                    response["status"] = "true";
+                    res.send(response);
+                    console.log(response["msg"]);
                 }
             });
         }
@@ -1508,7 +1500,7 @@ function searchUserSkill(res, searchStr, resultObj){
                     for (var i = 0; i < users.length; i++) {
                         ids.push(users[i].userID)
                     }
-                    User.find({"userID": {$in: ids}}, function (err, userInfos) {
+                    User.find({"userID": {$in: ids}}).select(['userID', 'userName','firstName', 'lastName']).exec(function (err, userInfos) {
                         skillResponse["status"] = "true";
                         skillResponse["msg"] = userInfos;
                         resultObj['skillSearch'] = skillResponse;
@@ -1621,7 +1613,7 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                         userIDs.push(users[i].userID);
                         userPublicMap.push(users[i]);
                     }
-                    User.find({"userID":{$in:userIDs}},function (err,userInfo) {
+                    User.find({"userID":{$in:userIDs}}).select(['userID', 'userName', 'firstName', 'lastName']).exec(function (err,userInfo) {
                         if(err||userInfo.length==0){
                             publicsInfoResponse["status"] = "false";
                             publicsInfoResponse["msg"] = "Unable to find users for given userIDs";
@@ -2123,6 +2115,7 @@ function getAllRepliesByPostID(req, res, next) {
                     for(var i = 0; i < replies.length; i++){
                         userIDs.push(replies[i].userID);
                     }
+                    userIDs.push(user.userID);
                     User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
                         if(err){
                             response["status"] = "false";
@@ -2224,4 +2217,166 @@ function checkOTP(req,res,next) {       //sessionString,OTP
             }
         }
     })
+}
+
+app.post('/getPendingRequests',getPendingRequests);
+function getPendingRequests(req,res,next) {       //sessionString for groupAdmin userID, groupID
+    var query  = {"sessionString":req.body.sessionString};
+    User.findOne(query,function (err,user) {
+        if(err||user==null){
+            response["status"] = "false";
+            response["msg"] = "Invalid sessionString";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            GroupInfo.findOne({"groupID":req.body.groupID},function (err,group) {
+                if(err||group==null){
+                    response["status"] = "false";
+                    response["msg"] = "Invalid groupID";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    if(group.admin==user.userID){
+//                      send all entries from groupjoinrequest
+                        GroupJoinRequest.find({"groupID":group.groupID},function (err,entries) {
+                            if(err||entries.length==0){
+                                response["status"] = "false";
+                                response["msg"] = "No pending requests";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                            else{
+                                var requesterIDs = [];
+                                for(var i = 0; i < entries.length; i++){
+                                    requesterIDs.push(entries[i].requesterID)
+                                }
+                                User.find({'userID':{$in:requesterIDs}}).select(['userID','userName','firstName', 'lastName']).exec(function (err,requesterInfo) {
+                                    if(err){
+                                        response["status"] = "false";
+                                        response["msg"] = "Something Wrong in groupJoinRequests";
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                    else{
+                                        response["status"] = "true";
+                                        response["msg"] = {"requesters":requesterInfo};
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else{
+                        response["status"] = "false";
+                        response["msg"] = "This user is not the admin of this group.";
+                        res.send(response);
+                        console.log(response["msg"]);
+                    }
+                }
+            });
+        }
+    });
+}
+
+app.post('/joinPrivateGroup',joinPrivateGroup);
+function joinPrivateGroup(req,res,next) {       //sessionString for userID, groupID
+    var query  = {"sessionString":req.body.sessionString};
+    User.findOne(query,function (err,user) {
+        if(err||user==null){
+            response["status"] = "false";
+            response["msg"] = "Invalid sessionString";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            GroupJoinRequest.find({"groupID":req.body.groupID,"requesterID":user.userID},function (err,entry) {
+                if(entry.length!=0){
+                    response["status"] = "false";
+                    response["msg"] = "Already requested.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    GroupInfo.findOne({"groupID":req.body.groupID},function (err,group) {
+                        if(err||group==null||group==undefined){
+                            response["status"] = "false";
+                            response["msg"] = "Unable to find group.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else{
+                            var newEntry = new GroupJoinRequest({
+                                groupID:req.body.groupID,
+                                adminID:group.admin,
+                                requesterID:user.userID,
+                                requestedOn:Date.now()
+                            });
+                            newEntry.save(function (err) {
+                                if (err) {
+                                    response["status"] = "false";
+                                    response["msg"] = "Unable to request";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    response["status"] = "true";
+                                    response["msg"] = "Requested successfully.";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/approveGroupRequests',approveGroupRequests);
+function approveGroupRequests(req,res,next) {       //groupID,userID
+    var query = {"groupID":req.body.groupID,"requesterID":req.body.userID};
+    GroupJoinRequest.findOne(query,function (err,entry) {
+        if(err||entry==null||entry==undefined){
+            response["status"] = "false";
+            response["msg"] = "Unable to find the request";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            entry.remove();
+            var query={"groupID":req.body.groupID,"userID":req.body.userID}
+            UserGroup.findOne(query,function (err,entry) {
+                if(err||entry!=undefined||entry!=null){
+                    response["status"] = "false";
+                    response["msg"] = "Already approved.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var newEntry = new UserGroup({
+                        groupID:req.body.groupID,
+                        userID:req.body.userID,
+                    });
+                    newEntry.save(function (err) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = "Unable to approve";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = "Approval successfully.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
 }
