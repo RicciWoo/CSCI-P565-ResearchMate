@@ -18,6 +18,8 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/login/verifyuser.html"
     }).when("/publication", {
       templateUrl: "components/publication/publication.html"
+    }).when("/publication/:publicationID", {
+      templateUrl: "components/publication/publication.html"
     }).when("/groups", {
       templateUrl: "components/groups/groups.html"
     }).when("/search", {
@@ -26,6 +28,10 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/login/login.html"
     }).when("/gendiscussion", {
       templateUrl: "components/discussion/generaldiscussion.html"
+    }).when("/discussion/:groupID", {
+      templateUrl: "components/discussion/display-discussion.html"
+    }).when("/discussiondetail/:groupid/:postid", {
+      templateUrl: "components/discussion/discussion-detail.html"
     });
 
 

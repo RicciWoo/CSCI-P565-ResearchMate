@@ -4,6 +4,7 @@ myApp.controller('searchController', ['$scope', '$http', '$location', 'URL', '$c
   var sessionString = $cookies.get("sessionString");
   if(searchQuery == undefined || searchQuery == "")
     return;
+    $scope.userSearchResult = [];
   $http({
     url: URL+"/searchInput",
     method: "POST",
@@ -13,12 +14,26 @@ myApp.controller('searchController', ['$scope', '$http', '$location', 'URL', '$c
   }).then(function success(response){
     if(response.status == 200 && response.data!=undefined){
       //set user search object
+      debugger
+      if(response.data.publicsInfoResponse!=undefined && response.data.publicsInfoResponse.status == "true"){
+        $scope.publicationSearchResult = response.data.publicsInfoResponse.msg.publicationInfo;
+      }
       if(response.data.userSearch!=undefined && response.data.userSearch.status == "true"){
         $scope.userSearchResult = response.data.userSearch.msg;
       }
       else {
         console.log(response.data.userSearch.msg);
       }
+      if(response.data.userInfoSearch!=undefined && response.data.userInfoSearch.status == "true"){
+        for(var i=0;i<response.data.userInfoSearch.msg.length;i++)
+        {
+          $scope.userSearchResult.push(response.data.userInfoSearch.msg[i]);
+        }
+      }
+      else {
+        console.log(response.data.userSearch.msg);
+      }
+
       if(response.data.groupSearch!=undefined && response.data.groupSearch.status == "true"){
         $scope.groupSearchResult = response.data.groupSearch.msg;
       }

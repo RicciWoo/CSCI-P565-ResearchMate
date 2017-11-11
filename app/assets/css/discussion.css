@@ -68,3 +68,21 @@
 .tagcloud ul li a:hover::before {
 	border-right-color: #555;
 }
+
+.container{
+	margin-top: 100px;
+}
+
+.post-row{
+	padding: 10px 5px;
+	border-bottom: 1px solid #ccc;
+}
+
+.reply-section{
+	margin-top: 20px;
+}
+.reply-section .reply-row{
+	padding: 10px 5px;
+	margin-bottom: 5px;
+	border-bottom: 1px solid #ccc;
+}

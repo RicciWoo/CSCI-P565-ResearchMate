@@ -123,8 +123,8 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
         $scope.country = userinfo.userInfo.location.country;
         $scope.summary = userinfo.userInfo.summary;
         $scope.university = userinfo.userInfo.university;
-
-        if (userinfo.userInfo.picture != "") {
+debugger
+        if (userinfo.userInfo.picture != "" && userinfo.userInfo.picture!="http://silo.soic.indiana.edu:54545/public/userIcon.jpg") {
           $scope.imgLocation = userinfo.userInfo.picture;
         }
         $scope.dob = new Date(userinfo.userInfo.dob).toLocaleDateString("en");

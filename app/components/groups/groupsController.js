@@ -1,4 +1,4 @@
-myApp.controller('groupsController',['$scope','$http','URL','$location', '$cookies', '$cookieStore',function($scope,$http,URL,$location, $cookies, $cookieStore) {
+myApp.controller('groupsController',['$scope','$http','URL','$location', '$cookies', '$cookieStore','$rootScope',function($scope,$http,URL,$location, $cookies, $cookieStore,$rootScope) {
   $http({
     url: URL+"/getAllGroups",
     method: "POST",
@@ -11,15 +11,15 @@ function error(response){
 $scope.userGroupID = []
 $scope.username = $cookies.get('username');
 $scope.sessionString = $cookies.get('sessionString');
+$rootScope.loggedIn = true;
 $http({
   url: URL+"/getUserGroups",
   method: "POST",
   data:{'username': $scope.username},
-}).then(function success(response){debugger
+}).then(function success(response){
   if(response.status == 200){
     if(response.data.status == "true" && response.data.msg.groupInfo!=undefined){
       var grpInfo = response.data.msg.groupInfo;
-      debugger
       for(var i = 0;i<grpInfo.length;i++){
         $scope.userGroupID.push(grpInfo[i].groupID);
       }
@@ -63,10 +63,9 @@ $scope.addNewGroup = function(){
         url: URL+"/setUserGroup",
         method: "POST",
         data:{'sessionString': $scope.sessionString, 'groupname': groupName},
-      }).then(function success(response){debugger
+      }).then(function success(response){
         if(response.status == 200){
           if(response.data.status == "true" && response.data.msg == "group entry added."){
-            debugger
             event.target.value = "Joined"
           }
           else{
