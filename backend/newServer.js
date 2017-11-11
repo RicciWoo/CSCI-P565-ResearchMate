@@ -2126,7 +2126,7 @@ app.post('/getAllRepliesByPostID', getAllRepliesByPostID);            // postID
 function getAllRepliesByPostID(req, res, next) {
     var query = {"postID":req.body.postID};
     DiscussionPosts.findOne(query,function (err, post) {
-        if(err||post==null||post==null){
+        if(err||post==null||post==undefined){
             response["status"] = "false";
             response["msg"] = "No post with postID :"+query.postID;
             res.send(response);
@@ -2134,10 +2134,19 @@ function getAllRepliesByPostID(req, res, next) {
         else{
             DiscussionReplies.find(query,function (err, replies) {
                 if(replies.length==0||err){
-                    response["status"] = "true";
-                    response["msg"] = {"postInfo":post,"replyInfo":{"status":"false","msg":"no replies for this post"}};
-                    res.send(response);
-                    console.log(response["msg"]);
+                    User.findOne({"userID":post.userID},function (err,user) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "User not found. something wrong with user table";
+                            res.send(response);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = {"postInfo":post,"replyInfo":{"status":"false","msg":"no replies for this post"},"userWhoPosted":user};
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
                 }
                 else {
                     var userIDs = [];
