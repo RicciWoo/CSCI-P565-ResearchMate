@@ -2142,7 +2142,7 @@ function getAllRepliesByPostID(req, res, next) {
                         }
                         else {
                             response["status"] = "true";
-                            response["msg"] = {"postInfo":post,"replyInfo":{"status":"false","msg":"no replies for this post"},"userWhoPosted":user};
+                            response["msg"] = {"postInfo":post,"replyInfo":{"status":"false","msg":"no replies for this post"},"allUsers":user};
                             res.send(response);
                             console.log(response["msg"]);
                         }
