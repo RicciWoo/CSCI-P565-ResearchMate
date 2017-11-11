@@ -116,12 +116,9 @@ function signUp(req,res,next) {
         // entry.userID is the max value
         if(entry == null) {
             maxCount = 1;
-//            console.log("if "+entry);
         }
         else {
             maxCount = entry.userID + 1;
-//            console.log("else "+entry.userID);
-//            console.log("maxcount : "+ maxCount);
         }
 
         var addUser = new User({
@@ -409,7 +406,6 @@ function forgetPassword(req, res, next){
     });
 }
 
-// basic function to get userInfo
 app.post('/getUserInfo', getUserInfo);
 function getUserInfo(req,res,next) {
     // check sessionString in usertable & get userID
@@ -439,7 +435,6 @@ function getUserInfo(req,res,next) {
                         console.log("check");
                     }
                     response["msg"] = {"user":user,"userInfo":userInfo};
-
                     response["status"] = "true";
                     res.send(response);
                     console.log("Complete: UserInfo sent for user = "+user.userName);
@@ -449,7 +444,6 @@ function getUserInfo(req,res,next) {
     });
 }
 
-// basic function to set userInfo
 app.post('/setUserInfo', setUserInfo);
 function setUserInfo(req,res,next) {
 //  check sessionString in usertable & get userID
@@ -591,7 +585,6 @@ function setUserPublication(req,res,next) {
                 }
             });
         }
-
     });
 }
 
@@ -764,7 +757,6 @@ function getUserFollowers(req,res,next) {
                     User.find({'userID':{$in:ids}}, function(err,followers){
                         UserInfo.find({'userID':{$in:ids}}, function(infoErr, userInfo){
                             var follower = [];
-
                             for(var i = 0;i<followers.length;i++){
                                 var tempObj = {};
                                 tempObj["firstname"] = followers[i].firstName;
@@ -778,7 +770,6 @@ function getUserFollowers(req,res,next) {
                                 }
                                 follower.push(tempObj);
                             }
-
                             if(sessionString == undefined || sessionString == "")
                                 response["msg"] = {"sessionString": "", "userInfo":follower};
                             else
@@ -787,7 +778,6 @@ function getUserFollowers(req,res,next) {
                             res.send(response);
                             console.log("followeeInfo sent for "+req.body.username);
                         });
-
                     });
                 }
             });
@@ -861,7 +851,6 @@ function addPublication(req,res,next) {
                     res.send(response);
                 }
                 else {
-
                     var maxCount = 1;
                     Publications.findOne().sort('-publicationID').exec(function(err, entry) {
                         // entry.userID is the max value
@@ -871,7 +860,6 @@ function addPublication(req,res,next) {
                         else {
                             maxCount = entry.publicationID + 1;
                         }
-
                         var publishDate = new Date(req.body.publishDate);
                         var newPublication = new Publications({
                             publicationID:maxCount,
@@ -1022,7 +1010,6 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                         else {
                                             maxCount = entry.publicationID + 1;
                                         }
-
                                         var publishDate = new Date(req.body.publishDate);
                                         console.log(user.userID);
                                         var newPublication = new Publications({
@@ -1104,7 +1091,6 @@ function getAllGroups(req, res, next) {
             response["status"] = "true";
             res.send(response);
         }
-
     });
 }
 
@@ -1172,14 +1158,11 @@ function addSkill(req, res, next) {       // SessionString, skillName
                         else {
                             maxCount = entry.skillID + 1;
                         }
-
                         var thisSkill = new Skills({
                             skillID: maxCount,
                             skillName: req.body.skillName
                         });
-
                         thisSkill.save();
-
                         var userThisSkill = new UserSkills({
                             skillID: maxCount,
                             userID: user.userID
@@ -1211,7 +1194,6 @@ function addSkill(req, res, next) {       // SessionString, skillName
                             res.send(response);
                             console.log(response["msg"]);
                         }
-
                     });
                 }
             });
@@ -1258,7 +1240,6 @@ function getUserSkills(req, res, next) {       // userName
                     });
                 }
             });
-
         }
     });
 }
@@ -1478,7 +1459,6 @@ function searchUserGroup(res, searchStr, resultObj){
                     }
                 }
             }
-
             if (result.length > 0) {
                 tempResponse["status"] = "true";
                 tempResponse["msg"] = result;
@@ -1516,7 +1496,6 @@ function searchUserSkill(res, searchStr, resultObj){
                     }
                 }
             }
-
             UserSkills.find({"skillID":{$in: skillID}},function (err, users) {
                 if(err||users==null||users.length==0){
                     skillResponse["status"] = "false";
@@ -1529,7 +1508,6 @@ function searchUserSkill(res, searchStr, resultObj){
                     for (var i = 0; i < users.length; i++) {
                         ids.push(users[i].userID)
                     }
-			console.log(ids);
                     User.find({"userID": {$in: ids}}, function (err, userInfos) {
                         skillResponse["status"] = "true";
                         skillResponse["msg"] = userInfos;
@@ -1657,11 +1635,11 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                             }
                             publicsInfoResponse["status"] = "true";
                             publicsInfoResponse["msg"] = {"publicationInfo":publicationsInfo,"userPublicMap":userPublicMap,"userData":userData};
-
-//                            console.log("publications:"+publicationsInfo);
-//                            console.log("userpubs:"+userPublicMap+"\n");
-//                            console.log("users:"+userData);
-
+/*
+                            console.log("publications:"+publicationsInfo);
+                            console.log("userpubs:"+userPublicMap+"\n");
+                            console.log("users:"+userData);
+*/
                             resultObj['publicsInfoResponse'] = publicsInfoResponse;
                             sendSearchResponse(res, resultObj)
                         }
@@ -1687,7 +1665,6 @@ function setRating(req,res,next) {
     else {
         var pubID = req.body.publicationID;
         var query = {"sessionString": req.body.sessionString};
-
         User.findOne(query, function (err, user) {
             if (user == null) {
                 response["status"] = "false";
@@ -1705,7 +1682,6 @@ function setRating(req,res,next) {
             else {
                 PublicationRatings.find({"userID": user.userID}, function (err, entry) {
                     var ids = [];
-
                     for (var i = 0; i < entry.length; i++) {
                         if (entry[i].publicationID == parseInt(pubID)) {
                             ids.push(entry[i]);
@@ -1864,7 +1840,6 @@ function removeUserPublication(req, res, next) {
                         }
                     }
                     if (deleted) {
-
                         var query = {'publicationID': publicationID};
                         Publications.findOne(query, function(err, publication){
                             if (publication == null) {
@@ -1972,7 +1947,6 @@ function postQuestion(req, res, next) {
     var sessionString = req.body.sessionString;
     var tagArray = req.body.tagArray;
     var query = {'sessionString': sessionString};
-
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
@@ -1989,7 +1963,6 @@ function postQuestion(req, res, next) {
                 else {
                     maxCount = entry.postID + 1;
                 }
-
                 var newPost = new DiscussionPosts({
                     postID: maxCount,
                     postString: req.body.postString,
@@ -2058,7 +2031,6 @@ function tagMapping(res,tagIDs,postID) {
     for(var k = 0; k < tagIDs.length;k++){
         insertArrayPostTag.push({"postID":postID,"tagID":tagIDs[k]});
     }
-
     PostTagsMapping.insertMany(insertArrayPostTag, function (err,saved) {
         if(err){
             response["status"] = "false";
@@ -2094,7 +2066,6 @@ function postReply(req, res, next) {
                 else {
                     maxCount = entry.replyID + 1;
                 }
-
                 var newReply = new DiscussionReplies({
                     postID: parseInt(req.body.postID),
                     replyString: req.body.replyString,
@@ -2102,7 +2073,6 @@ function postReply(req, res, next) {
                     userID: user.userID,
                     postedOn: Date.now()
                 });
-
                 newReply.save(function (err) {
                     if (err) {
                         response["status"] = "false";
@@ -2188,7 +2158,6 @@ function getAllPostsByGroupID(req, res, next) {
             for (var i = 0; i < posts.length; i++){
                 userIDs.push(posts[i].userID);
             }
-
             User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
                 if(err){
                     response["status"] = "false";
@@ -2208,7 +2177,6 @@ function getAllPostsByGroupID(req, res, next) {
 
 function sendOTP(sessionString) {            // sessionString
     var OTP = getRandom(low, high);
-
     var query = {"sessionString": sessionString};
     User.findOneAndUpdate(query, {"OTP":OTP} ,function (err, user) {
         if (user == null||err) {
