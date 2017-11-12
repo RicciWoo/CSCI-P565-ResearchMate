@@ -2155,6 +2155,8 @@ function getAllRepliesByPostID(req, res, next) {
         }
         else{
             var userIDs = [];
+            userIDs.push(post.userID);
+
             DiscussionReplies.find(query,function (err, replies) {
                 if(replies.length==0||err){
                     User.findOne({"userID":post.userID},function (err,user) {
@@ -2169,7 +2171,6 @@ function getAllRepliesByPostID(req, res, next) {
                             res.send(response);
                             console.log(response["msg"]);
                         }
-                        userIDs.push(user.userID);
                     });
                 }
                 else {
