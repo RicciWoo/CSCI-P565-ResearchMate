@@ -13,11 +13,15 @@ var groupSchema = mongoose.Schema({
         type: Date
     },
     admin:{
-        type: String
+        type: Number
     },
     description:{
         type: String,
-	default: ""
+	    default: ""
+    },
+    isPrivate:{
+        type: Number,
+        default: 0
     }
 });
 
