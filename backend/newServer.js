@@ -1746,8 +1746,9 @@ function setRating(req,res,next) {
 }
 
 app.post('/setPublicationAvgRatings', setPublicationAvgRatings);
-function setPublicationAvgRatings(req,res,next){    //publicationID
-    var ID = req.body.publicationID;
+function setPublicationAvgRatings(ID){    //publicationID
+//function setPublicationAvgRatings(req,res,next){    //publicationID
+//    var ID = req.body.publicationID;
     PublicationRatings.find({"publicationID":ID},function (err,entries) {
         if(err||entries.length==0||entries==null){
             response["status"] = "false";
@@ -1784,7 +1785,7 @@ function setPublicationAvgRatings(req,res,next){    //publicationID
             });
         }
     });
-    res.send("Hit");
+//    res.send("Hit");
 }
 
 app.post('/getPublicationRatings', getPublicationRatings);
@@ -2510,8 +2511,12 @@ function mostLikedPaper(req,res,next) {
             console.log(response["msg"]);
         }
         else {
+            var paperInfo=[];
+            for(var i = 0; i < papers.length; i++){
+                paperInfo.push(papers[i]);
+            }
             response["status"] = "true";
-            response["msg"] = papers;
+            response["msg"] = paperInfo;
             res.send(response);
             console.log(response["msg"]);
         }
