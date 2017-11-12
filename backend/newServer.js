@@ -627,10 +627,25 @@ function createGroup(req,res,next) {
                                 console.log(response["msg"]);
                             }
                             else {
-                                response["msg"] = "group created.";
-                                response["status"] = "true";
-                                res.send(response);
-                                console.log(response["msg"]);
+                                var newGroupDoc = new UserGroup({
+                                    groupID: maxCount,
+                                    userID: user.userID,
+                                });
+
+                                newGroupDoc.save(function (err, saved) {
+                                    if(err){
+                                        response["status"] = "false";
+                                        response["msg"] = "unable to save group";
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                    else{
+                                        response["msg"] = "group created and added myself.";
+                                        response["status"] = "true";
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                });
                             }
                         });
                     }
@@ -857,7 +872,7 @@ function addPublication(req,res,next) {
                             publicationID:maxCount,
                             name: req.body.name,
                             ISSN: req.body.ISSN,
-                            abstract: req.body.abstract,
+                            paperAbstract: req.body.abstract,
                             publishedAt: req.body.publishedAt,
                             publishDate: publishDate,
                             where: req.body.url
@@ -1011,6 +1026,7 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                             paperAbstract: req.body.paperAbstract,
                                             publishedAt: req.body.publishedAt,
                                             publishDate: publishDate,
+                                            avgRating:0,
                                             filePath: pathVar
                                         });
                                         newPublication.save(function (err) {
@@ -1719,6 +1735,7 @@ function setRating(req,res,next) {
                                 response["status"] = "true";
                                 res.send(response);
                                 console.log(response["msg"]);
+                                setPublicationAvgRatings(req.body.publicationID);
                             }
                         });
                     }
@@ -1726,6 +1743,48 @@ function setRating(req,res,next) {
             }
         });
     }
+}
+
+app.post('/setPublicationAvgRatings', setPublicationAvgRatings);
+function setPublicationAvgRatings(req,res,next){    //publicationID
+    var ID = req.body.publicationID;
+    PublicationRatings.find({"publicationID":ID},function (err,entries) {
+        if(err||entries.length==0||entries==null){
+            response["status"] = "false";
+            response["msg"] = " setPublicationAvgRatings no entries found";
+            console.log(response["msg"]);
+        }
+        else {
+            var avg = 0;
+            for(var i = 0; i < entries.length; i++){
+                avg = avg + entries[i].ratings;
+            }
+            console.log("avg : "+avg);
+            Publications.findOne({"publicationID":ID},function (err,paper) {
+                if(err||paper==null||paper==undefined){
+                    response["status"] = "false";
+                    response["msg"] = "setPublicationAvgRatings unable to find paper in database";
+                    console.log(response["msg"]);
+                }
+                else {
+                    paper.set({"avgRating":avg});
+                    paper.save(function (err,updatedentry) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = " setPublicationAvgRatings unable to update paper avg rating";
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = " setPublicationAvgRatings updated paper avg rating in database";
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+    res.send("Hit");
 }
 
 app.post('/getPublicationRatings', getPublicationRatings);
@@ -2377,6 +2436,84 @@ function approveGroupRequests(req,res,next) {       //groupID,userID
                     });
                 }
             });
+        }
+    });
+}
+
+app.post('/getUserPendingRequests',getUserPendingRequests);     //sessionString
+function getUserPendingRequests(req,res,next) {
+    User.findOne({"sessionString":req.body.sessionString},function (err,user) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            GroupJoinRequest.find({"requesterID":user.userID}).sort({"requestedOn":-1},function (err,entries) {
+                if(err||entries.length==0){
+                    response["status"] = "false";
+                    response["msg"] = "No pending Requests";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var groupIDs = [];
+                    for(var i = 0; i < entries.length; i++){
+                        groupIDs.push(entries[i].groupID);
+                    }
+                    GroupInfo.find({'groupID':{$in:groupIDs}},function (err,groupInfo) {
+                        if(err||groupInfo.length==0){
+                            response["status"] = "false";
+                            response["msg"] = "Something wrong";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = groupInfo;
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getUserID',getUserID);       //sessionString
+function getUserID(req,res,next) {
+    User.findOne({"sessionString":req.body.sessionString},function (err,user) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            response["status"] = "true";
+            response["msg"] = user.userID;
+            res.send(response);
+            console.log(response["msg"]);
+        }
+    });
+}
+
+app.post('/mostLikedPaper',mostLikedPaper);
+function mostLikedPaper(req,res,next) {
+    Publications.find({}).sort("-avgRating").exec(function (err,papers) {
+        if(err||papers.length==0){
+            response["status"] = "false";
+            response["msg"] = "Unable to find any paper in the database.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            response["status"] = "true";
+            response["msg"] = papers;
+            res.send(response);
+            console.log(response["msg"]);
         }
     });
 }
