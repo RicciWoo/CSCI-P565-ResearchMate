@@ -38,7 +38,7 @@ app.use(express.static('public/papers/'));
 
 mongoose.Promise = global.Promise;
 // Connect to MongoDB on localhost:27017
-var connection = mongoose.connect('mongodb://silo.soic.indiana.edu:27018/researchMate', { useMongoClient: true });
+var connection = mongoose.connect('mongodb://silo.soic.indiana.edu:27018/researchMate2', { useMongoClient: true });
 
 //  importing pre-defined model
 var User = require('./app/userModel');
@@ -2154,6 +2154,7 @@ function getAllRepliesByPostID(req, res, next) {
             res.send(response);
         }
         else{
+            var userIDs = [];
             DiscussionReplies.find(query,function (err, replies) {
                 if(replies.length==0||err){
                     User.findOne({"userID":post.userID},function (err,user) {
@@ -2168,14 +2169,13 @@ function getAllRepliesByPostID(req, res, next) {
                             res.send(response);
                             console.log(response["msg"]);
                         }
+                        userIDs.push(user.userID);
                     });
                 }
                 else {
-                    var userIDs = [];
                     for(var i = 0; i < replies.length; i++){
                         userIDs.push(replies[i].userID);
                     }
-                    userIDs.push(user.userID);
                     User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
                         if(err){
                             response["status"] = "false";
