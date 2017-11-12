@@ -1,0 +1,13 @@
+<div ng-controller="groupPendingController" class="container-margin container bg-white">
+  <div class="pending-requests col-lg-10">
+    <h3 style="padding-bottom: 10px;">Pending request to approve</h3>
+    <div class="row" style="padding-bottom:10px; border-bottom: 1px solid #ccc;" ng-repeat="user in userInfo">
+      <div class="col-lg-6 col-md-12">{{user.firstName}} {{user.lastName}}</div>
+      <div class="col-lg-3 col-md-6"><a href="/researchmate/#/profile/{{user.userName}}">{{user.userName}}</a></div>
+      <div class="col-lg-3 col-md-6 float-lg-right float-md-right text-right">
+        <input type="button" value="Approve" ng-click="approveRequest(user.userID)" class="btn btn-primary" />
+        <input type="button" value="Disapprove" ng-click="disapproveRequest(user.userID)" class="btn btn-primary" />
+      </div>
+    </div>
+  </div>
+</div>

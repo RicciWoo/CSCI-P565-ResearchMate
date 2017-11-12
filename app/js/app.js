@@ -18,12 +18,24 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/login/verifyuser.html"
     }).when("/publication", {
       templateUrl: "components/publication/publication.html"
+    }).when("/publication/:publicationID", {
+      templateUrl: "components/publication/publication.html"
     }).when("/groups", {
       templateUrl: "components/groups/groups.html"
     }).when("/search", {
       templateUrl: "components/search/search.html"
     }).when("/login", {
       templateUrl: "components/login/login.html"
+    }).when("/gendiscussion", {
+      templateUrl: "components/discussion/generaldiscussion.html"
+    }).when("/discussion/:groupID", {
+      templateUrl: "components/discussion/display-discussion.html"
+    }).when("/discussiondetail/:groupid/:postid", {
+      templateUrl: "components/discussion/discussion-detail.html"
+    }).when("/creategroup", {
+      templateUrl: "components/group/add-group.html"
+    }).when("/pendingrequest/:groupID", {
+      templateUrl: "components/group/pending-request.html"
     });
 
 
@@ -31,7 +43,7 @@ myApp.config(function ($routeProvider) {
 myApp.run(function ($rootScope, $location, $cookieStore,$cookies) {
   $rootScope.$on("$locationChangeStart", function (event, next, current) {
     var sessionString = $cookies.get('sessionString');
-    
+
      if($location.path().includes("/profile/") || $location.path().includes("/group")|| $location.path().includes("/publication"))
      {
        if(sessionString==undefined)

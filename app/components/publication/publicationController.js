@@ -1,4 +1,4 @@
-myApp.controller('publicationController',['$scope', '$http', '$location','$cookies','$cookieStore','URL', 'Upload', function ($scope, $http, $location, $cookies, $cookieStore,URL, Upload) {
+myApp.controller('publicationController',['$scope', '$http', '$location','$cookies','$cookieStore','URL', 'Upload', '$sce', function ($scope, $http, $location, $cookies, $cookieStore,URL, Upload, $sce) {
 
 $scope.sessionString = $cookies.get('sessionString');
 $scope.username = $cookies.get('username');
@@ -7,6 +7,47 @@ $scope.uploadPublication = function($file){
   $scope.file = $file;
 
 }
+$scope.allowEdit = false;
+var url = $location.path().split('/');
+if(url.length ==3){
+  var publicationID = url[2];
+  $http({
+    url: URL + "/getPublicationByID",
+    method: "POST",
+    data:{
+      "publicationID": publicationID,
+    }
+  }).then(function success(response){
+    if(response.status == 200){
+        if(response.data.status == "true" && response.data.msg!=undefined){
+          var pubInfo = response.data.msg.publicationInfo;
+          if(pubInfo!=undefined){
+            debugger
+            $scope.pubName = pubInfo.name;
+            $scope.pubIssn = pubInfo.ISSN;
+            $scope.abstract = pubInfo.paperAbstract;
+            $scope.journalName = pubInfo.publishedAt;
+            $scope.pubDate = pubInfo.publishDate;
+            $scope.publicationPath = $sce.trustAsResourceUrl(pubInfo.filePath);
+          }
+          var userInfo = response.data.msg.userInfo;
+          debugger
+          for(var i=0;i<userInfo.length;i++){
+            if($scope.sessionString == userInfo[i].sessionString){
+              $scope.allowEdit = true;
+              break;
+            }
+          }
+        }
+    }
+  },
+function error(response){
+  console.log(response.statusText);
+}
+
+);
+}
+
 $scope.savePublication = function(){
 /**
  * check if all the required values are provided

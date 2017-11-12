@@ -24,13 +24,24 @@
 
             <input type="password" id="pwd" ng-model="pwd" class="form-control" placeholder="Password" required>
         </div>
+        <div class="form-group">
+
+            <input type="text" id="phone" ng-model="phone" class="form-control" placeholder="Phone Number" required>
+        </div>
+        <div class="form-group">
+          <select class="form-control" ng-model="carrier" required>
+            <option value="">Please select carrier</option>
+              <option ng-repeat="provider in providerList" value={{provider.value}}>{{provider.name}}</option>
+          </select>
+
+        </div>
         <div class="row">
             <div class="form-group col-lg-6">
 
                 <input type="submit" id="submit" class="btn btn-success" value="Create Account">
             </div>
             <div class="form-group col-lg-6">
-              <google-sign-in-button button-id="uniqueid" options="options"></google-sign-in-button>
+              <google-sign-in-button button-id="uniqueid" ng-click="checkGoogleSignup()" options="options"></google-sign-in-button>
             </div>
 
         </div>

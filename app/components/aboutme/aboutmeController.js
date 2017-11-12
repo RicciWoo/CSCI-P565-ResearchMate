@@ -12,7 +12,7 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
         file: $file,
         data:{'username': $scope.username},
       }).progress(function(e){}).then(function(data, status, headers, config){
-        
+
       });
     }
     else
@@ -20,7 +20,7 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
       alert("you do not have permission!");
     }
     }
-   
+
     var url = $location.path().split('/');
     $scope.username = url[2];
     $scope.followUser = function () {
@@ -31,19 +31,19 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
           'username': $scope.username,
           'sessionString': $scope.sessionString
         },
-  
+
       }).then(function success(response) {
         if (response.status == 200) {
           if (response.data.status == false && response.data.msg != undefined && response.data.msg != "")
             alert(response.data.msg);
           else {
             alert("Followed Successfully");
-  
+
           }
         }
       },
         function error(response) {
-  
+
         }
         );
     }
@@ -81,8 +81,7 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
               $scope.country = userinfo.userInfo.location.country;
               $scope.summary =  userinfo.userInfo.summary;
               $scope.university = userinfo.userInfo.university;
-             
-              if(userinfo.userInfo.picture!=""){
+              if(userinfo.userInfo.picture!="" && userinfo.userInfo.picture!="http://silo.soic.indiana.edu:54545/public/userIcon.jpg"){
                 $scope.imgLocation = userinfo.userInfo.picture;
               }
               $scope.dob = new Date(userinfo.userInfo.dob).toLocaleDateString("en");
@@ -113,7 +112,7 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
                 "dob":"03/09/1991",
                 "primaryAdvisor":"HiteshKumar",
                 "secondaryAdvisor":"RahulVelayutham",
-                
+
                 "university": self.university,
                 "summary":self.summary
           },

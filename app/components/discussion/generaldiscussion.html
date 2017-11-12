@@ -1,0 +1,33 @@
+<link rel="stylesheet" href="assets/css/discussion.css">
+<div class="container" ng-controller="genDiscussionController">
+    <form class="col-lg-10 bg-white">
+        <h2>What's on your mind!</h2>
+        <div class="form-group">
+          <label for="post-text">Post: </label>
+        <textarea class="form-control" id="post-text" ng-model="postStr" placeholder="Post a question..."></textarea>
+      </div>
+      <div class="form-group">
+<label for="select-group">Select group</label>
+        <select id="select-group" ng-model="groupID" class="form-control">
+          <option selected="selected" value="-1">Select group</option>
+          <option ng-repeat="group in groupInfo" value={{group.groupID}}>{{group.groupName}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+          <input type="text" placeholder="Add tag" ng-model="txtTagInput" id="txtAddTag" ng-enter="addTag()" class="form-control" />
+      </div>
+      <div class="row tagcloud">
+      <!-- <div class=" col-lg-2" ng-repeat="tag in tagArr track by $index" style="margin:10px;padding:5px;border-radius:4px;background-color:#D9853B;color:white">
+         {{tag}}<a href="" ng-click="deleteTag($index)"> <i class="fa fa-times pull-right" ></i> </a> -->
+         <label style="margin:0px 10px;" for="tag-list">Tags: </label>
+        <ul>
+            <li ng-repeat="tag in tagArr track by $index"><a><span>{{tag}}<i ng-click="deleteTag($index)" class="fa fa-lg fa-times" ></i></span></a></li>
+      </ul>
+      </div>
+      <div style="margin-bottom:30px;" class="form-group col-lg-12">
+        <input type="button" ng-click="addUserPost()" class="btn btn-primary pull-right" value="Post" />
+      </div>
+    </div>
+    </form>
+
+</div>

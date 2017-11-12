@@ -1,0 +1,24 @@
+<div class="container" ng-controller="addGroupController">
+  <div class="col-lg-10 bg-white">
+    <h3>Create New Group</h3>
+    <div class="group-creation">
+      <form ng-submit="createGroup()">
+        <div class="form-group">
+            <input type="text" class="form-control" placeholder="Group Name" ng-model="groupName" required />
+        </div>
+        <div class="form-group">
+          <textarea placeholder="Description" class="form-control" ng-model="groupDescription"></textarea>
+        </div>
+        <div class="form-group">
+            <select class="form-control" ng-model="isPrivate" required>
+                <option value="0" ng-selected="true">Public</option>
+                <option value="1">Private</option>
+            </select>
+        </div>
+        <div class="form-group">
+          <input type="submit" class="btn btn-primary" value="Create Group" />
+        </div>
+    </div>
+  </form>
+  </div>
+</div>

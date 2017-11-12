@@ -1,6 +1,8 @@
 
 myApp.controller('signupController',['$scope','$http','URL','$location',function($scope,$http,URL,$location) {
 
+$scope.providerList = [{"name":"At&t", "value":"att"},{"name":"Sprint", "value":"sprint"}, {"name":"T-Mobile", "value":"t-mobile"},{"name":"Verizon", "value":"verizon"}]
+
   $scope.options = {
     width:40,
     longtitle:true,
@@ -11,11 +13,31 @@ myApp.controller('signupController',['$scope','$http','URL','$location',function
       var email = profile.getEmail();
       var firstname = profile.getGivenName();
       var lastname = profile.getFamilyName();
-      signUpUser(firstname,lastname, email, password, username);
+      var phone = $scope.phone;
+      var carrier = $scope.carrier;
+      if($scope.validInput)
+        signUpUser(firstname,lastname, email, password, username, phone, carrier);
     }
   }
-
-
+$scope.validInput = false;
+$scope.checkGoogleSignup=function(){
+  var phone = $scope.phone;
+  var carrier = $scope.carrier;
+  var msg = "";
+  if(phone == undefined || phone == ""){
+    msg += "Please provide phone number\n";
+  }
+  if(carrier == undefined || carrier == ""){
+    msg += "Please select a carrier";
+  }
+  if(msg!=""){
+    $scope.validInput = false;
+    alert(msg);
+  }
+  else{
+    $scope.validInput = true;
+  }
+}
 
   $scope.submit = function(){
 
@@ -24,12 +46,15 @@ myApp.controller('signupController',['$scope','$http','URL','$location',function
     var email = $scope.email;
     var password = $scope.pwd;
     var username = $scope.username;
-    signUpUser(firstname, lastname, email, password, username);
+    var phone = $scope.phone;
+    var carrier = $scope.carrier;
+    
+    signUpUser(firstname, lastname, email, password, username, phone, carrier);
 
 }
 
 
-function signUpUser(firstname, lastname, email, password, username){
+function signUpUser(firstname, lastname, email, password, username, phone, carrier){
   $http({
     url: URL+"/signUp",
     method: "POST",
@@ -38,7 +63,9 @@ function signUpUser(firstname, lastname, email, password, username){
       'password':password,
       'email': email,
       'firstname':firstname,
-      'lastname':lastname
+      'lastname':lastname,
+      'phone': phone,
+      'carrier': carrier
   },
 
 }).then(function success(response){
