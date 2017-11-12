@@ -4,6 +4,7 @@ myApp.controller('groupsController',['$scope','$http','URL','$location', '$cooki
     method: "POST",
     data:{},
   }).then(function success(response){
+    debugger
     $scope.groupInfo = response.data.msg.groupInfo;
   },
 function error(response){
@@ -55,18 +56,24 @@ $scope.addNewGroup = function(){
   });
 }
 
-  $scope.joinGroup = function(event, groupName){
-    if(event.currentTarget.value == "Joined")
+  $scope.joinGroup = function(event, groupID, isPrivate){
+    if(event.currentTarget.value == "Joined" || event.currentTarget.value == "Requested")
       return; //user is already in the group.
-
+      var method = "setUserGroup";
+      if(isPrivate){
+        method = "joinPrivateGroup"
+      }
       $http({
-        url: URL+"/setUserGroup",
+        url: URL+"/"+method,
         method: "POST",
-        data:{'sessionString': $scope.sessionString, 'groupname': groupName},
+        data:{'sessionString': $scope.sessionString, 'groupID': groupID},
       }).then(function success(response){
         if(response.status == 200){
-          if(response.data.status == "true" && response.data.msg == "group entry added."){
-            event.target.value = "Joined"
+          if(response.data.status == "true"){
+            if(isPrivate)
+              event.target.value = "Requested"
+            else
+              event.target.value = "Joined"
           }
           else{
             alert(response.data.msg);

@@ -82,3 +82,8 @@ text-overflow: ellipsis;
 .bg-white{
   padding: 20px;
 }
+
+.container-margin{
+  margin-top: 80px;
+
+}

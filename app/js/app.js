@@ -32,6 +32,10 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/discussion/display-discussion.html"
     }).when("/discussiondetail/:groupid/:postid", {
       templateUrl: "components/discussion/discussion-detail.html"
+    }).when("/creategroup", {
+      templateUrl: "components/group/add-group.html"
+    }).when("/pendingrequest/:groupID", {
+      templateUrl: "components/group/pending-request.html"
     });
 
 
