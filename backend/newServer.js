@@ -592,6 +592,12 @@ function setUserPublication(req,res,next) {
 app.post('/createGroup', createGroup);                  //groupname, sessionString, isPrivate
 function createGroup(req,res,next) {
     var maxCount = 1;
+    var groupPrivate = req.body.isPrivate;
+
+    if(groupPrivate==null){
+        groupPrivate = 0;
+    }
+
     GroupInfo.findOne().sort('-groupID').exec(function (err, entry) {
         // entry.userID is the max value
         if (entry == null) {
@@ -615,7 +621,7 @@ function createGroup(req,res,next) {
                     createdOn: Date.now(),
                     admin: user.userID,
                     description: req.body.description,
-                    isPrivate:req.body.isPrivate
+                    isPrivate:groupPrivate
                 });
                 GroupInfo.findOne({"groupName": req.body.groupname}, function (err, group) {
                     if (group==null) {
