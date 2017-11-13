@@ -1,0 +1,22 @@
+<div
+  class="jk-rating-stars-container"
+  layout="row" >
+
+  <a
+    class="button"
+    ng-click="ctrl.setRating(0)"
+    ng-if="!ctrl.readOnly" >
+    <i class="material-icons">remove_circle_outline</i>
+  </a>
+
+  <a
+    class="button star-button"
+    ng-class="item.class"
+    ng-mouseover="ctrl.setMouseOverRating($index + 1)"
+    ng-mouseleave="ctrl.setMouseOverRating(ctrl.rating)"
+    ng-click="ctrl.setRating($index + 1)"
+    ng-repeat="item in ctrl.starsArray" >
+    <i class="material-icons">star</i>
+  </a>
+
+</div>

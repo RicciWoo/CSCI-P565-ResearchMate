@@ -1,4 +1,4 @@
-var myApp = angular.module('myApp',['ngRoute','ngCookies', 'ngFileUpload','moment-picker']);
+var myApp = angular.module('myApp',['ngRoute','ngCookies', 'ngFileUpload','moment-picker','ngMaterial', 'jkAngularRatingStars']);
 myApp.constant('URL','http://silo.soic.indiana.edu:54545');
 myApp.config(function ($routeProvider) {
   $routeProvider

@@ -35,6 +35,9 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
       $scope.icon = "fa fa-pencil-square-o btnEdit"
   }
 
+  $scope.ratePublication = function(index){
+     console.log(index);
+  }
   $scope.deleteSkills = function(index){
      console.log("skill deleted"+$scope.skillNameArr[index]);
      console.log(sessionString);
@@ -240,6 +243,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
         var publicationInfo = response.data.msg.publicationInfo;
 
         $scope.publicationInfo = publicationInfo;
+        console.log($scope.publicationInfo);
       }
     }
   },
