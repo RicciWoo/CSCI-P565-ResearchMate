@@ -1719,6 +1719,7 @@ function setRating(req,res,next) {
                                 response["status"] = "true";
                                 res.send(response);
                                 console.log(response["msg"]);
+                                setPublicationAvgRatings(req.body.publicationID);
                             }
                         });
                     }
@@ -1767,6 +1768,7 @@ function setPublicationAvgRatings(ID){    //publicationID
             for(var i = 0; i < entries.length; i++){
                 avg = avg + entries[i].ratings;
             }
+            avg = avg / entries.length;
             console.log("avg : "+avg);
             Publications.findOne({"publicationID":ID},function (err,paper) {
                 if(err||paper==null||paper==undefined){
