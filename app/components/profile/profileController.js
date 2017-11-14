@@ -35,8 +35,32 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
       $scope.icon = "fa fa-pencil-square-o btnEdit"
   }
 
-  $scope.ratePublication = function(index){
-     console.log(index);
+  $scope.ratePublication = function(index,rate){
+     
+     $http({
+      url: "http://silo.soic.indiana.edu:54545/setRating",
+      method: "POST",
+      data: {
+        'sessionString': sessionString,
+        'publicationID':index,
+        'rating':rate
+    },
+
+  }).then(function success(response){
+    if(response.status == 200){
+      if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
+        console.log(response.data.msg);
+      else{
+      
+        console.log(response.data.msg);
+      
+      }
+    }
+  },
+  function error(response){
+
+  }
+  );
   }
   $scope.deleteSkills = function(index){
      console.log("skill deleted"+$scope.skillNameArr[index]);
