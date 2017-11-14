@@ -34,6 +34,7 @@ app.use(cors());
 app.use(express.static('public/'));
 app.use(express.static('public/images/profilePics/'));
 app.use(express.static('public/papers/'));
+app.use(express.static('public/images/skillIcons/'));
 
 
 mongoose.Promise = global.Promise;
