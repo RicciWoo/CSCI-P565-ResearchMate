@@ -1,9 +1,10 @@
-myApp.controller('groupsController',['$scope','$http','URL','$location', '$cookies', '$cookieStore',function($scope,$http,URL,$location, $cookies, $cookieStore) {
+myApp.controller('groupsController',['$scope','$http','URL','$location', '$cookies', '$cookieStore','$rootScope',function($scope,$http,URL,$location, $cookies, $cookieStore,$rootScope) {
   $http({
     url: URL+"/getAllGroups",
     method: "POST",
     data:{},
   }).then(function success(response){
+    debugger
     $scope.groupInfo = response.data.msg.groupInfo;
   },
 function error(response){
@@ -11,15 +12,15 @@ function error(response){
 $scope.userGroupID = []
 $scope.username = $cookies.get('username');
 $scope.sessionString = $cookies.get('sessionString');
+$rootScope.loggedIn = true;
 $http({
   url: URL+"/getUserGroups",
   method: "POST",
   data:{'username': $scope.username},
-}).then(function success(response){debugger
+}).then(function success(response){
   if(response.status == 200){
     if(response.data.status == "true" && response.data.msg.groupInfo!=undefined){
       var grpInfo = response.data.msg.groupInfo;
-      debugger
       for(var i = 0;i<grpInfo.length;i++){
         $scope.userGroupID.push(grpInfo[i].groupID);
       }
@@ -55,19 +56,24 @@ $scope.addNewGroup = function(){
   });
 }
 
-  $scope.joinGroup = function(event, groupName){
-    if(event.currentTarget.value == "Joined")
+  $scope.joinGroup = function(event, groupID, isPrivate){
+    if(event.currentTarget.value == "Joined" || event.currentTarget.value == "Requested")
       return; //user is already in the group.
-
+      var method = "setUserGroup";
+      if(isPrivate){
+        method = "joinPrivateGroup"
+      }
       $http({
-        url: URL+"/setUserGroup",
+        url: URL+"/"+method,
         method: "POST",
-        data:{'sessionString': $scope.sessionString, 'groupname': groupName},
-      }).then(function success(response){debugger
+        data:{'sessionString': $scope.sessionString, 'groupID': groupID},
+      }).then(function success(response){
         if(response.status == 200){
-          if(response.data.status == "true" && response.data.msg == "group entry added."){
-            debugger
-            event.target.value = "Joined"
+          if(response.data.status == "true"){
+            if(isPrivate)
+              event.target.value = "Requested"
+            else
+              event.target.value = "Joined"
           }
           else{
             alert(response.data.msg);

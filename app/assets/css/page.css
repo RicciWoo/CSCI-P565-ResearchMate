@@ -2,7 +2,7 @@ html, body{height:100%; width:100%;}
 html{
   margin:0px !important;
   padding:0px !important;
-  
+
   overflow-x: hidden;
   background: #fff;
 }
@@ -16,7 +16,7 @@ html{
     border-radius: 10px;
     }
     .background-img{
-   
+
    background-image: url(../img/background.jpg);
    background-size: cover; /* <------ */
    background-repeat: no-repeat;
@@ -77,5 +77,13 @@ text-overflow: ellipsis;
 
 .menu{width:60%;}
 .menu ul{list-style: none;margin-bottom: 0;}
-.menu ul li{display: inline-block}
+.menu ul li{display: inline-block; margin: 3px 10px;}
 .menu ul li a{color:#fff}
+.bg-white{
+  padding: 20px;
+}
+
+.container-margin{
+  margin-top: 80px;
+
+}

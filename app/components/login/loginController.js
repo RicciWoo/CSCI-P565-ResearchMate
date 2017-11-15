@@ -66,7 +66,36 @@ function loginUser(username, password){
         $cookies.remove('username');
         $cookies.put('sessionString', response.data.msg);
         $cookies.put('username', username);
-        $location.path('/profile/'+username);
+        var otp = prompt("Please enter OTP");
+        if(otp == undefined || otp == "")
+          return;
+        $http({
+          url: URL + "/checkOTP",
+          method: "POST",
+          data:{
+            'sessionString': response.data.msg,
+            'OTP': otp
+          }
+        }).then(function success(response){
+          if(response.status == 200){
+            if(response.data.status == "true"){
+
+              $location.path('/profile/'+username);
+            }
+            else{
+              alert(response.data.msg);
+            }
+          }
+        },
+          function error(response){
+              console.log(response.statusText);
+          }
+      );
+        // $cookies.remove('sessionString');
+        // $cookies.remove('username');
+        // $cookies.put('sessionString', response.data.msg);
+        // $cookies.put('username', username);
+        // $location.path('/profile/'+username);
       }
     }
   },

@@ -1,6 +1,13 @@
 <div class=" bg-white" ng-controller="groupController" style="padding:10px">
 
-       <h3 style="color:#558C89;font:bold">Groups</h3>
+        <div class="row" style="margin-bottom: 10px;">
+       <h3 class="col-lg-4 float-lg-left col-md-12" style="color:#558C89;font:bold">Groups</h3>
+       <div class="col-lg-8 float-lg-right text-right col-md-12">
+           <input type="button" class="btn btn-primary" ng-click="redirectAddGroup()" value="Add Groups" >
+           <input type="button" class="btn btn-primary " ng-click="redirectPendingRequest()" value="Pending Requests" />
+       </div>
+
+     </div>
        <div class="row" style="background-color:#558C89"></div>
        <hr style="height:5px;background-color:#D9853B;margin-top: 0;">
        <div class="row" >
@@ -8,7 +15,5 @@
               {{groups}}
           </div>
        </div>
-       <div style="margin-top:10px;" class="row col-lg-4">
-         <input type="button" class="btn btn-primary" ng-click="redirectAddGroup()" value="Add Groups" ></div>
-       </div>
+
        </div>
