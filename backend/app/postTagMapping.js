@@ -5,7 +5,7 @@ var postTagMappingSchema = mongoose.Schema({
         type: Number
     },
     postID:{
-        type: String
+        type: Number
     }
 });
 
