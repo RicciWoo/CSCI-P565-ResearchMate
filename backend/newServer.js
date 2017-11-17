@@ -2798,3 +2798,76 @@ function getUserBulletinBoard(req,res,next) {
     });
 }
 
+app.post('/getUserInterest',getUserInterest);         //sessionString
+function getUserInterest(req,res,next) {
+    var sessionString = req.body.sessionString;
+    User.findOne({"sessionString":sessionString},function (err,user) {
+        if (err||user==null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            UserInterests.find({"userID": user.userID}, function (err, tags) {
+                if (err || tags.length == 0) {
+                    response["status"] = "false";
+                    response["msg"] = "User is not interested in anything. Really? Why?";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var tagIDs = [];
+                    for (var i = 0; i < tags.length; i++) {
+                        tagIDs.push(tags[i].tagID);
+                    }
+
+                    PostTags.find({"tagID": {$in: tagIDs}}, function (err, tagNames) {
+                        if (err || tagNames.length == 0) {
+                            response["status"] = "false";
+                            response["msg"] = "User is not interested in anything. Whoa!";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = tagNames;
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/logout',logout);         //sessionString
+function logout(req,res,next) {
+    var sessionString = req.body.sessionString;
+    User.findOne({"sessionString": sessionString}, function (err, user) {
+        if (err||user==null|user==undefined) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            user.set({sessionString:""});
+            user.save(function(err, updatedUser) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "Error while logging out";
+                    res.send(response);
+                    console.log(response);
+                } else {
+                    response["msg"] = "Logout successful.";
+                    response["status"] = "true";
+                    res.send(response);
+                    console.log(response);
+                }
+            });
+        }
+    });
+}
+
