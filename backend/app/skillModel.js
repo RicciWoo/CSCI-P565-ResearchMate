@@ -6,6 +6,9 @@ var skillSchema = mongoose.Schema({
     },
     skillName:{
         type: String
+    },
+    iconPath:{
+        type: String
     }
 });
 

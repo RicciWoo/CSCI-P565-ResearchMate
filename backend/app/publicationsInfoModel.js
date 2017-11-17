@@ -23,6 +23,9 @@ var publicationSchema = mongoose.Schema({
     publishDate:{
         type: Date
     },
+    avgRating:{
+        type: Number
+    },
     filePath:{
         type : String,
         default: null
