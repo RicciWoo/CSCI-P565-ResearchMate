@@ -2846,7 +2846,7 @@ app.post('/logout',logout);         //sessionString
 function logout(req,res,next) {
     var sessionString = req.body.sessionString;
     User.findOne({"sessionString": sessionString}, function (err, user) {
-        if (err||user==null|user==undefined) {
+        if (err||user==null||user==undefined) {
             response["status"] = "false";
             response["msg"] = "Invalid User";
             res.send(response);
@@ -2871,3 +2871,149 @@ function logout(req,res,next) {
     });
 }
 
+app.post('/getPostTags',getPostTags);         //postID
+function getPostTags(req,res,next) {
+    PostTagsMapping.find({"postID":req.body.postID},function (err,tags) {
+        if(err||tags.length==0){
+            response["msg"] = "No tags for this post.";
+            response["status"] = "false";
+            res.send(response);
+            console.log(response);
+        }
+        else {
+            var tagIDs=[];
+            for(var i = 0; i < tags.length; i++){
+                tagIDs.push(tags[i].tagID)
+            }
+            PostTags.find({"tagID":{$in:tagIDs}},function (err,tagNames) {
+                if(err||tagNames.length==0){
+                    response["msg"] = "No tag names for these tags.";
+                    response["status"] = "false";
+                    res.send(response);
+                    console.log(response);
+                }
+                else {
+                    response["msg"] = tagNames;
+                    response["status"] = "true";
+                    res.send(response);
+                    console.log(response);
+                }
+            });
+        }
+    });
+}
+
+app.post('/setPostTag',setPostTag);         //postID, tagName
+function setPostTag(req,res,next) {
+    var postID = req.body.postID,
+        tagName = req.body.tagName;
+    PostTags.findOne({"tagName":tagName},function (err,tag) {
+        if(err||tag==undefined||tag==null){
+//      adding a new tag
+        addingTag(res,postID,tagName);
+        }
+        else {
+            PostTagsMapping.findOne({"postID":postID,"tagID":tag.tagID},function (err,entry) {
+                if(err||entry==null||entry==undefined){
+                    var newEntry = new PostTagsMapping({tagID:tag.tagID, postID: postID});
+                    newEntry.save(function (err) {
+                        if(err){
+                            response["msg"] = "Unable to save tag";
+                            response["status"] = "false";
+                            res.send(response);
+                            console.log(response);
+                        }
+                        else {
+                            response["msg"] = "tag saved.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response);
+                        }
+                    });
+                }
+                else{
+                    response["msg"] = "tag already exists.";
+                    response["status"] = "false";
+                    res.send(response);
+                    console.log(response);
+                }
+            });
+        }
+    });
+}
+function addingTag(res,postID,tagName) {
+    var maxCount = 1;
+    PostTags.findOne().sort('-tagID').exec(function (err, entry) {
+        if (entry == null) {
+            maxCount = 1;
+        }
+        else {
+            maxCount = entry.tagID + 1;
+        }
+        var newTag = new PostTags({tagID: maxCount, tagName: tagName});
+        newTag.save(function (err) {
+            if (err) {
+                response["msg"] = "Unable to save tag";
+                response["status"] = "false";
+                res.send(response);
+                console.log(response);
+            }
+            else {
+                var newEntry = new PostTagsMapping({tagID: maxCount, postID: postID});
+                newEntry.save(function (err) {
+                    if (err) {
+                        response["msg"] = "Unable to save tag";
+                        response["status"] = "false";
+                        res.send(response);
+                        console.log(response);
+                    }
+                    else {
+                        response["msg"] = "tag saved and added to posttagmapping.";
+                        response["status"] = "true";
+                        res.send(response);
+                        console.log(response);
+                    }
+                });
+            }
+        });
+    });
+}
+
+app.post('/removePostTag',removePostTag);    //postID, tagName
+function removePostTag(req,res,next) {
+    var postID = req.body.postID;
+    PostTags.findOne({"tagName":req.body.tagName},function (err,tag) {
+        if (err||tag==null||tag==undefined) {
+            response["msg"] = "Unable to find the tag in db.";
+            response["status"] = "false";
+            res.send(response);
+            console.log(response);
+        }
+        else {
+            PostTagsMapping.findOne({"tagID":tag.tagID,"postID":postID},function (err,entry) {
+                if (err||entry==null||entry==undefined) {
+                    response["msg"] = "Unable to remove tag because it is not linked to post to begin with.";
+                    response["status"] = "false";
+                    res.send(response);
+                    console.log(response);
+                }
+                else {
+                    entry.remove(function (err) {
+                        if (err) {
+                            response["msg"] = "Unable to remove tag";
+                            response["status"] = "false";
+                            res.send(response);
+                            console.log(response);
+                        }
+                        else {
+                            response["msg"] = "removal successful.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
