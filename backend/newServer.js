@@ -42,21 +42,22 @@ mongoose.Promise = global.Promise;
 var connection = mongoose.connect('mongodb://silo.soic.indiana.edu:27018/researchMate2', { useMongoClient: true });
 
 //  importing pre-defined model
-var User = require('./app/userModel');
-var UserInfo = require('./app/userInfoModel');
-var GroupInfo = require('./app/groupInfoModel');
-var UserGroup = require('./app/userGroupInfoModel');
-var Publications = require('./app/publicationsInfoModel');
-var UserPublications = require('./app/userPublicationInfoModel');
-var UserFollowee = require('./app/userFolloweeModel');
-var UserSkills = require('./app/userSkillModel');
-var Skills = require('./app/skillModel');
-var PublicationRatings = require('./app/publicationRatings');
-var DiscussionPosts = require('./app/discussionPosts');
-var DiscussionReplies = require('./app/discussionReplies');
-var PostTags = require('./app/postTags');
-var PostTagsMapping = require('./app/postTagMapping');
-var GroupJoinRequest = require('./app/groupJoinRequests');
+var User = require('./app/userModel'),
+    UserInfo = require('./app/userInfoModel'),
+    GroupInfo = require('./app/groupInfoModel'),
+    UserGroup = require('./app/userGroupInfoModel'),
+    Publications = require('./app/publicationsInfoModel'),
+    UserPublications = require('./app/userPublicationInfoModel'),
+    UserFollowee = require('./app/userFolloweeModel'),
+    UserSkills = require('./app/userSkillModel'),
+    Skills = require('./app/skillModel'),
+    PublicationRatings = require('./app/publicationRatings'),
+    DiscussionPosts = require('./app/discussionPosts'),
+    DiscussionReplies = require('./app/discussionReplies'),
+    PostTags = require('./app/postTags'),
+    PostTagsMapping = require('./app/postTagMapping'),
+    GroupJoinRequest = require('./app/groupJoinRequests'),
+    UserInterests = require('./app/userInterests');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -2142,12 +2143,74 @@ function postReply(req, res, next) {
                         console.log(response["msg"]);
                     }
                     else {
+                        addInterestThroughReply(res,user.userID,parseInt(req.body.postID));
+/*
                         response["status"] = "true";
                         response["msg"] = "Reply posted successfully.";
                         res.send(response);
                         console.log(response["msg"]);
+*/
                     }
                 });
+            });
+        }
+    });
+}
+
+function addInterestThroughReply(res,userID,postID) {
+    PostTagsMapping.find({"postID":postID},function (err,entries) {
+        if (err) {
+            response["status"] = "false";
+            response["msg"] = "Reply posted but unable to find tags for the post.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            UserInterests.find({"userID":userID},function (err,userInterestEntries) {
+                if(userInterestEntries.length==0){
+                    var entryArray = [];
+                    for(var i = 0; i < entries.length; i++){
+                        entryArray.push({"tagID":entries[i].tagID,"userID": userID,"addedOn":Date.now()});
+                    }
+                    UserInterests.insertMany(entryArray, function (err, saved) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = "Reply posted but failed in adding new userInterest entries.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else{
+                            response["status"] = "true";
+                            response["msg"] = "added new userInterest entries.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+                else {
+                    var entryArray = [];
+                    for(var j = 0; j < userInterestEntries.length; j++) {
+                        for (var i = 0; i < entries.length; i++) {
+                            if (userInterestEntries[j].tagID != entries[i].tagID) {
+                                entryArray.push({"tagID": entries[i].tagID, "userID": userID, "addedOn": Date.now()});
+                            }
+                        }
+                    }
+                    UserInterests.insertMany(entryArray, function (err, saved) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = "failed in adding new userInterest entries.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else{
+                            response["status"] = "true";
+                            response["msg"] = "added new userInterest entries.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
             });
         }
     });
@@ -2532,3 +2595,206 @@ function mostLikedPaper(req,res,next) {
         }
     });
 }
+
+app.post('/addUserInterest',addUserInterest);       // sessionString, interestName
+function addUserInterest(req,res,next) {
+    var interestName = req.body.interestName;
+    var sessionString = req.body.sessionString;
+    User.findOne({"sessionString":sessionString},function (err,user) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            PostTags.findOne({"tagName":interestName},function (err,tag) {
+                if(tag==null||tag==undefined) {
+                    var maxCount = 1;
+                    PostTags.findOne().sort('-tagID').exec(function(err, entry) {
+                        // entry.userID is the max value
+                        if(entry == null||entry==undefined||err) {
+                            maxCount = 1;
+                        }
+                        else {
+                            maxCount = entry.tagID + 1;
+                        }
+                        var newTag = new PostTags({"tagID": maxCount, "tagName": interestName});
+                        newTag.save(function (err) {
+                            if(err){
+                                response["status"] = "false";
+                                response["msg"] = "Unable to add interest in post";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                            else {
+                                addingUserInterest(res,maxCount,user.userID);
+                            }
+                        });
+                    });
+                }
+                else {
+                    var maxCount = tag.tagID;
+                    addingUserInterest(res,maxCount,user.userID);
+                }
+            });
+        }
+    });
+}
+
+function addingUserInterest(res,tagID,userID) {
+    UserInterests.findOne({"tagID":tagID,"userID":userID},function (err,entry) {
+        if(entry==null||entry==undefined){
+           var newEntry = new UserInterests({
+               tagID:tagID,
+               userID:userID,
+               addedOn:Date.now()
+           });
+           newEntry.save(function (err) {
+               if(err){
+                   response["status"] = "false";
+                   response["msg"] = "Unable to add interest in userInterest";
+                   res.send(response);
+                   console.log(response["msg"]);
+               }
+               else {
+                   response["status"] = "true";
+                   response["msg"] = "Interest added successfully.";
+                   res.send(response);
+                   console.log(response["msg"]);
+               }
+           });
+        }
+    });
+}
+
+app.post('/removeUserInterest',removeUserInterest);     //sessionString, interestName
+function removeUserInterest(req,res,next) {
+    User.findOne({"sessionString":req.body.sessionString},function (err,user) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            PostTags.findOne({"tagName":req.body.interestName},function (err,entry) {
+                if(err||entry==null||entry==undefined){
+                    response["status"] = "false";
+                    response["msg"] = "Tag is not present in the tables.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var tagID = entry.tagID;
+                    UserInterests.findOne({"userID":user.userID,"tagID":tagID},function (err,userInter) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "Unable to find UserInterest entry.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else if(userInter==null||userInter==undefined){
+                            response["status"] = "true";
+                            response["msg"] = "Unable to delete UserInterest entry because it was not there to begin with.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            userInter.remove(function (err) {
+                                if(err){
+                                    response["status"] = "false";
+                                    response["msg"] = "Unable to delete UserInterest entry.";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    response["status"] = "true";
+                                    response["msg"] = "Deleted UserInterest entry successfully.";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getUserBulletinBoard',getUserBulletinBoard);         //sessionString
+function getUserBulletinBoard(req,res,next) {
+    var sessionString = req.body.sessionString;
+    User.findOne({"sessionString":sessionString},function (err,user) {
+        if (err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            UserInterests.find({"userID":user.userID},function (err,tags) {
+                if(err||tags.length==0){
+                    response["status"] = "false";
+                    response["msg"] = "User is not interested in anything. Really? Why?";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var tagIDs = [];
+                    for(var i = 0; i < tags.length; i++){
+                        tagIDs.push(tags[i].tagID);
+                    }
+                    PostTagsMapping.find({"tagID":{$in:tagIDs}},function (err,postTags) {
+                        if(err||postTags.length==0){
+                            response["status"] = "false";
+                            response["msg"] = "User is not interested in anything. Lame!";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            var postIDs = [];
+                            for(var i = 0; i < postTags.length; i++){
+                                postIDs.push(postTags[i].postID);
+                            }
+                            DiscussionPosts.find({"postID":{$in:postIDs}},function (err,posts) {
+                                if(err||posts.length==0){
+                                    response["status"] = "false";
+                                    response["msg"] = "User is not interested in anything. Lame!";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    var postArray = [];
+                                    for(var i = 0; i < posts.length; i++){
+                                        postArray.push(posts[i]);
+                                    }
+                                    PostTags.find({"tagID":{$in:tagIDs}},function (err,tagNames) {
+                                        if (err || tagNames.length == 0) {
+                                            response["status"] = "false";
+                                            response["msg"] = "User is not interested in anything. Ultra Lame!";
+                                            res.send(response);
+                                            console.log(response["msg"]);
+                                        }
+                                        else {
+                                            var tagArray = [];
+                                            for(var i = 0; i < tagNames.length; i++){
+                                                tagArray.push(tagNames[i].tagName);
+                                            }
+                                            response["status"] = "true";
+                                            response["msg"] = {"posts":postArray,"tagNames":tagArray};
+                                            res.send(response);
+                                            console.log(response["msg"]);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
