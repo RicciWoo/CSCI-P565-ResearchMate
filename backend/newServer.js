@@ -2747,11 +2747,34 @@ function getUserBulletinBoard(req,res,next) {
                         tagIDs.push(tags[i].tagID);
                     }
                     PostTagsMapping.find({"tagID":{$in:tagIDs}},function (err,postTags) {
+                        console.log("Post: "+ tagIDs + " posts: "+ postTags);
                         if(err||postTags.length==0){
+                            if(tagIDs.length>0){
+                                PostTags.find({"tagID":{$in:tagIDs}},function (err,tagNames){
+                                    if (err || tagNames.length == 0) {
+                                        response["status"] = "false";
+                                        response["msg"] = "Error encountered while getting tag names";
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                    else {
+                                        var tagArray = [];
+                                        for(var i = 0; i < tagNames.length; i++){
+                                            tagArray.push(tagNames[i].tagName);
+                                        }
+                                        response["status"] = "true";
+                                        response["msg"] = {"posts":[],"tagNames":tagArray};
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                });
+                            }
+                            else{
                             response["status"] = "false";
                             response["msg"] = "User is not interested in anything. Lame!";
                             res.send(response);
                             console.log(response["msg"]);
+                            }
                         }
                         else {
                             var postIDs = [];
