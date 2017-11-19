@@ -1,6 +1,5 @@
 myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$location', 'Upload','$rootScope', function ($scope, $http, URL,$cookies,$location, Upload,$rootScope) {
     var self = $scope;
-    self.abc = "abc";
     self.allowedit=false;
     self.sessionString = $cookies.get('sessionString');
 
@@ -22,7 +21,11 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
     }
 
     var url = $location.path().split('/');
-    $scope.username = url[2];
+    if(url.length>3)
+      $scope.username = url[2];
+    else {
+      $scope.username = $cookies.get('username');
+    }
     $scope.followUser = function () {
       $http({
         url: "http://silo.soic.indiana.edu:54545/followSomeone",
@@ -120,5 +123,58 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
           console.log(response);
         });
     }
+
+/**
+ * Get user bullet-in board data
+ */
+
+ $scope.redditBullets = [];
+
+ $scope.searchRedditForPost = function(searchQuery){
+   if(searchQuery == undefined || searchQuery.trim() == "")
+     return;
+   $http({
+     url: "https://www.reddit.com/search.json?q="+searchQuery+"&sort=hot",
+     method: "GET"
+   }).then(function success(response){
+     debugger
+     if(response.status == 200){
+       if(response.data != undefined && response.data.data!=undefined && response.data.data.children != undefined){
+         debugger
+         $scope.redditBullets = $scope.redditBullets.concat(response.data.data.children);
+       }
+     }
+   },
+ function error(response){
+debugger
+ });
+ };
+
+
+
+
+$http({
+  url: URL + "/getUserBulletinBoard",
+  method: "POST",
+  data:{
+    'sessionString': self.sessionString
+  }
+}).then(function success(response){
+  if(response.status == 200){
+    if(response.data.status == "true"){
+      $scope.bulletinPosts = response.data.msg.posts;
+      $scope.userInterests = response.data.msg.tagNames;
+      for(var i=0;i<$scope.userInterests.length;i++){
+        $scope.searchRedditForPost($scope.userInterests[i]);
+      }
+    }
+  }
+},
+function error(response){
+  console.log(response.data.msg);
+});
+
+
+
 
 }]);

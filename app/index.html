@@ -56,9 +56,9 @@
           <h2>ResearchMate</h2>
           <div class="menu">
           <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="http://localhost/researchmate/#/discussion/-1">Discussion</a></li>
-            <li><a href="http://localhost/researchmate/#/groups">Groups</a></li>
+            <li><a href="/researchmate/#/profile/">Home</a></li>
+            <li><a href="/researchmate/#/discussion/-1">Discussion</a></li>
+            <li><a href="/researchmate/#/groups">Groups</a></li>
           </ul>
           </div>
           <form class="navbar-form" role="search" ng-show="loggedIn">
@@ -76,7 +76,7 @@
 
         </div>
       </nav>
-      <div ng-view class="top-margin"></div>
+      <div ng-view class="top-margin" ng-animate="{enter: 'view-enter', leave: 'view-leave'}"></div>
     </div>
 
 </body>

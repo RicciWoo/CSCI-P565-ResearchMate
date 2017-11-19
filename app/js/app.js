@@ -6,6 +6,8 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/login/login.html"
     }).when("/signup", {
       templateUrl: "components/signup/signup.html"
+    }).when("/profile/", {
+      templateUrl: "components/profile/profile.html"
     }).when("/profile/:username", {
       templateUrl: "components/profile/profile.html"
     }).when("/forgetpassword", {

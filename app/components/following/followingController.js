@@ -2,8 +2,12 @@ myApp.controller('followingController', ['$scope', '$http', 'URL','$cookies','$l
     var self=$scope;
     var sessionString = $cookies.get('sessionString');
     var url = $location.path().split('/');
-    self.username = url[2];
-    
+    if(url.length>3)
+      $scope.username = url[2];
+    else {
+      $scope.username = $cookies.get('username');
+    }
+
     $http({
         url: "http://silo.soic.indiana.edu:54545/getUserFollowers",
         method: "POST",

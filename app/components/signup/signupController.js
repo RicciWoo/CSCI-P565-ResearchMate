@@ -40,7 +40,8 @@ $scope.checkGoogleSignup=function(){
 }
 
   $scope.submit = function(){
-
+    if($scope.signupForm.$invalid)
+      return;
     var firstname = $scope.fname;
     var lastname = $scope.lname;
     var email = $scope.email;
@@ -48,7 +49,7 @@ $scope.checkGoogleSignup=function(){
     var username = $scope.username;
     var phone = $scope.phone;
     var carrier = $scope.carrier;
-    
+
     signUpUser(firstname, lastname, email, password, username, phone, carrier);
 
 }
@@ -69,7 +70,7 @@ function signUpUser(firstname, lastname, email, password, username, phone, carri
   },
 
 }).then(function success(response){
-  debugger
+
     if(response.status==200){
       if(response.data.status=="false"){
         if(response.data.msg!="")
@@ -82,7 +83,7 @@ function signUpUser(firstname, lastname, email, password, username, phone, carri
     }
   },
   function error(response){
-    debugger
+
     console.log("Error occured while authenticating user");
   }
 );

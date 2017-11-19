@@ -1,6 +1,7 @@
 <link rel="stylesheet" href="assets/css/discussion.css">
-<div ng-controller="displayDiscussionController" class="container">
-<div class="col-lg-10 bg-white">
+<div ng-controller="displayDiscussionController" class="container row col-lg-12">
+<div class="col-lg-7 col-md-12">
+  <div class="col-lg-11 bg-white pull-right">
 <div class="row col-lg-12 reply-section" style="margin-bottom: 30px;">
   <h4 class="col-lg-8 text-left">Welcome to Discussions Page</h4>
   <a href="/researchmate/#/gendiscussion" class="btn btn-primary col-lg-4 float-lg-right">Post discussion</a>
@@ -13,4 +14,21 @@
     </div>
   </div>
 </div>
+</div>
+<div class="col-lg-5 col-md-12">
+  <div class="col-lg-11 float-lg-right bg-white">
+  <div class="row">
+    <h4 class="col-lg-4">Your Interest(s)</h4>
+    <div class="col-lg-8">
+      <input type="text" class="form-control col-lg-8 float-lg-right" ng-model="interest" placeholder="Add New Interest" ng-enter="addUserInterest()" />
+    </div>
+  </div>
+  <div class="col-lg-10">
+    <span ng-repeat="interest in userInterests track by $index" class="col-lg-2 text-left interest-badge text-ellipsis badge badge-primary">
+      {{interest.tagName}} <i ng-click="deleteUserInterest($index, interest.tagName)" class="fa fa-close fa-lg pull-right"></i>
+    </span>
+  </div>
+  </div>
+</div>
+
 </div>

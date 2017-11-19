@@ -4,7 +4,11 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
 
 
   var url = $location.path().split('/');
-  $scope.username = url[2];
+  if(url.length>3)
+    $scope.username = url[2];
+  else {
+    $scope.username = $cookies.get('username');
+  }
   $scope.edit = false;
   $scope.icon = "fa fa-pencil-square-o btnEdit"
   $rootScope.loggedIn = true;
@@ -123,7 +127,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
         $scope.country = userinfo.userInfo.location.country;
         $scope.summary = userinfo.userInfo.summary;
         $scope.university = userinfo.userInfo.university;
-debugger
+
         if (userinfo.userInfo.picture != "" && userinfo.userInfo.picture!="http://silo.soic.indiana.edu:54545/public/userIcon.jpg") {
           $scope.imgLocation = userinfo.userInfo.picture;
         }
@@ -192,6 +196,7 @@ debugger
     );
 
   $scope.skillNameArr=[];
+  $scope.skillIcon = [];
   $http({
     url: "http://silo.soic.indiana.edu:54545/getUserSkills",
     method: "POST",
@@ -209,7 +214,9 @@ debugger
         for(i=0;i<$scope.userSkills.length;i++)
         {
 
-          $scope.skillNameArr.push($scope.userSkills[i].skillName)
+          $scope.skillNameArr.push($scope.userSkills[i].skillName);
+
+          $scope.skillIcon[$scope.userSkills[i].skillName] = $scope.userSkills[i].iconPath;
         }
 
 

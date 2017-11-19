@@ -16,7 +16,7 @@
         <div ng-controller="profileController" class="col-lg-6" style="padding:40px;">
             <div class="bg-white" style="padding:10px">
               <div class="col-lg-12 row">
-                <h2 class="col-lg-4" style="color:#558C89;font:bold">Publications</h2>
+                <h2 class="col-lg-4" style="color:#558C89;font:bold">Publications <span class="badge badge-primary">{{publicationInfo.length}}</span></h2>
                 <div class="col-lg-8 text-right">
                 <input type="button" class="btn btn-primary" value="Add Publications" ng-show="allowEdit" ng-click="redirectAddPublication()" />
               </div>
@@ -45,14 +45,14 @@
         </div>
         <div ng-controller="profileController" class="col-lg-6" style="padding:40px;">
             <div class="bg-white" style="padding:10px">
-                <h2 style="color:#558C89;font:bold">Skills</h2>
+                <h2 style="color:#558C89;font:bold">Skills <span class="badge badge-primary">{{skillNameArr.length}}</span></h2>
                 <hr style="height:5px;background-color:#D9853B;margin-top: 0;">
                 <div class="form-group" ng-show="allowEdit">
                     <input type="text" ng-model="skillName" placeholder="Add Skills" class="form-control" ng-enter="addUserSkill()" />
                 </div>
                 <div class="row">
-                    <div class=" col-lg-2 text-ellipsis" ng-repeat="userSkillName in skillNameArr" style="margin:15px;padding:8px 15px;border-radius:4px;background-color:#D9853B;color:white">
-                        {{userSkillName}}<a href="" ng-click="deleteSkills($index)" ng-show="allowEdit"> <i class="fa fa-times pull-right" ></i> </a>
+                    <div class=" col-lg-2 text-ellipsis" title="{{userSkillName}}" ng-repeat="userSkillName in skillNameArr" style="margin:15px;padding:8px 15px;border-radius:4px;background-color:#D9853B;color:white">
+                      <img width="40" ng-src="{{skillIcon[userSkillName]}}" ng-show="skillIcon[userSkillName]!=''&&skillIcon[userSkillName]!=null"></img>  <span ng-show="skillIcon[userSkillName]==''||skillIcon[userSkillName]==null">{{userSkillName}}</span><a href="" ng-click="deleteSkills($index)" ng-show="allowEdit"> <i class="fa fa-times pull-right" ></i> </a>
 
                     </div>
                 </div>

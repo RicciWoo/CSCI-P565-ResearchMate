@@ -1,6 +1,6 @@
 myApp.controller('groupPendingController', ['$scope', '$http', '$location','$cookies','$cookieStore','URL','$rootScope', function ($scope, $http, $location, $cookies, $cookieStore,URL,$rootScope) {
   var sessionString = $cookies.get("sessionString");
-  debugger
+
   var username = $cookies.get("username");
   var url = $location.path().split('/');
   if(url.length<3)
@@ -37,7 +37,7 @@ $scope.approveRequest = function(userID){
       "groupID": groupID
     }
   }).then(function success(response){
-    debugger
+
   },
 function error(response){
 

@@ -1,5 +1,5 @@
 myApp.controller('addGroupController', ['$scope', '$http', '$location','$cookies','$cookieStore','URL','$rootScope', function ($scope, $http, $location, $cookies, $cookieStore,URL,$rootScope) {
-  debugger
+
   var sessionString = $cookies.get("sessionString");
   var username = $cookies.get("username");
   if(sessionString!=undefined && sessionString!=""){
@@ -27,7 +27,7 @@ $scope.createGroup = function(){
      'description': $scope.groupDescription,
      'isPrivate': parseInt(isPrivate)
    },
-  }).then(function success(response){debugger
+  }).then(function success(response){
     if(response.status == 200){
       if(response.data.status == "true"){
         $location.path('/groups');

@@ -14,7 +14,7 @@ myApp.controller('searchController', ['$scope', '$http', '$location', 'URL', '$c
   }).then(function success(response){
     if(response.status == 200 && response.data!=undefined){
       //set user search object
-      debugger
+
       if(response.data.publicsInfoResponse!=undefined && response.data.publicsInfoResponse.status == "true"){
         $scope.publicationSearchResult = response.data.publicsInfoResponse.msg.publicationInfo;
       }

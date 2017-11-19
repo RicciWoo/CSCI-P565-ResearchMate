@@ -1,7 +1,7 @@
 <div class=" bg-white" ng-controller="groupController" style="padding:10px">
 
         <div class="row" style="margin-bottom: 10px;">
-       <h3 class="col-lg-4 float-lg-left col-md-12" style="color:#558C89;font:bold">Groups</h3>
+       <h3 class="col-lg-4 float-lg-left col-md-12" style="color:#558C89;font:bold">Groups <span class="badge badge-primary">{{groupNames.length}}</span></h3>
        <div class="col-lg-8 float-lg-right text-right col-md-12">
            <input type="button" class="btn btn-primary" ng-click="redirectAddGroup()" value="Add Groups" >
            <input type="button" class="btn btn-primary " ng-click="redirectPendingRequest()" value="Pending Requests" />
