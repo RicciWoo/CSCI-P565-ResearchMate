@@ -46,7 +46,7 @@ else{
       if(response.data.status == "false" && response.data.msg!=undefined && response.data.msg!="")
         alert(response.data.msg);
       else{
-        debugger
+
           if(response.data.msg!=undefined && response.data.msg.groupInfo!=undefined){
             for(var i=0;i<response.data.msg.groupInfo.length;i++){
               if(response.data.msg.groupInfo[i].groupID == groupID){
@@ -65,5 +65,79 @@ else{
   }
   );
 }
+
+
+/**
+ * Get user interests
+ */
+$http({
+  url: URL + "/getUserInterest",
+  method: "POST",
+  data:{'sessionString': sessionString}
+}).then(function success(response){
+  if(response.status == 200 && response.data.status == "true"){
+    $scope.userInterests = response.data.msg;
+  }
+  else{
+    console.log(response.data.msg)
+  }
+},
+function error(response){
+
+});
+
+/**
+ * delete User Interest
+ */
+$scope.deleteUserInterest = function(index, interestName){
+  if(interestName == undefined || interestName.trim() == "")
+  {
+    console.log("Interest name cannot be blank");
+    return;
+  }
+  $http({
+    url: URL + "/removeUserInterest",
+    method: "POST",
+    data:{
+      "sessionString": sessionString,
+      "interestName": interestName
+    }
+  }).then(function success(response){
+    if(response.status == 200 && response.data.status == "true"){
+      $scope.userInterests.splice(index, 1);
+    }
+      else {
+          console.log(response.data.msg);
+      }
+  },
+function error(response){
+  console.log(response.statusText);
+});
+};
+
+/**
+ * Add user interest
+ * @return {[type]} [description]
+ */
+$scope.addUserInterest = function(){
+  var userInterest = $scope.interest;
+  if(userInterest == undefined || userInterest.trim()=="")
+    return;
+  $http({
+    url: URL + "/addUserInterest",
+    method: "POST",
+    data:{
+      "sessionString": sessionString,
+      "interestName": userInterest
+    }
+  }).then(function success(response){
+    if(response.status == 200 && response.data.status == "true"){
+      $scope.userInterests.push({'tagName': userInterest})
+    }
+  },
+function error(response){
+  console.log(response.statusText);
+});
+};
 
 }]);

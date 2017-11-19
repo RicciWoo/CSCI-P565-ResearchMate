@@ -4,7 +4,7 @@ myApp.controller('groupsController',['$scope','$http','URL','$location', '$cooki
     method: "POST",
     data:{},
   }).then(function success(response){
-    debugger
+
     $scope.groupInfo = response.data.msg.groupInfo;
   },
 function error(response){
@@ -39,7 +39,7 @@ $scope.addNewGroup = function(){
     url: URL+"/createGroup",
     method: "POST",
     data:{'sessionString': $scope.sessionString, 'groupname': $scope.newGroupName},
-  }).then(function success(response){debugger
+  }).then(function success(response){
     if(response.status == 200){
       if(response.data.status == "true" && response.data.msg == "group entry added."){
         alert(response.data.msg)
