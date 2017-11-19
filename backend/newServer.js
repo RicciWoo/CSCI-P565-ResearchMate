@@ -13,34 +13,51 @@ var express = require('express'),
     smtpTransport = require('nodemailer-smtp-transport'),
     multipart = require('connect-multiparty'),
     path = require('path'),
-    async = require('async');
+    async = require('async'),
+    morgan = require('morgan');
 
 var portNumber = 54545;
 app.listen(portNumber);
 console.log("Server running at silo.soic.indiana.edu:"+portNumber);
+
+// For saving logs
+app.use(express.static('../app/'));
+app.use(express.static('log/'));
+// create a write stream (in append mode)
+var accessLogStream = fs.createWriteStream('./log/access.log', {flags: 'a'});
+// setup the logger
+app.use(morgan('combined', {stream: accessLogStream}));
+
 
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.static('public/'));
 app.use(express.static('public/images/profilePics/'));
 app.use(express.static('public/papers/'));
+app.use(express.static('public/images/skillIcons/'));
+
 
 mongoose.Promise = global.Promise;
-
 // Connect to MongoDB on localhost:27017
-var connection = mongoose.connect('mongodb://localhost:27018/researchMate', { useMongoClient: true });
+var connection = mongoose.connect('mongodb://silo.soic.indiana.edu:27018/researchMate2', { useMongoClient: true });
 
 //  importing pre-defined model
-var User = require('./app/userModel');
-var UserInfo = require('./app/userInfoModel');
-var GroupInfo = require('./app/groupInfoModel');
-var UserGroup = require('./app/userGroupInfoModel');
-var Publications = require('./app/publicationsInfoModel');
-var UserPublications = require('./app/userPublicationInfoModel');
-var UserFollowee = require('./app/userFolloweeModel');
-var UserSkills = require('./app/userSkillModel');
-var Skills = require('./app/skillModel');
-var PublicationRatings = require('./app/publicationRatings');
+var User = require('./app/userModel'),
+    UserInfo = require('./app/userInfoModel'),
+    GroupInfo = require('./app/groupInfoModel'),
+    UserGroup = require('./app/userGroupInfoModel'),
+    Publications = require('./app/publicationsInfoModel'),
+    UserPublications = require('./app/userPublicationInfoModel'),
+    UserFollowee = require('./app/userFolloweeModel'),
+    UserSkills = require('./app/userSkillModel'),
+    Skills = require('./app/skillModel'),
+    PublicationRatings = require('./app/publicationRatings'),
+    DiscussionPosts = require('./app/discussionPosts'),
+    DiscussionReplies = require('./app/discussionReplies'),
+    PostTags = require('./app/postTags'),
+    PostTagsMapping = require('./app/postTagMapping'),
+    GroupJoinRequest = require('./app/groupJoinRequests'),
+    UserInterests = require('./app/userInterests');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -94,18 +111,17 @@ function signUp(req,res,next) {
     var firstname = req.body.firstname;
     var lastname = req.body.lastname;
     var pw = req.body.password;
+    var phone = req.body.phone;
+    var carrier = req.body.carrier;
 
     var maxCount = 1;
     User.findOne().sort('-userID').exec(function(err, entry) {
         // entry.userID is the max value
         if(entry == null) {
             maxCount = 1;
-//            console.log("if "+entry);
         }
         else {
             maxCount = entry.userID + 1;
-//            console.log("else "+entry.userID);
-//            console.log("maxcount : "+ maxCount);
         }
 
         var addUser = new User({
@@ -116,7 +132,9 @@ function signUp(req,res,next) {
             lastName: lastname,
             passWord: pw,
             sessionString: randomstring.generate(16),
-            verificationNumber : getRandom(low,high)
+            verificationNumber : getRandom(low,high),
+            phone:phone,
+            carrier:carrier
         });
 
 //  For sending mail
@@ -265,6 +283,7 @@ function login(req,res,next) {
                                     response["msg"] = sessionString;
                                     res.send(response);
                                     console.log(username + ": updated sessionSting");
+                                    sendOTP(sessionString);
                                 }
                             });
                         }
@@ -390,7 +409,6 @@ function forgetPassword(req, res, next){
     });
 }
 
-// basic function to get userInfo
 app.post('/getUserInfo', getUserInfo);
 function getUserInfo(req,res,next) {
     // check sessionString in usertable & get userID
@@ -420,7 +438,6 @@ function getUserInfo(req,res,next) {
                         console.log("check");
                     }
                     response["msg"] = {"user":user,"userInfo":userInfo};
-
                     response["status"] = "true";
                     res.send(response);
                     console.log("Complete: UserInfo sent for user = "+user.userName);
@@ -430,7 +447,6 @@ function getUserInfo(req,res,next) {
     });
 }
 
-// basic function to set userInfo
 app.post('/setUserInfo', setUserInfo);
 function setUserInfo(req,res,next) {
 //  check sessionString in usertable & get userID
@@ -479,7 +495,8 @@ function setUserInfo(req,res,next) {
                             response["msg"] = " Update failed while saving.";
                             res.send(response);
                             console.log("Error: Update failed while saving!");
-                        } else {
+                        }
+                        else {
                             response["msg"] = " Update successful.";
                             response["status"] = "true";
                             res.send(response);
@@ -571,13 +588,18 @@ function setUserPublication(req,res,next) {
                 }
             });
         }
-
     });
 }
 
-app.post('/createGroup', createGroup);                  //groupname, sessionString
+app.post('/createGroup', createGroup);                  //groupname, sessionString, isPrivate
 function createGroup(req,res,next) {
     var maxCount = 1;
+    var groupPrivate = req.body.isPrivate;
+
+    if(groupPrivate==null){
+        groupPrivate = 0;
+    }
+
     GroupInfo.findOne().sort('-groupID').exec(function (err, entry) {
         // entry.userID is the max value
         if (entry == null) {
@@ -599,8 +621,9 @@ function createGroup(req,res,next) {
                     groupName: req.body.groupname,
                     groupID: maxCount,
                     createdOn: Date.now(),
-                    admin: user.userName,
-                    description: req.body.description
+                    admin: user.userID,
+                    description: req.body.description,
+                    isPrivate:groupPrivate
                 });
                 GroupInfo.findOne({"groupName": req.body.groupname}, function (err, group) {
                     if (group==null) {
@@ -612,10 +635,25 @@ function createGroup(req,res,next) {
                                 console.log(response["msg"]);
                             }
                             else {
-                                response["msg"] = "group created.";
-                                response["status"] = "true";
-                                res.send(response);
-                                console.log(response["msg"]);
+                                var newGroupDoc = new UserGroup({
+                                    groupID: maxCount,
+                                    userID: user.userID,
+                                });
+
+                                newGroupDoc.save(function (err, saved) {
+                                    if(err){
+                                        response["status"] = "false";
+                                        response["msg"] = "unable to save group";
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                    else{
+                                        response["msg"] = "group created and added myself.";
+                                        response["status"] = "true";
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                });
                             }
                         });
                     }
@@ -682,34 +720,24 @@ function setUserGroup(req,res,next) {
             console.log("Error: User not found!")
         }
         else {
-            query = {"groupName":req.body.groupname};
-            GroupInfo.findOne(query,function (err, group) {
-                if(err|| group == null){
+
+            console.log(user.userID);
+            var setUserGroupDoc = new UserGroup({
+                userID: user.userID,
+                groupID: req.body.groupID
+            });
+            setUserGroupDoc.save(function (err) {
+                if(err){
                     response["status"] = "false";
-                    response["msg"] = "group not found";
-                    console.log(response["msg"]);
+                    response["msg"] = "unable to add in group";
                     res.send(response);
+                    console.log(response["msg"]);
                 }
                 else{
-                    console.log(user.userID);
-                    var setUserGroupDoc = new UserGroup({
-                        userID: user.userID,
-                        groupID: group.groupID
-                    });
-                    setUserGroupDoc.save(function (err) {
-                        if(err){
-                            response["status"] = "false";
-                            response["msg"] = "unable to add in group";
-                            res.send(response);
-                            console.log(response["msg"]);
-                        }
-                        else{
-                            response["msg"] = "group entry added.";
-                            response["status"] = "true";
-                            res.send(response);
-                            console.log(response["msg"]);
-                        }
-                    });
+                    response["msg"] = "group entry added.";
+                    response["status"] = "true";
+                    res.send(response);
+                    console.log(response["msg"]);
                 }
             });
         }
@@ -744,7 +772,6 @@ function getUserFollowers(req,res,next) {
                     User.find({'userID':{$in:ids}}, function(err,followers){
                         UserInfo.find({'userID':{$in:ids}}, function(infoErr, userInfo){
                             var follower = [];
-
                             for(var i = 0;i<followers.length;i++){
                                 var tempObj = {};
                                 tempObj["firstname"] = followers[i].firstName;
@@ -758,7 +785,6 @@ function getUserFollowers(req,res,next) {
                                 }
                                 follower.push(tempObj);
                             }
-
                             if(sessionString == undefined || sessionString == "")
                                 response["msg"] = {"sessionString": "", "userInfo":follower};
                             else
@@ -767,7 +793,6 @@ function getUserFollowers(req,res,next) {
                             res.send(response);
                             console.log("followeeInfo sent for "+req.body.username);
                         });
-
                     });
                 }
             });
@@ -841,7 +866,6 @@ function addPublication(req,res,next) {
                     res.send(response);
                 }
                 else {
-
                     var maxCount = 1;
                     Publications.findOne().sort('-publicationID').exec(function(err, entry) {
                         // entry.userID is the max value
@@ -851,13 +875,12 @@ function addPublication(req,res,next) {
                         else {
                             maxCount = entry.publicationID + 1;
                         }
-
                         var publishDate = new Date(req.body.publishDate);
                         var newPublication = new Publications({
                             publicationID:maxCount,
                             name: req.body.name,
                             ISSN: req.body.ISSN,
-                            abstract: req.body.abstract,
+                            paperAbstract: req.body.abstract,
                             publishedAt: req.body.publishedAt,
                             publishDate: publishDate,
                             where: req.body.url
@@ -1002,7 +1025,6 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                         else {
                                             maxCount = entry.publicationID + 1;
                                         }
-
                                         var publishDate = new Date(req.body.publishDate);
                                         console.log(user.userID);
                                         var newPublication = new Publications({
@@ -1012,6 +1034,7 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                             paperAbstract: req.body.paperAbstract,
                                             publishedAt: req.body.publishedAt,
                                             publishDate: publishDate,
+                                            avgRating:0,
                                             filePath: pathVar
                                         });
                                         newPublication.save(function (err) {
@@ -1084,7 +1107,6 @@ function getAllGroups(req, res, next) {
             response["status"] = "true";
             res.send(response);
         }
-
     });
 }
 
@@ -1099,9 +1121,33 @@ function getPublicationByID(req, res, next) {       // publicationID
             console.log(response["msg"]);
         }
         else {
-            response["msg"] = publication;
-            response["status"] = "true";
-            res.send(response);
+            UserPublications.find({"publicationID":publication.publicationID},function (err,userPubs) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "Something Wrong in userPublication.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    var userIDs=[];
+                    for(var i = 0; i < userPubs.length; i++){
+                        userIDs.push(userPubs[i].userID);
+                    }
+                    User.find({"userID":{$in:userIDs}},function (err,users) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "Something Wrong in users.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["msg"] = {"publicationInfo":publication,"userInfo":users};
+                            response["status"] = "true";
+                            res.send(response);
+                        }
+                    });
+                }
+            });
         }
     });
 }
@@ -1128,14 +1174,11 @@ function addSkill(req, res, next) {       // SessionString, skillName
                         else {
                             maxCount = entry.skillID + 1;
                         }
-
                         var thisSkill = new Skills({
                             skillID: maxCount,
                             skillName: req.body.skillName
                         });
-
                         thisSkill.save();
-
                         var userThisSkill = new UserSkills({
                             skillID: maxCount,
                             userID: user.userID
@@ -1167,7 +1210,6 @@ function addSkill(req, res, next) {       // SessionString, skillName
                             res.send(response);
                             console.log(response["msg"]);
                         }
-
                     });
                 }
             });
@@ -1214,7 +1256,6 @@ function getUserSkills(req, res, next) {       // userName
                     });
                 }
             });
-
         }
     });
 }
@@ -1233,7 +1274,7 @@ function searchUser(req, res, next) {       // searchString
     searchString = searchString.toLowerCase();
 //    var query = {userName:searchString};
     var result = [];
-    User.find({},function (err,users_username) {
+    User.find({},function (err,users) {
         if(err ){
             response["status"]="false";
             response["msg"] = "Error encountered while searching";
@@ -1241,13 +1282,13 @@ function searchUser(req, res, next) {       // searchString
             return response;
         }
         else {
-            for(var i = 0;i<users_username.length;i++){
-                if(searchString == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchString)!=-1)
-                    result.push(users_username[i]);
-                else if(searchString == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchString)!=-1)
-                    result.push(users_username[i]);
-                else if(searchString== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchString)!=-1)
-                    result.push(users_username[i]);
+            for(var i = 0;i<users.length;i++){
+                if(searchString == users[i].userName.toLowerCase() || users[i].userName.toLowerCase().indexOf(searchString)!=-1)
+                    result.push(users[i]);
+                else if(searchString == users[i].firstName.toLowerCase() || users[i].firstName.toLowerCase().indexOf(searchString)!=-1)
+                    result.push(users[i]);
+                else if(searchString== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchString)!=-1)
+                    result.push(users[i]);
             }
             if(result.length>0) {
                 response["status"] = "true";
@@ -1369,8 +1410,8 @@ function searchInput(req, res, next){
     searchString = searchString.toLowerCase().trim();
     var searchStr = searchString.split(' ');
     var result = [];
-    User.find({},function (err,users_username) {
-        if(err || users_username == undefined || users_username.length == 0){
+    User.find({},function (err,users) {
+        if(err || users == undefined || users.length == 0){
             response["status"]="false";
             response["msg"] = "Error encountered while searching";
             resultObj['userSearch'] = response;
@@ -1380,19 +1421,19 @@ function searchInput(req, res, next){
             for(var j = 0;j<searchStr.length;j++){
                 if(searchStr[j] == undefined || searchStr[j].trim()=="")
                     continue;
-                for(var i = 0;i<users_username.length;i++){
-                        if(searchStr[j] == users_username[i].userName.toLowerCase() || users_username[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users_username[i])
+                for(var i = 0;i<users.length;i++){
+                        if(searchStr[j] == users[i].userName.toLowerCase() || users[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users[i])
                         }
-
-                        else if(searchStr[j] == users_username[i].firstName.toLowerCase() || users_username[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users_username[i])
+                        else if(searchStr[j] == users[i].firstName.toLowerCase() || users[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users[i])
                         }
-                        else if(searchStr[j]== users_username[i].lastName.toLowerCase() || users_username[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                          result.push(users_username[i])
-
+                        else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users[i])
                         }
-                   
+                        else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                            result.push(users[i])
+                        }
                 }
             }
             if(result.length>0) {
@@ -1434,7 +1475,6 @@ function searchUserGroup(res, searchStr, resultObj){
                     }
                 }
             }
-
             if (result.length > 0) {
                 tempResponse["status"] = "true";
                 tempResponse["msg"] = result;
@@ -1458,7 +1498,7 @@ function searchUserSkill(res, searchStr, resultObj){
             skillResponse["status"] = "false";
             skillResponse["msg"] = "This skill is not registered";
             resultObj['skillSearch'] = skillResponse;
-            sendSearchResponse(res, resultObj);
+            searchUserInfo(res, searchStr, resultObj);
         }
         else {
             var skillID = [];
@@ -1472,31 +1512,159 @@ function searchUserSkill(res, searchStr, resultObj){
                     }
                 }
             }
-
             UserSkills.find({"skillID":{$in: skillID}},function (err, users) {
-                if(err||users==null){
+                if(err||users==null||users.length==0){
                     skillResponse["status"] = "false";
                     skillResponse["msg"] = "Nobody has this skill.";
                     resultObj['skillSearch'] = skillResponse;
-                    sendSearchResponse(res, resultObj);
+                    searchUserInfo(res, searchStr, resultObj);
                 }
                 else {
                     var ids = [];
                     for (var i = 0; i < users.length; i++) {
                         ids.push(users[i].userID)
                     }
-                    User.find({"userID": {$in: ids}}, function (err, userInfos) {
+                    User.find({"userID": {$in: ids}}).select(['userID', 'userName','firstName', 'lastName']).exec(function (err, userInfos) {
                         skillResponse["status"] = "true";
                         skillResponse["msg"] = userInfos;
                         resultObj['skillSearch'] = skillResponse;
-                        sendSearchResponse(res, resultObj);
+                        searchUserInfo(res, searchStr, resultObj);
                     });
                 }
             });
         }
     });
 }
+function searchUserInfo(res, searchStr, resultObj){
+    UserInfo.find({},function (err,userInfo) {
+        var userInfoResponse = {};
+        if (err || userInfo == null) {
+            userInfoResponse["status"] = "false";
+            userInfoResponse["msg"] = "Nothing found in userInfo";
+            resultObj['userInfoSearch'] = userInfoResponse;
+            searchPublicationInfo(res, searchStr, resultObj)
+        }
+        else {
+            var users = [];
+            for(var j=0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for(var i = 0; i < userInfo.length; i++) {
+                    if (userInfo[i].university.toLowerCase() == searchStr[j] || userInfo[i].university.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i].userID);
+                    }
+                    else if (userInfo[i].location.address.toLowerCase() == searchStr[j] || userInfo[i].location.address.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i].userID);
+                    }
+                    else if (userInfo[i].location.city.toLowerCase() == searchStr[j] || userInfo[i].location.city.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i].userID);
+                    }
+                    else if (userInfo[i].location.state.toLowerCase() == searchStr[j] || userInfo[i].location.state.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i].userID);
+                    }
+                    else if (userInfo[i].location.country.toLowerCase() == searchStr[j] || userInfo[i].location.country.toLowerCase().indexOf(searchStr[j]) != -1) {
+                        users.push(userInfo[i].userID);
+                    }
+                }
+            }
+            if(users.length==0){
+                userInfoResponse["status"] = "false";
+                userInfoResponse["msg"] = "Something wrong in userInfo";
+                resultObj['userInfoSearch'] = userInfoResponse;
+                searchPublicationInfo(res, searchStr, resultObj)
+            }
+            else{
+                var result=[];
+                User.find({"userID":{$in:users}},function (err,userDatas) {
+                    if(err||userDatas==null||userDatas==undefined){
+                        userInfoResponse["status"] = "false";
+                        userInfoResponse["msg"] = "Something wrong in userInfo";
+                        resultObj['userInfoSearch'] = userInfoResponse;
+                        searchPublicationInfo(res, searchStr, resultObj)
+                    }
+                    else {
+                        for(var i = 0; i < userDatas.length; i++) {
+                            result.push(userDatas[i]);
+                        }
+                        userInfoResponse["status"] = "true";
+                        userInfoResponse["msg"] = result;
+                        resultObj['userInfoSearch'] = userInfoResponse;
+                        searchPublicationInfo(res, searchStr, resultObj)
+                    }
+                });
+            }
+        }
+    });
+}
+function searchPublicationInfo(res, searchStr, resultObj) {
 
+    Publications.find({},function (err,publics) {
+        var publicsInfoResponse = {};
+        if (err || publics == null||publics==undefined) {
+            publicsInfoResponse["status"] = "false";
+            publicsInfoResponse["msg"] = "Nothing found in publications";
+            resultObj['publicsInfoResponse'] = publicsInfoResponse;
+            sendSearchResponse(res, resultObj)
+        }
+        else {
+            var publicIDs = [];
+            var publicationsInfo=[];
+            for(var j=0;j<searchStr.length;j++){
+                if(searchStr[j] == undefined || searchStr[j].trim()=="")
+                    continue;
+                for(var i = 0; i < publics.length; i++){
+                    if(publics[i].name.toLowerCase() == searchStr[j] || publics[i].name.toLowerCase().indexOf(searchStr[j])!=-1){
+                        publicIDs.push(publics[i].publicationID);
+                        publicationsInfo.push(publics[i]);
+                    }
+                    else if(publics[i].paperAbstract.toLowerCase() == searchStr[j] || publics[i].paperAbstract.toLowerCase().indexOf(searchStr[j])!=-1){
+                        publicIDs.push(publics[i].publicationID);
+                        publicationsInfo.push(publics[i]);
+                    }
+                }
+            }
+            UserPublications.find({"publicationID":{$in:publicIDs}},function (err,users) {
+                if(err||users.length==0){
+                    publicsInfoResponse["status"] = "false";
+                    publicsInfoResponse["msg"] = "Something wrong in publications.";
+                    resultObj['publicsInfoResponse'] = publicsInfoResponse;
+                    sendSearchResponse(res, resultObj)
+                }
+                else{
+                    var userIDs = [];
+                    var userPublicMap=[];
+                    for(var i = 0; i < users.length; i++){
+                        userIDs.push(users[i].userID);
+                        userPublicMap.push(users[i]);
+                    }
+                    User.find({"userID":{$in:userIDs}}).select(['userID', 'userName', 'firstName', 'lastName']).exec(function (err,userInfo) {
+                        if(err||userInfo.length==0){
+                            publicsInfoResponse["status"] = "false";
+                            publicsInfoResponse["msg"] = "Unable to find users for given userIDs";
+                            resultObj['publicsInfoResponse'] = publicsInfoResponse;
+                            sendSearchResponse(res, resultObj)
+                        }
+                        else {
+                            var userData = [];
+                            for(var i = 0; i < users.length; i++){
+                                userData.push(userInfo[i]);
+                            }
+                            publicsInfoResponse["status"] = "true";
+                            publicsInfoResponse["msg"] = {"publicationInfo":publicationsInfo,"userPublicMap":userPublicMap,"userData":userData};
+/*
+                            console.log("publications:"+publicationsInfo);
+                            console.log("userpubs:"+userPublicMap+"\n");
+                            console.log("users:"+userData);
+*/
+                            resultObj['publicsInfoResponse'] = publicsInfoResponse;
+                            sendSearchResponse(res, resultObj)
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
 function sendSearchResponse(res, resultObj){
     res.send(resultObj)
 }
@@ -1513,7 +1681,6 @@ function setRating(req,res,next) {
     else {
         var pubID = req.body.publicationID;
         var query = {"sessionString": req.body.sessionString};
-
         User.findOne(query, function (err, user) {
             if (user == null) {
                 response["status"] = "false";
@@ -1531,7 +1698,6 @@ function setRating(req,res,next) {
             else {
                 PublicationRatings.find({"userID": user.userID}, function (err, entry) {
                     var ids = [];
-
                     for (var i = 0; i < entry.length; i++) {
                         if (entry[i].publicationID == parseInt(pubID)) {
                             ids.push(entry[i]);
@@ -1554,6 +1720,7 @@ function setRating(req,res,next) {
                                 response["status"] = "true";
                                 res.send(response);
                                 console.log(response["msg"]);
+                                setPublicationAvgRatings(req.body.publicationID);
                             }
                         });
                     }
@@ -1577,6 +1744,7 @@ function setRating(req,res,next) {
                                 response["status"] = "true";
                                 res.send(response);
                                 console.log(response["msg"]);
+                                setPublicationAvgRatings(req.body.publicationID);
                             }
                         });
                     }
@@ -1584,6 +1752,50 @@ function setRating(req,res,next) {
             }
         });
     }
+}
+
+app.post('/setPublicationAvgRatings', setPublicationAvgRatings);
+function setPublicationAvgRatings(ID){    //publicationID
+//function setPublicationAvgRatings(req,res,next){    //publicationID
+//    var ID = req.body.publicationID;
+    PublicationRatings.find({"publicationID":ID},function (err,entries) {
+        if(err||entries.length==0||entries==null){
+            response["status"] = "false";
+            response["msg"] = " setPublicationAvgRatings no entries found";
+            console.log(response["msg"]);
+        }
+        else {
+            var avg = 0;
+            for(var i = 0; i < entries.length; i++){
+                avg = avg + entries[i].ratings;
+            }
+            avg = avg / entries.length;
+            console.log("avg : "+avg);
+            Publications.findOne({"publicationID":ID},function (err,paper) {
+                if(err||paper==null||paper==undefined){
+                    response["status"] = "false";
+                    response["msg"] = "setPublicationAvgRatings unable to find paper in database";
+                    console.log(response["msg"]);
+                }
+                else {
+                    paper.set({"avgRating":avg});
+                    paper.save(function (err,updatedentry) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = " setPublicationAvgRatings unable to update paper avg rating";
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = " setPublicationAvgRatings updated paper avg rating in database";
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+//    res.send("Hit");
 }
 
 app.post('/getPublicationRatings', getPublicationRatings);
@@ -1690,7 +1902,6 @@ function removeUserPublication(req, res, next) {
                         }
                     }
                     if (deleted) {
-
                         var query = {'publicationID': publicationID};
                         Publications.findOne(query, function(err, publication){
                             if (publication == null) {
@@ -1792,3 +2003,871 @@ function removeUserSkill(req, res, next) {
         }
     });
 }
+
+app.post('/postQuestion', postQuestion);        // sessionString, postString, groupID, tagArray
+function postQuestion(req, res, next) {
+    var sessionString = req.body.sessionString;
+    var tagArray = req.body.tagArray;
+    var query = {'sessionString': sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "user not registered.";
+            console.log(response["msg"]);
+            res.send(response);
+        }
+        else {
+            var maxCount = 1;
+            DiscussionPosts.findOne().sort('-postID').exec(function (err, entry) {
+                if (entry == null) {
+                    maxCount = 1;
+                }
+                else {
+                    maxCount = entry.postID + 1;
+                }
+                var newPost = new DiscussionPosts({
+                    postID: maxCount,
+                    postString: req.body.postString,
+                    userID: user.userID,
+                    groupID: req.body.groupID,
+                    postedOn: Date.now()
+                });
+                newPost.save(function (err, savedPost) {
+                    if (err) {
+                        response["status"] = "false";
+                        response["msg"] = "Not Posted";
+                        res.send(response);
+                        console.log(response["msg"]);
+                    }
+                    else{
+                        tagging(res,tagArray,savedPost.postID)
+                    }
+                });
+            });
+        }
+    });
+}
+
+function tagging(res,tagArray,postID) {
+    var tagIDs = [];
+    PostTags.find({"tagName": {$in: tagArray}}, function (err, tags) {
+        if (tags.length != 0) {
+            for (var i = 0; i < tags.length; i++) {
+                tagIDs.push(tags[i].tagID);
+                tagArray.splice(i, 1);
+            }
+        }
+        var maxCount = 1;
+        PostTags.findOne().sort('-tagID').exec(function (err, entry) {
+            if (entry == null) {
+                maxCount = 1;
+            }
+            else {
+                maxCount = entry.tagID + 1;
+            }
+            var insertArrayTags = [];
+            for (var j = 0; j < tagArray.length; j++) {
+                insertArrayTags.push({"tagID": maxCount + j, "tagName": tagArray[j]});
+                tagIDs.push(maxCount + j);
+            }
+
+            PostTags.insertMany(insertArrayTags, function (err, saved) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "failed in adding new tags";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    console.log("Tags added in postTags:"+saved);
+                    tagMapping(res,tagIDs,postID);
+                }
+
+            });
+        });
+    });
+}
+
+function tagMapping(res,tagIDs,postID) {
+    var insertArrayPostTag = [];
+    for(var k = 0; k < tagIDs.length;k++){
+        insertArrayPostTag.push({"postID":postID,"tagID":tagIDs[k]});
+    }
+    PostTagsMapping.insertMany(insertArrayPostTag, function (err,saved) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "failed in adding new postTagMapping";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            response["status"] = "true";
+            response["msg"] = "Post and tags added successfully.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+    })
+}
+
+app.post('/postReply', postReply);            // postID, replyString, sessionString
+function postReply(req, res, next) {
+    var query = {"sessionString":req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "user not registered.";
+            console.log(response["msg"]);
+            res.send(response);
+        }
+        else {
+            var maxCount = 1;
+            DiscussionReplies.findOne().sort('-replyID').exec(function (err, entry) {
+                if (entry == null) {
+                    maxCount = 1;
+                }
+                else {
+                    maxCount = entry.replyID + 1;
+                }
+                var newReply = new DiscussionReplies({
+                    postID: parseInt(req.body.postID),
+                    replyString: req.body.replyString,
+                    replyID: maxCount,
+                    userID: user.userID,
+                    postedOn: Date.now()
+                });
+                newReply.save(function (err) {
+                    if (err) {
+                        response["status"] = "false";
+                        response["msg"] = "Unable to post the reply";
+                        res.send(response);
+                        console.log(response["msg"]);
+                    }
+                    else {
+                        addInterestThroughReply(res,user.userID,parseInt(req.body.postID));
+/*
+                        response["status"] = "true";
+                        response["msg"] = "Reply posted successfully.";
+                        res.send(response);
+                        console.log(response["msg"]);
+*/
+                    }
+                });
+            });
+        }
+    });
+}
+
+function addInterestThroughReply(res,userID,postID) {
+    PostTagsMapping.find({"postID":postID},function (err,entries) {
+        if (err) {
+            response["status"] = "false";
+            response["msg"] = "Reply posted but unable to find tags for the post.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            UserInterests.find({"userID":userID},function (err,userInterestEntries) {
+                if(userInterestEntries.length==0){
+                    var entryArray = [];
+                    for(var i = 0; i < entries.length; i++){
+                        entryArray.push({"tagID":entries[i].tagID,"userID": userID,"addedOn":Date.now()});
+                    }
+                    UserInterests.insertMany(entryArray, function (err, saved) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = "Reply posted but failed in adding new userInterest entries.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else{
+                            response["status"] = "true";
+                            response["msg"] = "added new userInterest entries.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+                else {
+                    var entryArray = [];
+                    for(var j = 0; j < userInterestEntries.length; j++) {
+                        for (var i = 0; i < entries.length; i++) {
+                            if (userInterestEntries[j].tagID != entries[i].tagID) {
+                                entryArray.push({"tagID": entries[i].tagID, "userID": userID, "addedOn": Date.now()});
+                            }
+                        }
+                    }
+                    UserInterests.insertMany(entryArray, function (err, saved) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = "failed in adding new userInterest entries.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else{
+                            response["status"] = "true";
+                            response["msg"] = "added new userInterest entries.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getAllRepliesByPostID', getAllRepliesByPostID);            // postID
+function getAllRepliesByPostID(req, res, next) {
+    var query = {"postID":req.body.postID};
+    DiscussionPosts.findOne(query,function (err, post) {
+        if(err||post==null||post==undefined){
+            response["status"] = "false";
+            response["msg"] = "No post with postID :"+query.postID;
+            res.send(response);
+        }
+        else{
+            var userIDs = [];
+            userIDs.push(post.userID);
+
+            DiscussionReplies.find(query,function (err, replies) {
+                if(replies.length==0||err){
+                    User.findOne({"userID":post.userID},function (err,user) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "User not found. something wrong with user table";
+                            res.send(response);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = {"postInfo":post,"replyInfo":{"status":"false","msg":"no replies for this post"},"allUsers":user};
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+                else {
+                    for(var i = 0; i < replies.length; i++){
+                        userIDs.push(replies[i].userID);
+                    }
+                    User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "Something is really wrong here once again.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = {"postInfo": post, "allRepliesInfo": replies,"allUsers":users};
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getAllPostsByGroupID', getAllPostsByGroupID);            // groupID
+function getAllPostsByGroupID(req, res, next) {
+    var groupID = req.body.groupID;
+    DiscussionPosts.find({"groupID":groupID}).sort("-postedOn").exec(function (err,posts) {
+        if(posts.length==0){
+            response["status"] = "false";
+            response["msg"] = "No posts for group: " + groupID;
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            var userIDs = [];
+            for (var i = 0; i < posts.length; i++){
+                userIDs.push(posts[i].userID);
+            }
+            User.find({"userID": {$in: userIDs}}).select(["userID","firstName","lastName","userName"]).exec(function (err,users) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "Something is really wrong.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    response["status"] = "true";
+                    response["msg"] = {"postInfo": posts, "userInfo":users};
+                    res.send(response);
+                }
+            });
+        }
+    });
+}
+
+function sendOTP(sessionString) {            // sessionString
+    var OTP = getRandom(low, high);
+    var query = {"sessionString": sessionString};
+    User.findOneAndUpdate(query, {"OTP":OTP} ,function (err, user) {
+        if (user == null||err) {
+            response["status"] = "false";
+            response["msg"] = "user not registered.";
+            console.log(response["msg"]);
+            res.send(response);
+        }
+        else {
+            var carriers={"att":"txt.att.net","sprint":"messaging.sprintpcs.com","t-mobile":"tmomail.net","verizon":"vtext.com"};
+            var phone = user.phone.replace(/-/g,'').replace(/\(/g,'').replace(/\)/g,'').replace(/\+/g,'');
+            var mailOption = {
+                from: 'se.researchmate@gmail.com',
+                to: phone+"@"+carriers[user.carrier],
+                subject: 'Hello there!',
+                text: 'Your OTP : ' + OTP
+            };
+            sendMaill(mailOption);
+        }
+    });
+}
+
+app.post('/checkOTP',checkOTP);
+function checkOTP(req,res,next) {       //sessionString,OTP
+    var query = {"sessionString":req.body.sessionString};
+    User.findOne(query,function (err,user) {
+        if(user==null||err||user==undefined){
+            response["status"] = "false";
+            response["msg"] = "Invalid user";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            if(user.OTP != req.body.OTP){
+                response["status"] = "false";
+                response["msg"] = "Invalid OTP";
+                res.send(response);
+                console.log(response["msg"]);
+            }
+            else{
+                response["status"] = "true";
+                response["msg"] = "Valid user";
+                res.send(response);
+                console.log(response["msg"]);
+            }
+        }
+    })
+}
+
+app.post('/getPendingRequests',getPendingRequests);
+function getPendingRequests(req,res,next) {       //sessionString for groupAdmin userID, groupID
+    var query  = {"sessionString":req.body.sessionString};
+    User.findOne(query,function (err,user) {
+        if(err||user==null){
+            response["status"] = "false";
+            response["msg"] = "Invalid sessionString";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            GroupInfo.findOne({"groupID":req.body.groupID},function (err,group) {
+                if(err||group==null){
+                    response["status"] = "false";
+                    response["msg"] = "Invalid groupID";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    if(group.admin==user.userID){
+//                      send all entries from groupjoinrequest
+                        GroupJoinRequest.find({"groupID":group.groupID},function (err,entries) {
+                            if(err||entries.length==0){
+                                response["status"] = "false";
+                                response["msg"] = "No pending requests";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                            else{
+                                var requesterIDs = [];
+                                for(var i = 0; i < entries.length; i++){
+                                    requesterIDs.push(entries[i].requesterID)
+                                }
+                                User.find({'userID':{$in:requesterIDs}}).select(['userID','userName','firstName', 'lastName']).exec(function (err,requesterInfo) {
+                                    if(err){
+                                        response["status"] = "false";
+                                        response["msg"] = "Something Wrong in groupJoinRequests";
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                    else{
+                                        response["status"] = "true";
+                                        response["msg"] = {"requesters":requesterInfo};
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else{
+                        response["status"] = "false";
+                        response["msg"] = "This user is not the admin of this group.";
+                        res.send(response);
+                        console.log(response["msg"]);
+                    }
+                }
+            });
+        }
+    });
+}
+
+app.post('/joinPrivateGroup',joinPrivateGroup);
+function joinPrivateGroup(req,res,next) {       //sessionString for userID, groupID
+    var query  = {"sessionString":req.body.sessionString};
+    User.findOne(query,function (err,user) {
+        if(err||user==null){
+            response["status"] = "false";
+            response["msg"] = "Invalid sessionString";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            GroupJoinRequest.find({"groupID":req.body.groupID,"requesterID":user.userID},function (err,entry) {
+                if(entry.length!=0){
+                    response["status"] = "false";
+                    response["msg"] = "Already requested.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    GroupInfo.findOne({"groupID":req.body.groupID},function (err,group) {
+                        if(err||group==null||group==undefined){
+                            response["status"] = "false";
+                            response["msg"] = "Unable to find group.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else{
+                            var newEntry = new GroupJoinRequest({
+                                groupID:req.body.groupID,
+                                adminID:group.admin,
+                                requesterID:user.userID,
+                                requestedOn:Date.now()
+                            });
+                            newEntry.save(function (err) {
+                                if (err) {
+                                    response["status"] = "false";
+                                    response["msg"] = "Unable to request";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    response["status"] = "true";
+                                    response["msg"] = "Requested successfully.";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/approveGroupRequests',approveGroupRequests);
+function approveGroupRequests(req,res,next) {       //groupID,userID
+    var query = {"groupID":req.body.groupID,"requesterID":req.body.userID};
+    GroupJoinRequest.findOne(query,function (err,entry) {
+        if(err||entry==null||entry==undefined){
+            response["status"] = "false";
+            response["msg"] = "Unable to find the request";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            entry.remove();
+            var query={"groupID":req.body.groupID,"userID":req.body.userID}
+            UserGroup.findOne(query,function (err,entry) {
+                if(err||entry!=undefined||entry!=null){
+                    response["status"] = "false";
+                    response["msg"] = "Already approved.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var newEntry = new UserGroup({
+                        groupID:req.body.groupID,
+                        userID:req.body.userID,
+                    });
+                    newEntry.save(function (err) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = "Unable to approve";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = "Approval successfully.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getUserPendingRequests',getUserPendingRequests);     //sessionString
+function getUserPendingRequests(req,res,next) {
+    User.findOne({"sessionString":req.body.sessionString},function (err,user) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            GroupJoinRequest.find({"requesterID":user.userID}).sort({"requestedOn":-1},function (err,entries) {
+                if(err||entries.length==0){
+                    response["status"] = "false";
+                    response["msg"] = "No pending Requests";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var groupIDs = [];
+                    for(var i = 0; i < entries.length; i++){
+                        groupIDs.push(entries[i].groupID);
+                    }
+                    GroupInfo.find({'groupID':{$in:groupIDs}},function (err,groupInfo) {
+                        if(err||groupInfo.length==0){
+                            response["status"] = "false";
+                            response["msg"] = "Something wrong";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = groupInfo;
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getUserID',getUserID);       //sessionString
+function getUserID(req,res,next) {
+    User.findOne({"sessionString":req.body.sessionString},function (err,user) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            response["status"] = "true";
+            response["msg"] = user.userID;
+            res.send(response);
+            console.log(response["msg"]);
+        }
+    });
+}
+
+app.post('/mostLikedPaper',mostLikedPaper);
+function mostLikedPaper(req,res,next) {
+    Publications.find({}).sort("-avgRating").exec(function (err,papers) {
+        if(err||papers.length==0){
+            response["status"] = "false";
+            response["msg"] = "Unable to find any paper in the database.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            var paperInfo=[];
+            for(var i = 0; i < papers.length; i++){
+                paperInfo.push(papers[i]);
+            }
+            response["status"] = "true";
+            response["msg"] = paperInfo;
+            res.send(response);
+            console.log(response["msg"]);
+        }
+    });
+}
+
+app.post('/addUserInterest',addUserInterest);       // sessionString, interestName
+function addUserInterest(req,res,next) {
+    var interestName = req.body.interestName;
+    var sessionString = req.body.sessionString;
+    User.findOne({"sessionString":sessionString},function (err,user) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            PostTags.findOne({"tagName":interestName},function (err,tag) {
+                if(tag==null||tag==undefined) {
+                    var maxCount = 1;
+                    PostTags.findOne().sort('-tagID').exec(function(err, entry) {
+                        // entry.userID is the max value
+                        if(entry == null||entry==undefined||err) {
+                            maxCount = 1;
+                        }
+                        else {
+                            maxCount = entry.tagID + 1;
+                        }
+                        var newTag = new PostTags({"tagID": maxCount, "tagName": interestName});
+                        newTag.save(function (err) {
+                            if(err){
+                                response["status"] = "false";
+                                response["msg"] = "Unable to add interest in post";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
+                            else {
+                                addingUserInterest(res,maxCount,user.userID);
+                            }
+                        });
+                    });
+                }
+                else {
+                    var maxCount = tag.tagID;
+                    addingUserInterest(res,maxCount,user.userID);
+                }
+            });
+        }
+    });
+}
+
+function addingUserInterest(res,tagID,userID) {
+    UserInterests.findOne({"tagID":tagID,"userID":userID},function (err,entry) {
+        if(entry==null||entry==undefined){
+           var newEntry = new UserInterests({
+               tagID:tagID,
+               userID:userID,
+               addedOn:Date.now()
+           });
+           newEntry.save(function (err) {
+               if(err){
+                   response["status"] = "false";
+                   response["msg"] = "Unable to add interest in userInterest";
+                   res.send(response);
+                   console.log(response["msg"]);
+               }
+               else {
+                   response["status"] = "true";
+                   response["msg"] = "Interest added successfully.";
+                   res.send(response);
+                   console.log(response["msg"]);
+               }
+           });
+        }
+    });
+}
+
+app.post('/removeUserInterest',removeUserInterest);     //sessionString, interestName
+function removeUserInterest(req,res,next) {
+    User.findOne({"sessionString":req.body.sessionString},function (err,user) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            PostTags.findOne({"tagName":req.body.interestName},function (err,entry) {
+                if(err||entry==null||entry==undefined){
+                    response["status"] = "false";
+                    response["msg"] = "Tag is not present in the tables.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var tagID = entry.tagID;
+                    UserInterests.findOne({"userID":user.userID,"tagID":tagID},function (err,userInter) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "Unable to find UserInterest entry.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else if(userInter==null||userInter==undefined){
+                            response["status"] = "true";
+                            response["msg"] = "Unable to delete UserInterest entry because it was not there to begin with.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            userInter.remove(function (err) {
+                                if(err){
+                                    response["status"] = "false";
+                                    response["msg"] = "Unable to delete UserInterest entry.";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    response["status"] = "true";
+                                    response["msg"] = "Deleted UserInterest entry successfully.";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getUserBulletinBoard',getUserBulletinBoard);         //sessionString
+function getUserBulletinBoard(req,res,next) {
+    var sessionString = req.body.sessionString;
+    User.findOne({"sessionString":sessionString},function (err,user) {
+        if (err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            UserInterests.find({"userID":user.userID},function (err,tags) {
+                if(err||tags.length==0){
+                    response["status"] = "false";
+                    response["msg"] = "User is not interested in anything. Really? Why?";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var tagIDs = [];
+                    for(var i = 0; i < tags.length; i++){
+                        tagIDs.push(tags[i].tagID);
+                    }
+                    PostTagsMapping.find({"tagID":{$in:tagIDs}},function (err,postTags) {
+                        if(err||postTags.length==0){
+                            response["status"] = "false";
+                            response["msg"] = "User is not interested in anything. Lame!";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            var postIDs = [];
+                            for(var i = 0; i < postTags.length; i++){
+                                postIDs.push(postTags[i].postID);
+                            }
+                            DiscussionPosts.find({"postID":{$in:postIDs}},function (err,posts) {
+                                if(err||posts.length==0){
+                                    response["status"] = "false";
+                                    response["msg"] = "User is not interested in anything. Lame!";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    var postArray = [];
+                                    for(var i = 0; i < posts.length; i++){
+                                        postArray.push(posts[i]);
+                                    }
+                                    PostTags.find({"tagID":{$in:tagIDs}},function (err,tagNames) {
+                                        if (err || tagNames.length == 0) {
+                                            response["status"] = "false";
+                                            response["msg"] = "User is not interested in anything. Ultra Lame!";
+                                            res.send(response);
+                                            console.log(response["msg"]);
+                                        }
+                                        else {
+                                            var tagArray = [];
+                                            for(var i = 0; i < tagNames.length; i++){
+                                                tagArray.push(tagNames[i].tagName);
+                                            }
+                                            response["status"] = "true";
+                                            response["msg"] = {"posts":postArray,"tagNames":tagArray};
+                                            res.send(response);
+                                            console.log(response["msg"]);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getUserInterest',getUserInterest);         //sessionString
+function getUserInterest(req,res,next) {
+    var sessionString = req.body.sessionString;
+    User.findOne({"sessionString":sessionString},function (err,user) {
+        if (err||user==null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            UserInterests.find({"userID": user.userID}, function (err, tags) {
+                if (err || tags.length == 0) {
+                    response["status"] = "false";
+                    response["msg"] = "User is not interested in anything. Really? Why?";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    var tagIDs = [];
+                    for (var i = 0; i < tags.length; i++) {
+                        tagIDs.push(tags[i].tagID);
+                    }
+
+                    PostTags.find({"tagID": {$in: tagIDs}}, function (err, tagNames) {
+                        if (err || tagNames.length == 0) {
+                            response["status"] = "false";
+                            response["msg"] = "User is not interested in anything. Whoa!";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = tagNames;
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/logout',logout);         //sessionString
+function logout(req,res,next) {
+    var sessionString = req.body.sessionString;
+    User.findOne({"sessionString": sessionString}, function (err, user) {
+        if (err||user==null|user==undefined) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            user.set({sessionString:""});
+            user.save(function(err, updatedUser) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "Error while logging out";
+                    res.send(response);
+                    console.log(response);
+                } else {
+                    response["msg"] = "Logout successful.";
+                    response["status"] = "true";
+                    res.send(response);
+                    console.log(response);
+                }
+            });
+        }
+    });
+}
+
