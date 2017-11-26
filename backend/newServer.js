@@ -801,7 +801,6 @@ function getUserFollowers(req,res,next) {
     });
 }
 
-
 app.post('/followSomeone', followSomeone);                 //sessionstring, followthis(user that needs to be followed by sessionstring holder)
 function followSomeone(req,res,next) {
     var query = {"sessionString": req.body.sessionString};
@@ -3043,3 +3042,62 @@ function removePostTag(req,res,next) {
     });
 }
 
+app.post('/getMyCircle',getMyCircle);           //sessionString
+function getMyCircle(req,res,next) {
+    var sessionString = req.body.sessionString;
+    var query = {"sessionString": sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var userID = user.userID;
+            UserFollowee.find({"userID": userID}, {'_id': 0}).select("followeeID").exec(function (err, docs) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "None in the circle.";
+                    res.send(response);
+                }
+                else {
+                    var ids = [];
+                    for (var i = 0; i < docs.length; i++) {
+                        ids.push(docs[i].followeeID)
+                    }
+                    User.find({'userID': {$in: ids}}, function (err, followers) {
+                        UserInfo.find({'userID': {$in: ids}}, function (infoErr, userInfo) {
+                            var follower = [];
+                            for (var i = 0; i < followers.length; i++) {
+                                var tempObj = {};
+                                if(followers[i].active) {
+                                    tempObj["firstname"] = followers[i].firstName;
+                                    tempObj["lastname"] = followers[i].lastName;
+                                    tempObj["username"] = followers[i].userName;
+                                    for (var j = 0; j < userInfo.length; j++) {
+                                        if (userInfo[j].userID == followers[i].userID) {
+                                            tempObj["imgLocation"] = userInfo[j].picture;
+                                            break;
+                                        }
+                                    }
+                                    follower.push(tempObj);
+                                }
+                            }
+                            if(follower.length>0) {
+                                response["status"] = "true";
+                                response["msg"] = {"followerActiveInfo":follower};
+                                res.send(response);
+                            }
+                            else{
+                                response["status"] = "false";
+                                response["msg"] = "None active at the moment.";
+                                res.send(response);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+    });
+}
