@@ -812,32 +812,47 @@ function followSomeone(req,res,next) {
             console.log("Error: User not found!")
         }
         else {
-            query = {"userName":req.body.username};
-            User.findOne(query,function (err,followme) {
-                if(err || followme == null){
+            query = {"userName": req.body.username};
+            User.findOne(query, function (err, followme) {
+                if (err || followme == null) {
                     response["status"] = "false";
                     response["msg"] = "Unable to find user you want to follow.";
                     res.send(response);
                     console.log("Error: User you want to follow not found!")
                 }
-                else{
+                else {
                     var userFollowDoc = new UserFollowee({
-                        userID:user.userID,
-                        followeeID:followme.userID,
-                        followingFrom:Date.now()
+                        userID: user.userID,
+                        followeeID: followme.userID,
+                        followingFrom: Date.now()
                     });
                     userFollowDoc.save(function (err) {
-                        if(err){
+                        if (err) {
                             response["status"] = "false";
                             response["msg"] = "unable to follow this user";
                             res.send(response);
                             console.log(response["msg"]);
                         }
-                        else{
-                            response["msg"] = "following successful entry added.";
-                            response["status"] = "true";
-                            res.send(response);
-                            console.log(response["msg"]);
+                        else {
+                            var userFollowDoc2 = new UserFollowee({
+                                userID: followme.userID,
+                                followeeID: user.userID,
+                                followingFrom: Date.now()
+                            });
+                            userFollowDoc2.save(function (err) {
+                                if (err) {
+                                    response["status"] = "false";
+                                    response["msg"] = "unable to follow this user";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    response["msg"] = "following successful entry added.";
+                                    response["status"] = "true";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                            });
                         }
                     });
                 }
@@ -845,6 +860,7 @@ function followSomeone(req,res,next) {
         }
     });
 }
+
 
 app.post('/addPublication',addPublication);
 function addPublication(req,res,next) {
