@@ -134,7 +134,8 @@ function signUp(req,res,next) {
             sessionString: randomstring.generate(16),
             verificationNumber : getRandom(low,high),
             phone:phone,
-            carrier:carrier
+            carrier:carrier,
+            createdDate:Date.now()
         });
 
 //  For sending mail
@@ -271,7 +272,7 @@ function login(req,res,next) {
                         }
                         else {
                             var sessionString = randomstring.generate(16);
-                            User.findOneAndUpdate({userName:seeUser.userName}, { $set: { sessionString:sessionString}}, function(err,updatedUser){
+                            User.findOneAndUpdate({userName:seeUser.userName}, {$set:{sessionString:sessionString,active:true}}, function(err,updatedUser){
                                 if(err){
                                     response["status"] = "false";
                                     response["msg"] = "Failed to update sessionString.";
@@ -2877,6 +2878,7 @@ function logout(req,res,next) {
         }
         else {
             user.set({sessionString:""});
+            user.set({active:false});
             user.save(function(err, updatedUser) {
                 if (err) {
                     response["status"] = "false";
@@ -3040,3 +3042,4 @@ function removePostTag(req,res,next) {
         }
     });
 }
+

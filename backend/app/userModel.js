@@ -28,8 +28,7 @@ var userSchema = mongoose.Schema({
         required: true
     },
     createdDate:{
-        type: Date,
-        default: Date.now
+        type: Date
     },
     verificationNumber:{
         type: Number
@@ -45,6 +44,9 @@ var userSchema = mongoose.Schema({
     },
     carrier:{
         type: String
+    },
+    active:{
+        type:Boolean,
     }
 });
 
