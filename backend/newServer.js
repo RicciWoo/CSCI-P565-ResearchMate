@@ -57,7 +57,8 @@ var User = require('./app/userModel'),
     PostTags = require('./app/postTags'),
     PostTagsMapping = require('./app/postTagMapping'),
     GroupJoinRequest = require('./app/groupJoinRequests'),
-    UserInterests = require('./app/userInterests');
+    UserInterests = require('./app/userInterests'),
+    Messages = require('./app/messages');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -1438,18 +1439,18 @@ function searchInput(req, res, next){
                 if(searchStr[j] == undefined || searchStr[j].trim()=="")
                     continue;
                 for(var i = 0;i<users.length;i++){
-                        if(searchStr[j] == users[i].userName.toLowerCase() || users[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users[i])
-                        }
-                        else if(searchStr[j] == users[i].firstName.toLowerCase() || users[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users[i])
-                        }
-                        else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users[i])
-                        }
-                        else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users[i])
-                        }
+                    if(searchStr[j] == users[i].userName.toLowerCase() || users[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                        result.push(users[i])
+                    }
+                    else if(searchStr[j] == users[i].firstName.toLowerCase() || users[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                        result.push(users[i])
+                    }
+                    else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                        result.push(users[i])
+                    }
+                    else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                        result.push(users[i])
+                    }
                 }
             }
             if(result.length>0) {
@@ -1667,11 +1668,11 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                             }
                             publicsInfoResponse["status"] = "true";
                             publicsInfoResponse["msg"] = {"publicationInfo":publicationsInfo,"userPublicMap":userPublicMap,"userData":userData};
-/*
-                            console.log("publications:"+publicationsInfo);
-                            console.log("userpubs:"+userPublicMap+"\n");
-                            console.log("users:"+userData);
-*/
+                            /*
+                                                        console.log("publications:"+publicationsInfo);
+                                                        console.log("userpubs:"+userPublicMap+"\n");
+                                                        console.log("users:"+userData);
+                            */
                             resultObj['publicsInfoResponse'] = publicsInfoResponse;
                             sendSearchResponse(res, resultObj)
                         }
@@ -2160,12 +2161,12 @@ function postReply(req, res, next) {
                     }
                     else {
                         addInterestThroughReply(res,user.userID,parseInt(req.body.postID));
-/*
-                        response["status"] = "true";
-                        response["msg"] = "Reply posted successfully.";
-                        res.send(response);
-                        console.log(response["msg"]);
-*/
+                        /*
+                                                response["status"] = "true";
+                                                response["msg"] = "Reply posted successfully.";
+                                                res.send(response);
+                                                console.log(response["msg"]);
+                        */
                     }
                 });
             });
@@ -2661,25 +2662,25 @@ function addUserInterest(req,res,next) {
 function addingUserInterest(res,tagID,userID) {
     UserInterests.findOne({"tagID":tagID,"userID":userID},function (err,entry) {
         if(entry==null||entry==undefined){
-           var newEntry = new UserInterests({
-               tagID:tagID,
-               userID:userID,
-               addedOn:Date.now()
-           });
-           newEntry.save(function (err) {
-               if(err){
-                   response["status"] = "false";
-                   response["msg"] = "Unable to add interest in userInterest";
-                   res.send(response);
-                   console.log(response["msg"]);
-               }
-               else {
-                   response["status"] = "true";
-                   response["msg"] = "Interest added successfully.";
-                   res.send(response);
-                   console.log(response["msg"]);
-               }
-           });
+            var newEntry = new UserInterests({
+                tagID:tagID,
+                userID:userID,
+                addedOn:Date.now()
+            });
+            newEntry.save(function (err) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "Unable to add interest in userInterest";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    response["status"] = "true";
+                    response["msg"] = "Interest added successfully.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+            });
         }
     });
 }
@@ -2786,10 +2787,10 @@ function getUserBulletinBoard(req,res,next) {
                                 });
                             }
                             else{
-                            response["status"] = "false";
-                            response["msg"] = "User is not interested in anything. Lame!";
-                            res.send(response);
-                            console.log(response["msg"]);
+                                response["status"] = "false";
+                                response["msg"] = "User is not interested in anything. Lame!";
+                                res.send(response);
+                                console.log(response["msg"]);
                             }
                         }
                         else {
@@ -2950,7 +2951,7 @@ function setPostTag(req,res,next) {
     PostTags.findOne({"tagName":tagName},function (err,tag) {
         if(err||tag==undefined||tag==null){
 //      adding a new tag
-        addingTag(res,postID,tagName);
+            addingTag(res,postID,tagName);
         }
         else {
             PostTagsMapping.findOne({"postID":postID,"tagID":tag.tagID},function (err,entry) {
@@ -3114,6 +3115,196 @@ function getMyCircle(req,res,next) {
                     });
                 }
             });
+        }
+    });
+}
+
+app.post('/sendMessage',sendMessage);           //sessionString(sender), username(receiver),msg
+function sendMessage(req,res,next){
+    var senderSessionString = req.body.sessionString;
+    var receiverUsername = req.body.username;
+    var message = req.body.msg;
+    var query = {"sessionString": senderSessionString};
+    User.findOne(query, function (err, sender) {
+        if (sender == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var query = {"userName": receiverUsername};
+            User.findOne(query, function (err, receiver) {
+                if (receiver == null) {
+                    response["status"] = "false";
+                    response["msg"] = "User you want to chat with cannot be found.";
+                    res.send(response);
+                    console.log("Error: Receiver not found!")
+                }
+                else {
+                    var msg = new Messages({
+                        senderID:sender.userID,
+                        receiverID:receiver.userID,
+                        msg:message,
+                        sentOn:Date.now()
+                    });
+                    msg.save(function (err) {
+                        if (err) {
+                            response["msg"] = "Unable to save msg.";
+                            response["status"] = "false";
+                            res.send(response);
+                            console.log(response);
+                        }
+                        else {
+                            response["msg"] = "msg saved.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getMessagesFromAUser',getMessagesFromAUser);           //sessionString(receiver), username(sender)
+function getMessagesFromAUser(req,res,next) {
+    var receiverSessionString = req.body.sessionString;
+    var senderUsername = req.body.username;
+    var query = {"sessionString": receiverSessionString};
+    User.findOne(query, function (err, receiver) {
+        if (receiver == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var query = {"userName": senderUsername};
+            User.findOne(query, function (err, sender) {
+                if (sender == null) {
+                    response["status"] = "false";
+                    response["msg"] = "User you want to get msgs from cannot be found.";
+                    res.send(response);
+                    console.log("Error: Sender not found!")
+                }
+                else {
+                    var MSGArray = [];
+                    var query = {"senderID":sender.userID,"receiverID":receiver.userID};
+                    Messages.find(query).sort('sentOn').exec(function (err,msgs) {
+                        if(err||msgs.length==0){
+                            response["status"] = "false";
+                            response["msg"] = "No messages. LAME.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            for(var i = 0; i < msgs.length; i++) {
+                                MSGArray.push(msgs[i]);
+                            }
+                            response["status"] = "true";
+                            response["msg"] = MSGArray;
+                            res.send(response);
+                            console.log(response["status"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getAllMessages',getAllMessages);           //sessionString(receiver)
+function getAllMessages(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, receiver) {
+        if (receiver == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var userID = receiver.userID;
+            UserFollowee.find({"userID": userID}).exec(function (err, docs) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "None in the circle.";
+                    res.send(response);
+                }
+                else {
+                    var ids = [];
+                    for (var i = 0; i < docs.length; i++) {
+                        ids.push(docs[i].followeeID)
+                    }
+                    User.find({'userID': {$in: ids}}, function (err, followers) {
+                        if(err||followers.length==0){
+                            response["status"] = "false";
+                            response["msg"] = "Something Wrong.";
+                            res.send(response);
+                        }
+                        else {
+                            UserInfo.find({'userID': {$in: ids}}, function (err, userInfo) {
+                                if(err||userInfo.length==0){
+                                    response["status"] = "false";
+                                    response["msg"] = "Something Wrong.";
+                                    res.send(response);
+                                }
+                                else {
+                                    var follower = [];
+                                    for (var i = 0; i < followers.length; i++) {
+                                        var tempObj = {};
+                                        tempObj["id"] = followers[i].userID;
+                                        tempObj["firstname"] = followers[i].firstName;
+                                        tempObj["lastname"] = followers[i].lastName;
+                                        tempObj["username"] = followers[i].userName;
+                                        var query = {"receiverID":receiver.userID,"senderID":followers[i].userID};
+                                        for (var j = 0; j < userInfo.length; j++) {
+                                            if (userInfo[j].userID == followers[i].userID) {
+                                                tempObj["imgLocation"] = userInfo[j].picture;
+                                                break;
+                                            }
+                                        }
+                                        follower.push(tempObj);
+                                    }
+                                    sendMessageResponse(res,follower,userID);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+function sendMessageResponse(res,follower,userID){
+    var ids = [];
+    for(var i = 0; i < follower.length; i++){
+        ids.push(follower[i].id);
+    }
+    var query = {"receiverID":userID};
+    Messages.find(query,function (err,entries) {
+        if(err||entries.length==0){
+            response["status"] = "false";
+            response["msg"] = "lonely creature";
+            res.send(response);
+        }
+        else {
+            for(var i = 0; i < follower.length; i++){
+                var msgCount = 0;
+                for(var j = 0; j < entries.length; j++){
+                    if(entries[j].senderID==follower[i].id){
+                        msgCount += 1;
+                    }
+                }
+                follower[i].msgCount = msgCount;
+            }
+            response["status"] = "true";
+            response["msg"] = follower;
+            res.send(response);
+            console.log(response);
         }
     });
 }
