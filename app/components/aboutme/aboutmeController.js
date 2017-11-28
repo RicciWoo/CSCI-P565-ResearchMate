@@ -1,7 +1,63 @@
 myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$location', 'Upload','$rootScope', function ($scope, $http, URL,$cookies,$location, Upload,$rootScope) {
+
+
+
     var self = $scope;
     self.allowedit=false;
     self.sessionString = $cookies.get('sessionString');
+
+    /**
+     * Get user bullet-in board data
+     */
+
+     $scope.redditBullets = [];
+
+     $scope.searchRedditForPost = function(searchQuery){
+       if(searchQuery == undefined || searchQuery.trim() == "")
+         return;
+       $http({
+         url: "https://www.reddit.com/search.json?q="+searchQuery+"&sort=hot",
+         method: "GET"
+       }).then(function success(response){
+         debugger
+         if(response.status == 200){
+           if(response.data != undefined && response.data.data!=undefined && response.data.data.children != undefined){
+             debugger
+             $scope.redditBullets = $scope.redditBullets.concat(response.data.data.children);
+           }
+         }
+       },
+     function error(response){
+    debugger
+     });
+     };
+
+
+    $scope.getUserBulletinBoard = function(){
+      $http({
+        url: URL + "/getUserBulletinBoard",
+        method: "POST",
+        data:{
+          'sessionString': self.sessionString
+        }
+      }).then(function success(response){
+        if(response.status == 200){
+          if(response.data.status == "true"){
+            $scope.bulletinPosts = response.data.msg.posts;
+            $scope.userInterests = response.data.msg.tagNames;
+            for(var i=0;i<$scope.userInterests.length;i++){
+              $scope.searchRedditForPost($scope.userInterests[i]);
+            }
+          }
+        }
+      },
+      function error(response){
+        console.log(response.data.msg);
+      });
+
+
+    }
+
 
     $scope.uploadProfilePic = function($file){
       if($scope.allowEdit==true)
@@ -21,7 +77,8 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
     }
 
     var url = $location.path().split('/');
-    if(url.length>3)
+    debugger
+    if(url.length==3 && url[2]!="")
       $scope.username = url[2];
     else {
       $scope.username = $cookies.get('username');
@@ -69,7 +126,10 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
               var sessString = userinfo.user.sessionString;
 
               if(sessString!=undefined && sessString!="" && sessString == self.sessionString)
-                $scope.allowEdit = true;
+                {
+                  $scope.allowEdit = true;
+                  $scope.getUserBulletinBoard();
+                }
               else {
                 $scope.allowEdit = false;
               }
@@ -124,55 +184,6 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
         });
     }
 
-/**
- * Get user bullet-in board data
- */
-
- $scope.redditBullets = [];
-
- $scope.searchRedditForPost = function(searchQuery){
-   if(searchQuery == undefined || searchQuery.trim() == "")
-     return;
-   $http({
-     url: "https://www.reddit.com/search.json?q="+searchQuery+"&sort=hot",
-     method: "GET"
-   }).then(function success(response){
-     debugger
-     if(response.status == 200){
-       if(response.data != undefined && response.data.data!=undefined && response.data.data.children != undefined){
-         debugger
-         $scope.redditBullets = $scope.redditBullets.concat(response.data.data.children);
-       }
-     }
-   },
- function error(response){
-debugger
- });
- };
-
-
-
-
-$http({
-  url: URL + "/getUserBulletinBoard",
-  method: "POST",
-  data:{
-    'sessionString': self.sessionString
-  }
-}).then(function success(response){
-  if(response.status == 200){
-    if(response.data.status == "true"){
-      $scope.bulletinPosts = response.data.msg.posts;
-      $scope.userInterests = response.data.msg.tagNames;
-      for(var i=0;i<$scope.userInterests.length;i++){
-        $scope.searchRedditForPost($scope.userInterests[i]);
-      }
-    }
-  }
-},
-function error(response){
-  console.log(response.data.msg);
-});
 
 
 

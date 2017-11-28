@@ -1,6 +1,6 @@
 myApp.controller('indexController', ['$scope','$location', function ($scope, $location) {
   $scope.searchQuery = function(){
-    
+    debugger
     if($scope.searchStr.indexOf('=')!=-1){
       alert("Possible attempt of SQL Injection. Request blocked!");
       return;

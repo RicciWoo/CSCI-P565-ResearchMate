@@ -1,10 +1,10 @@
 myApp.controller('groupsController',['$scope','$http','URL','$location', '$cookies', '$cookieStore','$rootScope',function($scope,$http,URL,$location, $cookies, $cookieStore,$rootScope) {
+  $scope.userID = $cookies.get('userID');
   $http({
     url: URL+"/getAllGroups",
     method: "POST",
     data:{},
   }).then(function success(response){
-
     $scope.groupInfo = response.data.msg.groupInfo;
   },
 function error(response){
@@ -86,5 +86,10 @@ $scope.addNewGroup = function(){
       function error(response){
       });
   }
+
+
+$scope.redirectPending = function(groupID){
+  $location.path('/pendingrequest/'+groupID)
+}
 
 }]);

@@ -16,9 +16,10 @@
             </div>
         </div>
         <div data-id={{group.groupID}} class="grouplist row" ng-repeat="group in groupInfo">
-            <div class="col-lg-4 col-md-12"><strong><a href="/researchmate/#/discussion/{{group.groupID}}">{{group.groupName}}</a></strong></div>
-            <div class="col-lg-5 col-md-6 float-md-left text-ellipsis">{{group.description}}</div>
-            <div class="col-lg-3 col-md-6 float-md-right"><input type="button" class="btn btn-primary float-lg-right " value="{{userGroupID.indexOf(group.groupID) == -1?'Join':'Joined'}}"
+            <div class="col-lg-3 col-md-12"><strong><a href="/researchmate/#/discussion/{{group.groupID}}">{{group.groupName}}</a></strong></div>
+            <div class="col-lg-4 col-md-12 float-md-left text-ellipsis">{{group.description}}</div>
+            <div ng-show="userID!=null && userID==group.admin" class="col-lg-3 float-lg-right col-md-6 float-md-left"><input type="button" value="Pending Requests" class="btn btn-primary" ng-click="redirectPending(group.admin)" /></div>
+            <div class="col-lg-2 col-md-6 float-md-right"><input type="button" class="btn btn-primary float-lg-right " value="{{userGroupID.indexOf(group.groupID) == -1?'Join':'Joined'}}"
                     ng-click="joinGroup($event,group.groupID, group.isPrivate)" />
             </div>
     </form>

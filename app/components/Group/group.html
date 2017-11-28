@@ -4,15 +4,15 @@
        <h3 class="col-lg-4 float-lg-left col-md-12" style="color:#558C89;font:bold">Groups <span class="badge badge-primary">{{groupNames.length}}</span></h3>
        <div class="col-lg-8 float-lg-right text-right col-md-12">
            <input type="button" class="btn btn-primary" ng-click="redirectAddGroup()" value="Add Groups" >
-           <input type="button" class="btn btn-primary " ng-click="redirectPendingRequest()" value="Pending Requests" />
        </div>
 
      </div>
        <div class="row" style="background-color:#558C89"></div>
        <hr style="height:5px;background-color:#D9853B;margin-top: 0;">
        <div class="row" >
-          <div class="col-lg-3 text-ellipsis" ng-repeat="groups in groupNames">
-              {{groups}}
+          <div class="col-lg-3 text-ellipsis" ng-repeat="groups in groupInfo">
+              <a href="/researchmate/#/discussion/{{groups.groupID}}">{{groups.groupName}}</a><i title="Private Group" style="margin-left:5px;" ng-show="groups.isPrivate" class="fa fa-lock" aria-hidden="true"></i>
+              <i title="Admin" ng-show="userID!=null && userID == groups.admin" class="fa fa-key" aria-hidden="true"></i>
           </div>
        </div>
 
