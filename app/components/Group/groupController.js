@@ -2,7 +2,11 @@ myApp.controller('groupController', ['$scope', '$http', 'URL','$cookies','$locat
     var self=$scope;
     var sessionString = $cookies.get('sessionString');
     var url = $location.path().split('/');
-    self.username = url[2];
+    if(url.length==3)
+      self.username = url[2];
+    else {
+      self.username = $cookies.get('username');
+    }
     $http({
         url: "http://silo.soic.indiana.edu:54545/getUserGroups",
         method: "POST",

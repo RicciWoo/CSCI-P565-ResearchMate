@@ -2,7 +2,7 @@ myApp.controller('followingController', ['$scope', '$http', 'URL','$cookies','$l
     var self=$scope;
     var sessionString = $cookies.get('sessionString');
     var url = $location.path().split('/');
-    if(url.length>3)
+    if(url.length==3)
       $scope.username = url[2];
     else {
       $scope.username = $cookies.get('username');

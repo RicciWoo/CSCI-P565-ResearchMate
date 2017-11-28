@@ -21,7 +21,8 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
     }
 
     var url = $location.path().split('/');
-    if(url.length>3)
+    debugger
+    if(url.length==3)
       $scope.username = url[2];
     else {
       $scope.username = $cookies.get('username');
@@ -151,29 +152,31 @@ debugger
  };
 
 
-
-
-$http({
-  url: URL + "/getUserBulletinBoard",
-  method: "POST",
-  data:{
-    'sessionString': self.sessionString
-  }
-}).then(function success(response){
-  if(response.status == 200){
-    if(response.data.status == "true"){
-      $scope.bulletinPosts = response.data.msg.posts;
-      $scope.userInterests = response.data.msg.tagNames;
-      for(var i=0;i<$scope.userInterests.length;i++){
-        $scope.searchRedditForPost($scope.userInterests[i]);
+debugger
+if(self.allowedit){
+  $http({
+    url: URL + "/getUserBulletinBoard",
+    method: "POST",
+    data:{
+      'sessionString': self.sessionString
+    }
+  }).then(function success(response){
+    if(response.status == 200){
+      if(response.data.status == "true"){
+        $scope.bulletinPosts = response.data.msg.posts;
+        $scope.userInterests = response.data.msg.tagNames;
+        for(var i=0;i<$scope.userInterests.length;i++){
+          $scope.searchRedditForPost($scope.userInterests[i]);
+        }
       }
     }
-  }
-},
-function error(response){
-  console.log(response.data.msg);
-});
+  },
+  function error(response){
+    console.log(response.data.msg);
+  });
 
+
+}
 
 
 

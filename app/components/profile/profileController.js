@@ -4,7 +4,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
 
 
   var url = $location.path().split('/');
-  if(url.length>3)
+  if(url.length==3)
     $scope.username = url[2];
   else {
     $scope.username = $cookies.get('username');
