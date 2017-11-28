@@ -52,7 +52,7 @@
                 </div>
                 <div class="row">
                     <div class=" col-lg-2 text-ellipsis" title="{{userSkillName}}" ng-repeat="userSkillName in skillNameArr" style="margin:15px;padding:8px 15px;border-radius:4px;background-color:#D9853B;color:white">
-                      <img width="40" ng-src="{{skillIcon[userSkillName]}}" ng-show="skillIcon[userSkillName]!=''&&skillIcon[userSkillName]!=null"></img>  <span ng-show="skillIcon[userSkillName]==''||skillIcon[userSkillName]==null">{{userSkillName}}</span><a href="" ng-click="deleteSkills($index)" ng-show="allowEdit"> <i class="fa fa-times pull-right" ></i> </a>
+                      <img width="40" ng-src="{{skillIcon[userSkillName]}}" ng-show="skillIcon[userSkillName]!=''&& skillIcon[userSkillName]!=null"></img>  <span ng-show="skillIcon[userSkillName]==''||skillIcon[userSkillName]==null">{{userSkillName}}</span><a href="" ng-click="deleteSkills($index)" ng-show="allowEdit"> <i class="fa fa-times pull-right" ></i> </a>
 
                     </div>
                 </div>

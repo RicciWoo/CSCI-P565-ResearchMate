@@ -1,10 +1,11 @@
-myApp.controller('profileController', function ($scope, $http, $location, $cookies, $cookieStore, Upload, $rootScope) {
+myApp.controller('profileController', function ($scope, $http, $location, $cookies, $cookieStore, Upload, $rootScope, URL) {
 
   var sessionString = $cookies.get('sessionString');
 
 
   var url = $location.path().split('/');
-  if(url.length==3)
+
+  if(url.length==3 && url[2]!="")
     $scope.username = url[2];
   else {
     $scope.username = $cookies.get('username');
@@ -301,8 +302,28 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
      }
 
 
+/**
+ * Get user ID for future use.. Added by Gulshan
+ */
+if($rootScope.allowEdit){
+  $http({
+    url: URL + "/getUserID",
+    method: "POST",
+    data:{
+      'sessionString': sessionString
+    }
+  }).then(function success(response){
 
+    if(response.status == 200 && response.data.status == "true"){
+      $cookies.put('userID', response.data.msg);
+    }
 
+  },
+  function error(response){
+    console.log(response.statusText)
+  }
+  );
+  }
 }); //end of controller
 
 
