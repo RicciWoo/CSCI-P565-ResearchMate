@@ -36,6 +36,8 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/group/add-group.html"
     }).when("/pendingrequest/:groupID", {
       templateUrl: "components/group/pending-request.html"
+    }).when("/chat", {
+      templateUrl: "components/chat/chat.html"
     });
 
 
