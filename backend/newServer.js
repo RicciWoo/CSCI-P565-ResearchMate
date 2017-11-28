@@ -57,7 +57,8 @@ var User = require('./app/userModel'),
     PostTags = require('./app/postTags'),
     PostTagsMapping = require('./app/postTagMapping'),
     GroupJoinRequest = require('./app/groupJoinRequests'),
-    UserInterests = require('./app/userInterests');
+    UserInterests = require('./app/userInterests'),
+    Messages = require('./app/messages');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -134,7 +135,8 @@ function signUp(req,res,next) {
             sessionString: randomstring.generate(16),
             verificationNumber : getRandom(low,high),
             phone:phone,
-            carrier:carrier
+            carrier:carrier,
+            createdDate:Date.now()
         });
 
 //  For sending mail
@@ -271,7 +273,7 @@ function login(req,res,next) {
                         }
                         else {
                             var sessionString = randomstring.generate(16);
-                            User.findOneAndUpdate({userName:seeUser.userName}, { $set: { sessionString:sessionString}}, function(err,updatedUser){
+                            User.findOneAndUpdate({userName:seeUser.userName}, {$set:{sessionString:sessionString,active:true}}, function(err,updatedUser){
                                 if(err){
                                     response["status"] = "false";
                                     response["msg"] = "Failed to update sessionString.";
@@ -800,7 +802,6 @@ function getUserFollowers(req,res,next) {
     });
 }
 
-
 app.post('/followSomeone', followSomeone);                 //sessionstring, followthis(user that needs to be followed by sessionstring holder)
 function followSomeone(req,res,next) {
     var query = {"sessionString": req.body.sessionString};
@@ -812,32 +813,47 @@ function followSomeone(req,res,next) {
             console.log("Error: User not found!")
         }
         else {
-            query = {"userName":req.body.username};
-            User.findOne(query,function (err,followme) {
-                if(err || followme == null){
+            query = {"userName": req.body.username};
+            User.findOne(query, function (err, followme) {
+                if (err || followme == null) {
                     response["status"] = "false";
                     response["msg"] = "Unable to find user you want to follow.";
                     res.send(response);
                     console.log("Error: User you want to follow not found!")
                 }
-                else{
+                else {
                     var userFollowDoc = new UserFollowee({
-                        userID:user.userID,
-                        followeeID:followme.userID,
-                        followingFrom:Date.now()
+                        userID: user.userID,
+                        followeeID: followme.userID,
+                        followingFrom: Date.now()
                     });
                     userFollowDoc.save(function (err) {
-                        if(err){
+                        if (err) {
                             response["status"] = "false";
                             response["msg"] = "unable to follow this user";
                             res.send(response);
                             console.log(response["msg"]);
                         }
-                        else{
-                            response["msg"] = "following successful entry added.";
-                            response["status"] = "true";
-                            res.send(response);
-                            console.log(response["msg"]);
+                        else {
+                            var userFollowDoc2 = new UserFollowee({
+                                userID: followme.userID,
+                                followeeID: user.userID,
+                                followingFrom: Date.now()
+                            });
+                            userFollowDoc2.save(function (err) {
+                                if (err) {
+                                    response["status"] = "false";
+                                    response["msg"] = "unable to follow this user";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    response["msg"] = "following successful entry added.";
+                                    response["status"] = "true";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                            });
                         }
                     });
                 }
@@ -845,6 +861,7 @@ function followSomeone(req,res,next) {
         }
     });
 }
+
 
 app.post('/addPublication',addPublication);
 function addPublication(req,res,next) {
@@ -1422,18 +1439,18 @@ function searchInput(req, res, next){
                 if(searchStr[j] == undefined || searchStr[j].trim()=="")
                     continue;
                 for(var i = 0;i<users.length;i++){
-                        if(searchStr[j] == users[i].userName.toLowerCase() || users[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users[i])
-                        }
-                        else if(searchStr[j] == users[i].firstName.toLowerCase() || users[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users[i])
-                        }
-                        else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users[i])
-                        }
-                        else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
-                            result.push(users[i])
-                        }
+                    if(searchStr[j] == users[i].userName.toLowerCase() || users[i].userName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                        result.push(users[i])
+                    }
+                    else if(searchStr[j] == users[i].firstName.toLowerCase() || users[i].firstName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                        result.push(users[i])
+                    }
+                    else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                        result.push(users[i])
+                    }
+                    else if(searchStr[j]== users[i].lastName.toLowerCase() || users[i].lastName.toLowerCase().indexOf(searchStr[j])!=-1) {
+                        result.push(users[i])
+                    }
                 }
             }
             if(result.length>0) {
@@ -1651,11 +1668,11 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                             }
                             publicsInfoResponse["status"] = "true";
                             publicsInfoResponse["msg"] = {"publicationInfo":publicationsInfo,"userPublicMap":userPublicMap,"userData":userData};
-/*
-                            console.log("publications:"+publicationsInfo);
-                            console.log("userpubs:"+userPublicMap+"\n");
-                            console.log("users:"+userData);
-*/
+                            /*
+                                                        console.log("publications:"+publicationsInfo);
+                                                        console.log("userpubs:"+userPublicMap+"\n");
+                                                        console.log("users:"+userData);
+                            */
                             resultObj['publicsInfoResponse'] = publicsInfoResponse;
                             sendSearchResponse(res, resultObj)
                         }
@@ -2144,12 +2161,12 @@ function postReply(req, res, next) {
                     }
                     else {
                         addInterestThroughReply(res,user.userID,parseInt(req.body.postID));
-/*
-                        response["status"] = "true";
-                        response["msg"] = "Reply posted successfully.";
-                        res.send(response);
-                        console.log(response["msg"]);
-*/
+                        /*
+                                                response["status"] = "true";
+                                                response["msg"] = "Reply posted successfully.";
+                                                res.send(response);
+                                                console.log(response["msg"]);
+                        */
                     }
                 });
             });
@@ -2645,25 +2662,25 @@ function addUserInterest(req,res,next) {
 function addingUserInterest(res,tagID,userID) {
     UserInterests.findOne({"tagID":tagID,"userID":userID},function (err,entry) {
         if(entry==null||entry==undefined){
-           var newEntry = new UserInterests({
-               tagID:tagID,
-               userID:userID,
-               addedOn:Date.now()
-           });
-           newEntry.save(function (err) {
-               if(err){
-                   response["status"] = "false";
-                   response["msg"] = "Unable to add interest in userInterest";
-                   res.send(response);
-                   console.log(response["msg"]);
-               }
-               else {
-                   response["status"] = "true";
-                   response["msg"] = "Interest added successfully.";
-                   res.send(response);
-                   console.log(response["msg"]);
-               }
-           });
+            var newEntry = new UserInterests({
+                tagID:tagID,
+                userID:userID,
+                addedOn:Date.now()
+            });
+            newEntry.save(function (err) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "Unable to add interest in userInterest";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    response["status"] = "true";
+                    response["msg"] = "Interest added successfully.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+            });
         }
     });
 }
@@ -2747,11 +2764,34 @@ function getUserBulletinBoard(req,res,next) {
                         tagIDs.push(tags[i].tagID);
                     }
                     PostTagsMapping.find({"tagID":{$in:tagIDs}},function (err,postTags) {
+                        console.log("Post: "+ tagIDs + " posts: "+ postTags);
                         if(err||postTags.length==0){
-                            response["status"] = "false";
-                            response["msg"] = "User is not interested in anything. Lame!";
-                            res.send(response);
-                            console.log(response["msg"]);
+                            if(tagIDs.length>0){
+                                PostTags.find({"tagID":{$in:tagIDs}},function (err,tagNames){
+                                    if (err || tagNames.length == 0) {
+                                        response["status"] = "false";
+                                        response["msg"] = "Error encountered while getting tag names";
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                    else {
+                                        var tagArray = [];
+                                        for(var i = 0; i < tagNames.length; i++){
+                                            tagArray.push(tagNames[i].tagName);
+                                        }
+                                        response["status"] = "true";
+                                        response["msg"] = {"posts":[],"tagNames":tagArray};
+                                        res.send(response);
+                                        console.log(response["msg"]);
+                                    }
+                                });
+                            }
+                            else{
+                                response["status"] = "false";
+                                response["msg"] = "User is not interested in anything. Lame!";
+                                res.send(response);
+                                console.log(response["msg"]);
+                            }
                         }
                         else {
                             var postIDs = [];
@@ -2846,7 +2886,7 @@ app.post('/logout',logout);         //sessionString
 function logout(req,res,next) {
     var sessionString = req.body.sessionString;
     User.findOne({"sessionString": sessionString}, function (err, user) {
-        if (err||user==null|user==undefined) {
+        if (err||user==null||user==undefined) {
             response["status"] = "false";
             response["msg"] = "Invalid User";
             res.send(response);
@@ -2854,6 +2894,7 @@ function logout(req,res,next) {
         }
         else {
             user.set({sessionString:""});
+            user.set({active:false});
             user.save(function(err, updatedUser) {
                 if (err) {
                     response["status"] = "false";
@@ -2871,3 +2912,399 @@ function logout(req,res,next) {
     });
 }
 
+app.post('/getPostTags',getPostTags);         //postID
+function getPostTags(req,res,next) {
+    PostTagsMapping.find({"postID":req.body.postID},function (err,tags) {
+        if(err||tags.length==0){
+            response["msg"] = "No tags for this post.";
+            response["status"] = "false";
+            res.send(response);
+            console.log(response);
+        }
+        else {
+            var tagIDs=[];
+            for(var i = 0; i < tags.length; i++){
+                tagIDs.push(tags[i].tagID)
+            }
+            PostTags.find({"tagID":{$in:tagIDs}},function (err,tagNames) {
+                if(err||tagNames.length==0){
+                    response["msg"] = "No tag names for these tags.";
+                    response["status"] = "false";
+                    res.send(response);
+                    console.log(response);
+                }
+                else {
+                    response["msg"] = tagNames;
+                    response["status"] = "true";
+                    res.send(response);
+                    console.log(response);
+                }
+            });
+        }
+    });
+}
+
+app.post('/setPostTag',setPostTag);         //postID, tagName
+function setPostTag(req,res,next) {
+    var postID = req.body.postID,
+        tagName = req.body.tagName;
+    PostTags.findOne({"tagName":tagName},function (err,tag) {
+        if(err||tag==undefined||tag==null){
+//      adding a new tag
+            addingTag(res,postID,tagName);
+        }
+        else {
+            PostTagsMapping.findOne({"postID":postID,"tagID":tag.tagID},function (err,entry) {
+                if(err||entry==null||entry==undefined){
+                    var newEntry = new PostTagsMapping({tagID:tag.tagID, postID: postID});
+                    newEntry.save(function (err) {
+                        if(err){
+                            response["msg"] = "Unable to save tag";
+                            response["status"] = "false";
+                            res.send(response);
+                            console.log(response);
+                        }
+                        else {
+                            response["msg"] = "tag saved.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response);
+                        }
+                    });
+                }
+                else{
+                    response["msg"] = "tag already exists.";
+                    response["status"] = "false";
+                    res.send(response);
+                    console.log(response);
+                }
+            });
+        }
+    });
+}
+function addingTag(res,postID,tagName) {
+    var maxCount = 1;
+    PostTags.findOne().sort('-tagID').exec(function (err, entry) {
+        if (entry == null) {
+            maxCount = 1;
+        }
+        else {
+            maxCount = entry.tagID + 1;
+        }
+        var newTag = new PostTags({tagID: maxCount, tagName: tagName});
+        newTag.save(function (err) {
+            if (err) {
+                response["msg"] = "Unable to save tag";
+                response["status"] = "false";
+                res.send(response);
+                console.log(response);
+            }
+            else {
+                var newEntry = new PostTagsMapping({tagID: maxCount, postID: postID});
+                newEntry.save(function (err) {
+                    if (err) {
+                        response["msg"] = "Unable to save tag";
+                        response["status"] = "false";
+                        res.send(response);
+                        console.log(response);
+                    }
+                    else {
+                        response["msg"] = "tag saved and added to posttagmapping.";
+                        response["status"] = "true";
+                        res.send(response);
+                        console.log(response);
+                    }
+                });
+            }
+        });
+    });
+}
+
+app.post('/removePostTag',removePostTag);    //postID, tagName
+function removePostTag(req,res,next) {
+    var postID = req.body.postID;
+    PostTags.findOne({"tagName":req.body.tagName},function (err,tag) {
+        if (err||tag==null||tag==undefined) {
+            response["msg"] = "Unable to find the tag in db.";
+            response["status"] = "false";
+            res.send(response);
+            console.log(response);
+        }
+        else {
+            PostTagsMapping.findOne({"tagID":tag.tagID,"postID":postID},function (err,entry) {
+                if (err||entry==null||entry==undefined) {
+                    response["msg"] = "Unable to remove tag because it is not linked to post to begin with.";
+                    response["status"] = "false";
+                    res.send(response);
+                    console.log(response);
+                }
+                else {
+                    entry.remove(function (err) {
+                        if (err) {
+                            response["msg"] = "Unable to remove tag";
+                            response["status"] = "false";
+                            res.send(response);
+                            console.log(response);
+                        }
+                        else {
+                            response["msg"] = "removal successful.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getMyCircle',getMyCircle);           //sessionString
+function getMyCircle(req,res,next) {
+    var sessionString = req.body.sessionString;
+    var query = {"sessionString": sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var userID = user.userID;
+            UserFollowee.find({"userID": userID}, {'_id': 0}).select("followeeID").exec(function (err, docs) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "None in the circle.";
+                    res.send(response);
+                }
+                else {
+                    var ids = [];
+                    for (var i = 0; i < docs.length; i++) {
+                        ids.push(docs[i].followeeID)
+                    }
+                    User.find({'userID': {$in: ids}}, function (err, followers) {
+                        UserInfo.find({'userID': {$in: ids}}, function (infoErr, userInfo) {
+                            var follower = [];
+                            for (var i = 0; i < followers.length; i++) {
+                                var tempObj = {};
+                                if(followers[i].active) {
+                                    tempObj["firstname"] = followers[i].firstName;
+                                    tempObj["lastname"] = followers[i].lastName;
+                                    tempObj["username"] = followers[i].userName;
+                                    for (var j = 0; j < userInfo.length; j++) {
+                                        if (userInfo[j].userID == followers[i].userID) {
+                                            tempObj["imgLocation"] = userInfo[j].picture;
+                                            break;
+                                        }
+                                    }
+                                    follower.push(tempObj);
+                                }
+                            }
+                            if(follower.length>0) {
+                                response["status"] = "true";
+                                response["msg"] = {"followerActiveInfo":follower};
+                                res.send(response);
+                            }
+                            else{
+                                response["status"] = "false";
+                                response["msg"] = "None active at the moment.";
+                                res.send(response);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/sendMessage',sendMessage);           //sessionString(sender), username(receiver),msg
+function sendMessage(req,res,next){
+    var senderSessionString = req.body.sessionString;
+    var receiverUsername = req.body.username;
+    var message = req.body.msg;
+    var query = {"sessionString": senderSessionString};
+    User.findOne(query, function (err, sender) {
+        if (sender == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var query = {"userName": receiverUsername};
+            User.findOne(query, function (err, receiver) {
+                if (receiver == null) {
+                    response["status"] = "false";
+                    response["msg"] = "User you want to chat with cannot be found.";
+                    res.send(response);
+                    console.log("Error: Receiver not found!")
+                }
+                else {
+                    var msg = new Messages({
+                        senderID:sender.userID,
+                        receiverID:receiver.userID,
+                        msg:message,
+                        sentOn:Date.now()
+                    });
+                    msg.save(function (err) {
+                        if (err) {
+                            response["msg"] = "Unable to save msg.";
+                            response["status"] = "false";
+                            res.send(response);
+                            console.log(response);
+                        }
+                        else {
+                            response["msg"] = "msg saved.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getMessagesFromAUser',getMessagesFromAUser);           //sessionString(receiver), username(sender)
+function getMessagesFromAUser(req,res,next) {
+    var receiverSessionString = req.body.sessionString;
+    var senderUsername = req.body.username;
+    var query = {"sessionString": receiverSessionString};
+    User.findOne(query, function (err, receiver) {
+        if (receiver == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var query = {"userName": senderUsername};
+            User.findOne(query, function (err, sender) {
+                if (sender == null) {
+                    response["status"] = "false";
+                    response["msg"] = "User you want to get msgs from cannot be found.";
+                    res.send(response);
+                    console.log("Error: Sender not found!")
+                }
+                else {
+                    var MSGArray = [];
+                    var query = {"senderID":sender.userID,"receiverID":receiver.userID};
+                    Messages.find(query).sort('sentOn').exec(function (err,msgs) {
+                        if(err||msgs.length==0){
+                            response["status"] = "false";
+                            response["msg"] = "No messages. LAME.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            for(var i = 0; i < msgs.length; i++) {
+                                MSGArray.push(msgs[i]);
+                            }
+                            response["status"] = "true";
+                            response["msg"] = MSGArray;
+                            res.send(response);
+                            console.log(response["status"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getAllMessages',getAllMessages);           //sessionString(receiver)
+function getAllMessages(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, receiver) {
+        if (receiver == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var userID = receiver.userID;
+            UserFollowee.find({"userID": userID}).exec(function (err, docs) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "None in the circle.";
+                    res.send(response);
+                }
+                else {
+                    var ids = [];
+                    for (var i = 0; i < docs.length; i++) {
+                        ids.push(docs[i].followeeID)
+                    }
+                    User.find({'userID': {$in: ids}}, function (err, followers) {
+                        if(err||followers.length==0){
+                            response["status"] = "false";
+                            response["msg"] = "Something Wrong.";
+                            res.send(response);
+                        }
+                        else {
+                            UserInfo.find({'userID': {$in: ids}}, function (err, userInfo) {
+                                if(err||userInfo.length==0){
+                                    response["status"] = "false";
+                                    response["msg"] = "Something Wrong.";
+                                    res.send(response);
+                                }
+                                else {
+                                    var follower = [];
+                                    for (var i = 0; i < followers.length; i++) {
+                                        var tempObj = {};
+                                        tempObj["id"] = followers[i].userID;
+                                        tempObj["firstname"] = followers[i].firstName;
+                                        tempObj["lastname"] = followers[i].lastName;
+                                        tempObj["username"] = followers[i].userName;
+                                        var query = {"receiverID":receiver.userID,"senderID":followers[i].userID};
+                                        for (var j = 0; j < userInfo.length; j++) {
+                                            if (userInfo[j].userID == followers[i].userID) {
+                                                tempObj["imgLocation"] = userInfo[j].picture;
+                                                break;
+                                            }
+                                        }
+                                        follower.push(tempObj);
+                                    }
+                                    sendMessageResponse(res,follower,userID);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+function sendMessageResponse(res,follower,userID) {
+    var ids = [];
+    for (var i = 0; i < follower.length; i++) {
+        ids.push(follower[i].id);
+    }
+    var query = {"receiverID": userID};
+    Messages.find(query, function (err, entries) {
+        if (err || entries.length == 0) {
+            response["status"] = "false";
+            response["msg"] = "lonely creature";
+            res.send(response);
+        }
+        else {
+            for (var i = 0; i < follower.length; i++) {
+                var msgCount = 0;
+                for (var j = 0; j < entries.length; j++) {
+                    if (entries[j].senderID == follower[i].id) {
+                        msgCount += 1;
+                    }
+                }
+                follower[i].msgCount = msgCount;
+            }
+            response["status"] = "true";
+            response["msg"] = follower;
+            res.send(response);
+            console.log(response);
+        }
+    });
+}
