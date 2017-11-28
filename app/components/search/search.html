@@ -3,28 +3,30 @@
         <div class="container">
           <h3>Search Results</h3>
 
-          <div class="col-lg-12">
+          <div class="col-lg-12" ng-show="publicationSearchResult.length>0">
             <div style="padding-bottom: 10px; border-bottom:1px solid #ccc;margin-top:20px;" class="row">
-                <h5 class="col-lg-6"  ng-show="publicationSearchResult.length>0">Publication Search Results</h5>
-                <form class="col-lg-6" name="myForm1">
-                    <label for="mySelect1" style="margin-right:5px">Ratings :</label>
-                    <select name="mySelect1" id="mySelect1"
+                <h5 class="col-lg-3">Publication Search Results</h5>
+
+                <h4 style="margin-right: 10px;">Filter: </h4>
+                    <select name="mySelect1" class="col-lg-5 form-control" id="mySelect1"
                       ng-options="option.name for option in data1.availableOptions1 track by option.id"
                       ng-model="data1.selectedOption1"></select>
-                  </form>
+
+                  <select style="margin-left: 10px;" id="ratingValue" class="col-lg-2 form-control" ng-model="query">
+                    <option value="1">&#xf005;</option>
+                    <option value="2">&#xf005;&#xf005;</option>
+                    <option value="3">&#xf005;&#xf005;&#xf005;</option>
+                    <option value="4">&#xf005;&#xf005;&#xf005;&#xf005;</option>
+                    <option value="5">&#xf005;&#xf005;&#xf005;&#xf005;&#xf005;</option>
+                  </select>
             </div>
-           
-           
-            <select ng-model="query">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-            
-            {{query}}
-            <div ng-repeat="publication in publicationSearchResult | filter:query |orderBy: data1.selectedOption1.value " style="padding: 10px 5px;" class="row">
-              {{publication.avgRating}} 
+
+
+
+
+            <div id="publicationSearchSection">
+            <div rating-value = {{publication.avgRating}} ng-repeat="publication in publicationSearchResult | filter:query |orderBy: data1.selectedOption1.value " style="padding: 10px 5px;" class="row">
+
                   <div class="col-lg-3 col-md-12">
                     <a href="/researchmate/#/publication/{{publication.publicationID}}">{{publication.name}}  </a>
                   </div>
@@ -34,11 +36,12 @@
                     <input type="button" value="Follow" class="btn btn-primary" ng-click="followUser(userResult.userName)"></input>
                   </div> -->
               </div>
+            </div>
           </div>
 
-          <div class="col-lg-12">
+          <div ng-show="userSearchResult.length>0" class="col-lg-12">
               <div style="padding-bottom: 10px; border-bottom:1px solid #ccc;margin-top:20px;" class="row">
-            <h5 class="col-lg-6" ng-show="userSearchResult.length>0">User Search Results</h5>
+            <h5 class="col-lg-6">User Search Results</h5>
             <form class="col-lg-6" name="myForm">
                 <label for="mySelect">Name : </label>
                 <select name="mySelect" id="mySelect"
@@ -47,7 +50,7 @@
               </form>
               </div>
             <div ng-repeat="userResult in userSearchResult | orderBy:data.selectedOption.value" style="padding: 10px 5px;" class="row">
-               
+
                   <div class="col-lg-6 col-md-12"><a href="http://localhost/ResearchMate/#/profile/{{userResult.userName}}">
                     {{userResult.firstName}} {{userResult.lastName}}
                   </a></div>
