@@ -87,3 +87,6 @@ text-overflow: ellipsis;
   margin-top: 80px;
 
 }
+#ratingValue{
+  font-family: 'FontAwesome', 'Second Font name'
+}
