@@ -3279,23 +3279,23 @@ function getAllMessages(req,res,next) {
     });
 }
 
-function sendMessageResponse(res,follower,userID){
+function sendMessageResponse(res,follower,userID) {
     var ids = [];
-    for(var i = 0; i < follower.length; i++){
+    for (var i = 0; i < follower.length; i++) {
         ids.push(follower[i].id);
     }
-    var query = {"receiverID":userID};
-    Messages.find(query,function (err,entries) {
-        if(err||entries.length==0){
+    var query = {"receiverID": userID};
+    Messages.find(query, function (err, entries) {
+        if (err || entries.length == 0) {
             response["status"] = "false";
             response["msg"] = "lonely creature";
             res.send(response);
         }
         else {
-            for(var i = 0; i < follower.length; i++){
+            for (var i = 0; i < follower.length; i++) {
                 var msgCount = 0;
-                for(var j = 0; j < entries.length; j++){
-                    if(entries[j].senderID==follower[i].id){
+                for (var j = 0; j < entries.length; j++) {
+                    if (entries[j].senderID == follower[i].id) {
                         msgCount += 1;
                     }
                 }
