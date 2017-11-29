@@ -16,7 +16,9 @@ var express = require('express'),
     async = require('async'),
     morgan = require('morgan');
 
-var portNumber = 54545;
+var inputValidator = require('./InputValidator');
+
+var portNumber = 54547;
 app.listen(portNumber);
 console.log("Server running at silo.soic.indiana.edu:"+portNumber);
 
@@ -105,6 +107,13 @@ function getRandom(low,high) {
 
 
 app.post('/signUp',signUp);
+/**
+ * Function to create new user in database
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function signUp(req,res,next) {
 //  creating a document
     var email = req.body.email;
@@ -114,6 +123,9 @@ function signUp(req,res,next) {
     var pw = req.body.password;
     var phone = req.body.phone;
     var carrier = req.body.carrier;
+
+    if(!checkSignupInput(res, firstname, lastname, username, email, pw, phone, carrier))
+      return;
 
     var maxCount = 1;
     User.findOne().sort('-userID').exec(function(err, entry) {
@@ -241,11 +253,15 @@ app.post('/login',login);
 function login(req,res,next) {
     var username = req.body.username;
     var pw = req.body.password;
+    if(!inputValidator.checkLoginInput(res, username, pw)){
+        return;
+    }
 
     if(username==null||pw==null||pw==undefined||username==undefined||username==""||pw==""){
         response["status"] = "false";
         response["msg"] = "Wrong input";
         res.send(response);
+        return;
     }
     var query = {'userName':username};
     User.findOne(query, function(err, seeUser) {
