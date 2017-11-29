@@ -3326,11 +3326,15 @@ function chatConnect(req,res,next) {
 
     io.on('connection', function (socket) {
         socket.on(roomName, function (data) {
-            console.log(data);
-            socket.broadcast.emit(roomName, {
-                username: socket.username,
-                message: data
-            });
+            var txt = {};
+            txt["username"] = data.username;
+            txt["message"] = data.message;
+            socket.broadcast.emit(roomName, txt);
+
+
+            console.log("sender : "+me);
+            console.log("receiver : "+other);
+            console.log("message : "+txt.message);
         });
     });
 

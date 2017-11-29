@@ -26,14 +26,15 @@
         var socket = io();
         $('form').submit(function(){
             var data = {
-                msg:$('#m').val(),
+                message:$('#m').val(),
                 username:'shub'
             };
-            socket.emit('new message',data);
+            socket.emit('jaytest',data);
             $('#m').val('');
+            $('#messages').append($('<li>').text(data.message));
             return false;
         });
-        socket.on('new message', function(data){
+        socket.on('jaytest', function(data){
             $('#messages').append($('<li>').text(data.message));
             window.scrollTo(0, document.body.scrollHeight);
         });
