@@ -3325,11 +3325,6 @@ function chatConnect(req,res,next) {
     var roomName = me+other;
 
     io.on('connection', function (socket) {
-
-        response["status"] = "true";
-        response["msg"] = roomName;
-        res.send(response);
-
         socket.on(roomName, function (data) {
             console.log(data);
             socket.broadcast.emit(roomName, {
