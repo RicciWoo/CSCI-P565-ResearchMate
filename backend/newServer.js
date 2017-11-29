@@ -5,7 +5,7 @@ var express = require('express'),
     cors = require('cors'),
     bcrypt = require('bcrypt'),
     mongoose = require('mongoose'),
-    http = require('http'),
+    http = require('http').createServer(app),
     bodyParser = require('body-parser'),
     fs = require('fs'),
     randomstring = require("randomstring"),
@@ -14,12 +14,19 @@ var express = require('express'),
     multipart = require('connect-multiparty'),
     path = require('path'),
     async = require('async'),
-    morgan = require('morgan');
+    morgan = require('morgan'),
+    io = require('socket.io')(http);
 
 var portNumber = 54545;
-app.listen(portNumber);
+http.listen(portNumber);
+
 console.log("Server running at silo.soic.indiana.edu:"+portNumber);
 
+app.get('/', function(req, res){
+    res.sendFile(__dirname + '/index.html');
+});
+
+/*
 // For saving logs
 app.use(express.static('../app/'));
 app.use(express.static('log/'));
@@ -27,6 +34,7 @@ app.use(express.static('log/'));
 var accessLogStream = fs.createWriteStream('./log/access.log', {flags: 'a'});
 // setup the logger
 app.use(morgan('combined', {stream: accessLogStream}));
+*/
 
 
 app.use(bodyParser.json());
@@ -3307,4 +3315,28 @@ function sendMessageResponse(res,follower,userID) {
             console.log(response);
         }
     });
+}
+
+// chat
+app.post('/chatConnect',chatConnect);           //sender, receiver
+function chatConnect(req,res,next) {
+    var me = req.body.sender;
+    var other = req.body.receiver;
+    var roomName = me+other;
+
+    io.on('connection', function (socket) {
+
+        response["status"] = "true";
+        response["msg"] = roomName;
+        res.send(response);
+
+        socket.on(roomName, function (data) {
+            console.log(data);
+            socket.broadcast.emit(roomName, {
+                username: socket.username,
+                message: data
+            });
+        });
+    });
+
 }
