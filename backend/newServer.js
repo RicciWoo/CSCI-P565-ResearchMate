@@ -186,9 +186,18 @@ function signUp(req,res,next) {
 }
 
 app.post('/verifyUser',verifyUser);
+/**
+ * Function to check the verfication of user (Dual authentication)
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function verifyUser(req,res,next) {
     var username = req.body.username;
     var verifNumber = req.body.verificationNumber;
+    if(!inputValidator.checkVerifyUserInput(res, username, verifNumber))
+      return;
     var query = {"userName": username};
 
     User.findOne(query, function(err, seeUser) {
@@ -250,6 +259,13 @@ function verifyUser(req,res,next) {
 }
 
 app.post('/login',login);
+/**
+ * Function to verify the user credentials for input and generate OTP
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function login(req,res,next) {
     var username = req.body.username;
     var pw = req.body.password;
@@ -320,9 +336,18 @@ function login(req,res,next) {
 }
 
 app.post('/updatePassword',updatePassword);
+/**
+ * Function to update the user password
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function updatePassword(req, res, next){
     var sessionString = req.body.sessionString;
     var password = myHasher(req.body.password);
+    if(!inputValidator.checkUpdatePwdInput(res, sessionString, password))
+      return;
     var query = {'sessionString': sessionString};
     User.findOne(query, function(err, UserObj){
         if(UserObj == null){
@@ -356,8 +381,17 @@ function updatePassword(req, res, next){
 }
 
 app.post('/forgetUsername',forgetUsername);
+/**
+ * Function to send username to user using email
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function forgetUsername(req, res, next){
     var email = req.body.email;
+    if(!inputValidator.checkForgetUsernameInput(res, email))
+      return;
     var query = {'emailID' : email};
     User.findOne(query, function(err, UserObj){
         if(UserObj == null){
@@ -383,8 +417,17 @@ function forgetUsername(req, res, next){
 }
 
 app.post('/forgetPassword',forgetPassword);
+/**
+ * Function to generate a URL that allows the user to reset password
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function forgetPassword(req, res, next){
     var input = req.body.input;
+    if(!inputValidator.checkForgetPwdInput(res, input))
+      return;
     var query = {};
     if(input.indexOf('@')!=-1){
         query = {'emailID' : input};
@@ -428,10 +471,19 @@ function forgetPassword(req, res, next){
 }
 
 app.post('/getUserInfo', getUserInfo);
+/**
+ * Function to return the basic user information
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function getUserInfo(req,res,next) {
     // check sessionString in usertable & get userID
     var sessionString = req.body.sessionstring;
     var username = req.body.username;
+    if(!inputValidator.checkGetUserInfo(res, username))
+      return;
     var query = {"userName": username};
     User.findOne(query, function(err, user) {
         if (user == null) {
@@ -466,9 +518,17 @@ function getUserInfo(req,res,next) {
 }
 
 app.post('/setUserInfo', setUserInfo);
+/**
+ * Function to set the user information
+ * @param {[type]}   req  [description]
+ * @param {[type]}   res  [description]
+ * @param {Function} next [description]
+ */
 function setUserInfo(req,res,next) {
 //  check sessionString in usertable & get userID
     var sessionString = req.body.sessionstring;
+    if(!inputValidator.checkSessionString(res, sessionString))
+      return;
     var query = {"sessionString": sessionString};
     User.findOne(query, function(err, user) {
         if (user == null) {
@@ -538,8 +598,17 @@ function sayHello(req,res,next){
 }
 
 app.post('/getUserPublications', getUserPublications);     //username and (opt)sessionString
+/**
+ * Function to return user publication data
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function getUserPublications(req,res,next) {
     var sessionString = req.body.sessionString;
+    if(!inputValidator.checkGetUserInfo(res, req.body.username))
+      return
     var query = {"userName": req.body.username};
     User.findOne(query, function (err, user) {
         if (user == null) {
@@ -577,7 +646,15 @@ function getUserPublications(req,res,next) {
 }
 
 app.post('/setUserPublication', setUserPublication);      //sessionstring, publicationID   (not properly set yet)
+/**
+ * Function to add publication data into database
+ * @param {[type]}   req  [description]
+ * @param {[type]}   res  [description]
+ * @param {Function} next [description]
+ */
 function setUserPublication(req,res,next) {
+    if(!inputValidator.checkSessionString(res, req.body.sessionstring))
+      return;
     var query = {"sessionString": req.body.sessionstring};
     User.findOne(query, function (err, user) {
         if (user == null) {
@@ -610,9 +687,18 @@ function setUserPublication(req,res,next) {
 }
 
 app.post('/createGroup', createGroup);                  //groupname, sessionString, isPrivate
+/**
+ * Function to create a new group
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function createGroup(req,res,next) {
     var maxCount = 1;
     var groupPrivate = req.body.isPrivate;
+    if(!inputValidator.checkCreateGroupInput(res, req.body.sessionString))
+      return;
 
     if(groupPrivate==null){
         groupPrivate = 0;
@@ -689,8 +775,17 @@ function createGroup(req,res,next) {
 
 
 app.post('/getUserGroups', getUserGroups);                  //username + (opt)sessionstring
+/**
+ * Function to return the user groups
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function getUserGroups(req,res,next) {
     var sessionString = req.body.sessionString;
+    if(!inputValidator.checkGetUserInfo(req.body.username))
+      return;
     var query = {"userName": req.body.username};
     User.findOne(query, function (err, user) {
         if (user == null) {
@@ -728,7 +823,16 @@ function getUserGroups(req,res,next) {
 }
 
 app.post('/setUserGroup', setUserGroup);                   //sessionstring, groupname
+/**
+ * Function to add user to a group
+ * @param {[type]}   req  [description]
+ * @param {[type]}   res  [description]
+ * @param {Function} next [description]
+ */
 function setUserGroup(req,res,next) {
+
+    if(!inputValidator.checkSetUserGroupInput(res, req.body.sessionString, req.body.groupID))
+      return;
     var query = {"sessionString": req.body.sessionString};
     User.findOne(query, function (err, user) {
         if (user == null) {
@@ -763,8 +867,17 @@ function setUserGroup(req,res,next) {
 }
 
 app.post('/getUserFollowers', getUserFollowers);           //username + (opt)sessionstring
+/**
+ * Function that return connections of a given user
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function getUserFollowers(req,res,next) {
     var sessionString = req.body.sessionString;
+    if(!inputValidator.checkGetUserInfo(res, req.body.username))
+      return;
     var query = {"userName": req.body.username};
     console.log(req.body.username);
     User.findOne(query, function (err, user) {
@@ -819,7 +932,18 @@ function getUserFollowers(req,res,next) {
 }
 
 app.post('/followSomeone', followSomeone);                 //sessionstring, followthis(user that needs to be followed by sessionstring holder)
+/**
+ * Function to add connections
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function followSomeone(req,res,next) {
+    if(!inputValidator.checkSessionString(res, req.body.sessionString))
+      return;
+    if(!inputValidator.checkGetUserInfo(res, req.body.username))
+      return;
     var query = {"sessionString": req.body.sessionString};
     User.findOne(query, function (err, user) {
         if (user == null || err) {
@@ -880,7 +1004,15 @@ function followSomeone(req,res,next) {
 
 
 app.post('/addPublication',addPublication);
+/**
+ * Function to add user publication
+ * @param {[type]}   req  [description]
+ * @param {[type]}   res  [description]
+ * @param {Function} next [description]
+ */
 function addPublication(req,res,next) {
+    if(!inputValidator.checkAddPublication(res, req.body.sessionstring, req.body.name, req.body.ISSN))
+      return;
     var query = {"sessionString": req.body.sessionstring};
     User.findOne(query, function (err, user) {
         if (user == null || err) {
@@ -1004,6 +1136,8 @@ function uploadProfilePic(req, res, next) {
 
 app.post('/uploadPaperPDF', uploadPaperPDF);
 function uploadPaperPDF(req, res, next) {       // requires ISSN, username
+  if(!inputValidator.checkAddPublication(res, req.body.sessionString, req.body.name, req.body.ISSN))
+    return;
     var data = req.body.type,
         finalPath = './public/papers/' + req.body.ISSN.toString() + '.pdf',
         file = req.files.file,
@@ -1144,7 +1278,16 @@ function getAllGroups(req, res, next) {
 }
 
 app.post('/getPublicationByID', getPublicationByID);
+/**
+ * Get the publication details for a given publication ID
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function getPublicationByID(req, res, next) {       // publicationID
+    if(!inputValidator.checkPublicationByID(res, req.body.publicationID))
+      return;
     var query = {"publicationID":req.body.publicationID};
     Publications.findOne(query,function (err,publication) {
         if(err||publication==null){
@@ -1186,7 +1329,15 @@ function getPublicationByID(req, res, next) {       // publicationID
 }
 
 app.post('/addSkill', addSkill);
+/**
+ * Function to add new skill to user
+ * @param {[type]}   req  [description]
+ * @param {[type]}   res  [description]
+ * @param {Function} next [description]
+ */
 function addSkill(req, res, next) {       // SessionString, skillName
+    if(!inputValidator.checkAddSkill(res, req.body.sessionString, req.body.skillName))
+      return;
     var query = {"sessionString": req.body.sessionString};
     User.findOne(query, function (err, user) {
         if (err || user == null) {
@@ -1252,6 +1403,8 @@ function addSkill(req, res, next) {       // SessionString, skillName
 
 app.post('/getUserSkills', getUserSkills);
 function getUserSkills(req, res, next) {       // userName
+    if(!inputValidator.checkGetUserInfo(res, req.body.userName))
+      return;
     var query = {"userName": req.body.userName};
     User.findOne(query, function (err, user) {
         if (err || user == null) {
@@ -1295,7 +1448,16 @@ function getUserSkills(req, res, next) {       // userName
 
 
 app.post('/searchUser', searchUser);
+/**
+ * Function to search for the requested query
+ * @param  {[type]}   req  [description]
+ * @param  {[type]}   res  [description]
+ * @param  {Function} next [description]
+ * @return {[type]}        [description]
+ */
 function searchUser(req, res, next) {       // searchString
+    if(!inputValidator.checkSearchQuery(res, req.body.searchString))
+      return;
     var searchString = req.body.searchString;
     if(searchString == undefined || searchString.trim() == "")
     {
@@ -1430,6 +1592,8 @@ function searchSkill(req, res, next) {
 
 app.post('/searchInput', searchInput);
 function searchInput(req, res, next){
+  if(!inputValidator.checkSearchQuery(res, req.body.searchString))
+    return;
     var searchString = req.body.searchString;
     var resultObj = {};
     if(searchString == undefined || searchString.trim() == "")
