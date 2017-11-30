@@ -3322,7 +3322,8 @@ app.post('/chatConnect',chatConnect);           //sender, receiver
 function chatConnect(req,res,next) {
     var me = req.body.sender;
     var other = req.body.receiver;
-    var roomName = me+other;
+    var roomName = me + other;
+    var roomRev = other + me;
 
     io.on('connection', function (socket) {
         socket.on(roomName, function (data) {
@@ -3331,11 +3332,9 @@ function chatConnect(req,res,next) {
             txt["message"] = data.message;
             socket.broadcast.emit(roomName, txt);
 
-
-            console.log("sender : "+me);
-            console.log("receiver : "+other);
-            console.log("message : "+txt.message);
+            console.log("sender : " + me);
+            console.log("receiver : " + other);
+            console.log("message : " + txt.message);
         });
     });
-
 }
