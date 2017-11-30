@@ -3324,10 +3324,36 @@ io.on('connection', function (socket) {
         txt["sender"] = data.sender;
         txt["receiver"] = data.receiver;
         txt["message"] = data.message;
-
-        socket.broadcast.emit('universal', txt);
         console.log(txt);
-        console.log("data : " + data.message);
-
+        User.findOne({"userName":txt["sender"]},function (err,sender) {
+            if (err||sender ==null) {
+                return new Error("Database Error for sender");
+            }
+            else {
+                User.findOne({"userName": txt["receiver"]}, function (err, receiver) {
+                    if (err||receiver==null) {
+                        return new Error("Database Error at receiver");
+                    }
+                    else {
+                        var msg = new Messages({
+                            senderID: sender.userID,
+                            receiverID: receiver.userID,
+                            msg: txt["message"],
+                            sentOn: Date.now()
+                        });
+                        msg.save(function (err) {
+                            if (err) {
+                                return new Error("Database Error while saving");
+                            }
+                            else {
+                                console.log("msg sent.");
+                                socket.broadcast.emit('universal', txt);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        socket.broadcast.emit('universal', txt);
     });
 });
