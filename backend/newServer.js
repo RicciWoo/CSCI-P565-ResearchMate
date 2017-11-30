@@ -3318,23 +3318,16 @@ function sendMessageResponse(res,follower,userID) {
 }
 
 // chat
-app.post('/chatConnect',chatConnect);           //sender, receiver
-function chatConnect(req,res,next) {
-    var me = req.body.sender;
-    var other = req.body.receiver;
-    var roomName = me + other;
-    var roomRev = other + me;
+io.on('connection', function (socket) {
+    socket.on('universal', function (data) {
+        var txt = {};
+        txt["sender"] = data.sender;
+        txt["receiver"] = data.receiver;
+        txt["message"] = data.message;
 
-    io.on('connection', function (socket) {
-        socket.on(roomName, function (data) {
-            var txt = {};
-            txt["username"] = data.username;
-            txt["message"] = data.message;
-            socket.broadcast.emit(roomName, txt);
+        socket.broadcast.emit('universal', txt);
+        console.log(txt);
+        console.log("data : " + data.message);
 
-            console.log("sender : " + me);
-            console.log("receiver : " + other);
-            console.log("message : " + txt.message);
-        });
     });
-}
+});
