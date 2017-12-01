@@ -22,8 +22,14 @@ http.listen(portNumber);
 
 console.log("Server running at silo.soic.indiana.edu:"+portNumber);
 
-app.get('/', function(req, res){
-    res.sendFile(__dirname + '/index.html');
+app.get('/test1', function(req, res){
+    res.sendFile(__dirname + '/index1.html');
+});
+app.get('/test2', function(req, res){
+    res.sendFile(__dirname + '/index2.html');
+});
+app.get('/test3', function(req, res){
+    res.sendFile(__dirname + '/index3.html');
 });
 
 /*
@@ -3319,6 +3325,7 @@ function sendMessageResponse(res,follower,userID) {
 }
 
 // chat
+var connectedUsers = [];
 io.on('connection', function (socket) {
     socket.on('universal', function (data) {
         var txt = {};
@@ -3326,6 +3333,12 @@ io.on('connection', function (socket) {
         txt["receiver"] = data.receiver;
         txt["message"] = data.message;
         console.log(txt);
+
+        connectedUsers[data.sender] = socket.id;
+        console.log(connectedUsers);
+
+        var receiverID = connectedUsers[data.receiver];
+
         User.findOne({"userName":txt["sender"]},function (err,sender) {
             if (err||sender ==null) {
                 return new Error("Database Error for sender");
@@ -3355,7 +3368,8 @@ io.on('connection', function (socket) {
                 });
             }
         });
-        socket.broadcast.emit('universal', txt);
+        socket.to(receiverID).emit('universal', txt);
+
     });
 });
 
@@ -3575,6 +3589,63 @@ function rejectConnectionRequest(req,res,next) {
                             response["msg"] = "request deleted.";
                             res.send(response);
                             console.log(response)
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/unfriend',unfriend);           //sessionString(me), username (to unfriend)
+function unfriend(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            User.findOne({"userName": req.body.username}, function (err, requester) {
+                if (requester == null || err) {
+                    response["status"] = "false";
+                    response["msg"] = "He/She/It is just your imagination.";
+                    res.send(response);
+                    console.log(response)
+                }
+                else {
+                    UserFollowee.findOne({
+                        "userID": user.userID,
+                        "followeeID": requester.userID
+                    }, function (err, entry1) {
+                        if (err || entry == null || entry == undefined) {
+                            response["status"] = "false";
+                            response["msg"] = "He/She/It is just your imagination.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            UserFollowee.findOne({
+                                "userID": requester.userID,
+                                "followeeID": user.userID
+                            }, function (err, entry2) {
+                                if (err || entry == null || entry == undefined) {
+                                    response["status"] = "false";
+                                    response["msg"] = "He/She/It is just your imagination.";
+                                    res.send(response);
+                                    console.log(response)
+                                }
+                                else {
+                                    entry1.remove();
+                                    entry2.remove();
+                                    response["status"] = "true";
+                                    response["msg"] = "Friend Removed. I hope you are happy with yourself.";
+                                    res.send(response);
+                                    console.log(response)
+                                }
+                            });
                         }
                     });
                 }
