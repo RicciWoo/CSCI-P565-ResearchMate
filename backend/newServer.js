@@ -3542,3 +3542,43 @@ function allowConnectionRequest(req,res,next) {
         }
     });
 }
+
+app.post('/rejectConnectionRequest',rejectConnectionRequest);           //sessionString(me), username (requester)
+function rejectConnectionRequest(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            User.findOne({"userName": req.body.username}, function (err, requester) {
+                if (requester == null || err) {
+                    response["status"] = "false";
+                    response["msg"] = "He/She/It is just your imagination.";
+                    res.send(response);
+                    console.log(response)
+                }
+                else {
+                    FriendRequest.findOne({"requesterID": requester.userID, "userID": user.userID},function(err,entry){
+                        if (err || entry == null || entry == undefined) {
+                            response["status"] = "false";
+                            response["msg"] = "He/She/It is not in the table anymore.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            entry.remove();
+                            response["status"] = "true";
+                            response["msg"] = "request deleted.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
