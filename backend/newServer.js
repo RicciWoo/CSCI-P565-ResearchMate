@@ -66,7 +66,8 @@ var User = require('./app/userModel'),
     PostTagsMapping = require('./app/postTagMapping'),
     GroupJoinRequest = require('./app/groupJoinRequests'),
     UserInterests = require('./app/userInterests'),
-    Messages = require('./app/messages');
+    Messages = require('./app/messages'),
+    FriendRequest = require('./app/friendRequests');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -3357,3 +3358,187 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('universal', txt);
     });
 });
+
+app.post('/sendRequest',sendRequest);               //sessionString(requester), username(to be requested)
+function sendRequest(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            query = {"userName": req.body.username};
+            User.findOne(query, function (err, followme) {
+                if (err || followme == null) {
+                    response["status"] = "false";
+                    response["msg"] = "Unable to find user you want to send request to.";
+                    res.send(response);
+                    console.log("Error: User you want to befriend not found!")
+                }
+                else {
+                    FriendRequest.findOne({"requesterID":user.userID,"userID":followme.userID},function (err,entry) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "DB error";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else if(entry==null||entry==undefined){
+                            var entry = new FriendRequest({
+                                requesterID:user.userID,
+                                userID:followme.userID,
+                                requestedOn:Date.now()
+                            });
+                            entry.save(function (err) {
+                                if (err) {
+                                    response["status"] = "false";
+                                    response["msg"] = "unable to send request to this user";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    response["msg"] = "request send successfully.";
+                                    response["status"] = "true";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                            });
+                        }
+                        else {
+                            response["msg"] = "request already sent.";
+                            response["status"] = "true";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getAllConnectionRequests',getAllConnectionRequests);           //sessionString
+function getAllConnectionRequests(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            FriendRequest.find({"userID":user.userID},function (err,requesters) {
+                if(err||requesters.length==0){
+                    response["status"] = "false";
+                    response["msg"] = "No requests.";
+                    res.send(response);
+                    console.log(response)
+                }
+                else {
+                    var requestIDs = [];
+                    for(var i = 0; i < requesters.length; i++){
+                        requestIDs.push(requesters[i].requesterID);
+                    }
+                    User.find({"userID":{$in:requestIDs}},function (err,users) {
+                        if(err||users.length==0){
+                            response["status"] = "false";
+                            response["msg"] = "Something Wrong in the database";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            UserInfo.find({"userID":{$in:requestIDs}},function (err,userInfos) {
+                                if(err||users.length==0){
+                                    response["status"] = "false";
+                                    response["msg"] = "Something Wrong in the database";
+                                    res.send(response);
+                                    console.log(response)
+                                }
+                                else {
+                                    response["status"] = "true";
+                                    response["msg"] = {"users":users,"userInfo":userInfos};
+                                    res.send(response);
+                                    console.log(response)
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/allowConnectionRequest',allowConnectionRequest);           //sessionString(me), username (requester)
+function allowConnectionRequest(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            User.findOne({"userName":req.body.username}, function (err, requester) {
+                if (requester == null || err) {
+                    response["status"] = "false";
+                    response["msg"] = "He/She/It is just your imagination.";
+                    res.send(response);
+                    console.log(response)
+                }
+                else {
+                    FriendRequest.findOne({"requesterID":requester.userID,"userID":user.userID},function (err,entry) {
+                        if(err||entry==null||entry==undefined){
+                            response["status"] = "false";
+                            response["msg"] = "He/She/It is not in the table anymore.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            entry.remove();
+                            var userFollowDoc = new UserFollowee({
+                                userID: user.userID,
+                                followeeID: requester.userID,
+                                followingFrom: Date.now()
+                            });
+                            userFollowDoc.save(function (err) {
+                                if (err) {
+                                    response["status"] = "false";
+                                    response["msg"] = "DB problem";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    var userFollowDoc2 = new UserFollowee({
+                                        userID: requester.userID,
+                                        followeeID: user.userID,
+                                        followingFrom: Date.now()
+                                    });
+                                    userFollowDoc2.save(function (err) {
+                                        if (err) {
+                                            response["status"] = "false";
+                                            response["msg"] = "DB problem";
+                                            res.send(response);
+                                            console.log(response["msg"]);
+                                        }
+                                        else {
+                                            response["msg"] = "Connection made.";
+                                            response["status"] = "true";
+                                            res.send(response);
+                                            console.log(response["msg"]);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
