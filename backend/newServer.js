@@ -210,35 +210,38 @@ function verifyUser(req,res,next) {
                         res.send(response);
                     }
                     else {
+                        var pic = "http://silo.soic.indiana.edu:" + portNumber.toString() + "/public/userIcon.jpg";
 
-                        var maxCount = 1;
-                        UserInfo.findOne().sort('-userID').exec(function (err, entry) {
-                            // entry.userID is the max value
-                            if (entry == null) {
-                                maxCount = 1;
+                        var userInfo = new UserInfo({
+                            userID: seeUser.userID,
+                            university: "",
+                            location: {
+                                address: "",
+                                city: "",
+                                state: "",
+                                country: ""
+                            },
+                            dob: Date.now(),
+                            advisor: {
+                                primary: "",
+                                secondary: ""
+                            },
+                            picture: pic,
+                            summary: ""
+                        });
+                        userInfo.save(function (err) {
+                            if (err) {
+                                response["status"] = "false";
+                                response["msg"] = "unable to add into userInfo";
+                                res.send(response);
+                                console.log("unable to add into userInfo");
                             }
                             else {
-                                maxCount = entry.userID + 1;
+                                response["status"] = "true";
+                                response["msg"] = "Verification Successful.";
+                                res.send(response);
+                                console.log("added into userInfo");
                             }
-
-                            var pic = "http://silo.soic.indiana.edu:"+portNumber.toString()+"/public/userIcon.jpg";
-                            var userInfo = new UserInfo({userID: maxCount,picture:pic});
-
-
-                            userInfo.save(function (err) {
-                                if (err) {
-                                    response["status"] = "false";
-                                    response["msg"] = "unable to add into userInfo";
-                                    res.send(response);
-                                    console.log("unable to add into userInfo");
-                                }
-                                else {
-                                    response["status"] = "true";
-                                    response["msg"] = "Verification Successful.";
-                                    res.send(response);
-                                    console.log("added into userInfo");
-                                }
-                            });
                         });
                     }
                 });
