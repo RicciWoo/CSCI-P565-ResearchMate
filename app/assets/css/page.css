@@ -149,3 +149,20 @@ text-overflow: ellipsis;
   border-bottom: 1px solid #ccc;
   margin-bottom: 5px;
 }
+
+
+.send{
+  margin-top: 10px;
+  border-radius: 10px;
+  background: #ccc;
+  float: right;
+  padding: 10px;
+}
+.receive{
+  margin-top: 10px;
+  border-radius: 10px;
+  background: #007bff;
+  color: #fff;
+  float: left;
+  padding: 10px;
+}

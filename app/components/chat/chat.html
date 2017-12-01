@@ -1,0 +1,35 @@
+<div ng-controller="chatController">
+ <div class="row " style="height:770px">
+  <div class="col-lg-3 " style="background-color:lightgray;">
+    <div class="list-group" ng-repeat="user in followerInfo">
+
+       <button type="button" class="list-group-item list-group-item-action" style="width:104%" ng-click="chatConfig(user, $event)" active >
+                <div class="row">
+               <div class=col-lg-10>
+                  <img ng-src={{user.imgLocation==""?'http://simpleicon.com/wp-content/uploads/user1.png':user.imgLocation}} title="{{user.firstname +' ' + user.lastname}}" height="50px" width="50px" style="padding:10px"/>
+                  {{user.firstname +' ' + user.lastname}}
+                </div>
+
+            </div>
+            </button>
+            </div>
+        </div>
+
+        <div class="col-lg-9 container-fluid" style="background-color:white">
+         <div style="height:85%;border:thin solid gray;margin-right:10px;margin-bottom: 10px;margin-top:10px;background-color:rgba(240, 235, 235, 0.97)" >
+           <div ng-repeat="message in messages track by $index">
+             <div class="col-lg-10 {{message.side}}">{{message.msg}}  <span class="col-lg-2 pull-right"><em>{{message.date|date:'MM/dd/yyyy HH:mm:ss'}}</em></span> </div>
+
+           </div>
+
+         </div>
+
+         <div class="form-group row">
+
+                <input type="text" class="form-control col-lg-10" ng-model="msg" >
+                <button type="button" class="btn btn-primary col-lg-2" ng-click="sendMessage()">Send</button>
+              </div>
+        </div>
+
+    </div>
+</div>

@@ -38,7 +38,10 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/group/add-group.html"
     }).when("/pendingrequest/:groupID", {
       templateUrl: "components/group/pending-request.html"
-    });
+    }).when("/chat", {
+      templateUrl: "components/chat/chat.html",
+
+    });;
 
 
 });
@@ -69,4 +72,34 @@ myApp.directive('ngEnter', function() {
           }
       });
   };
+});
+
+myApp.service('chatService', function($cookies) {
+  var sessionString;
+  var userName;
+  var addSessionString = function(newObj) {
+    sessionString = newObj;
+
+  };
+  var addUserName= function(newObj) {
+    userName = newObj;
+    console.log(newObj+" app");
+  };
+  var getUserName= function(newObj) {
+    console.log(userName+" app");
+    return userName;
+
+  };
+  var getSessionString = function(){
+
+      return sessionString;
+  };
+
+  return {
+    addSessionString: addSessionString,
+    getSessionString: getSessionString,
+    addUserName: addUserName,
+    getUserName: getUserName
+  };
+
 });
