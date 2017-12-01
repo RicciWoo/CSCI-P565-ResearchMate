@@ -89,6 +89,9 @@
           </div>
         </li>
       </ul>
+      <div data-toggle="modal" data-target="#pendingReqModal" style="padding-right: 20px; cursor:pointer;" class="form-inline my-1 my-lg-1"><i class="fa fa-2x fa-users" aria-hidden="true"></i>
+          <h2 style="color: #fff; margin-top: -20px; margin-left: -10px;" class="badge badge-danger">{{connectionReqCount}}</h2>
+      </div>
       <form class="form-inline my-2 my-lg-0 hidden-sm hidden-xs" role="search" ng-show="loggedIn">
         <input class="form-control" type="search" ng-model="searchStr" name="q" placeholder="Search" aria-label="Search">
         <button class="btn btn-default my-2 my-sm-0" type="button" ng-click="searchQuery()" style="margin-left: -5px;"><i class="fa fa-search"></i></button>
@@ -99,6 +102,39 @@
 
   </nav>
   <div ng-view ng-animate="{enter: 'view-enter', leave: 'view-leave'}"></div>
+  <div class="container">
+  <!-- <h2>Modal Example</h2>
+
+  <button type="button" class="btn btn-info btn-lg">Open Modal</button> -->
+
+  <!-- Modal -->
+  <div class="modal fade" id="pendingReqModal" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Pending Requests</h4>
+        </div>
+        <div class="modal-body">
+          <h4 ng-hide="connectionReqCount>0">No Pending Request</h4>
+          <div ng-repeat="user in users" ng-show="connectionReqCount>0" class="row request-row">
+              <img class="col-lg-2 img-responsive rounded-circle" alt="User Image" width="20" height="40" ng-src={{userInfo[user.userID].picture}} />
+              <a class="align-self-center col-lg-6 text-ellipsis" href="#">{{user.firstName}} {{user.lastName}}</a>
+              <i title="Accept" ng-click="acceptRequest(user.userName)" class="fa fa-2x fa-check text-success col-lg-2" aria-hidden="true"></i>
+              <i title="Reject" ng-click="rejectRequest(user.userName)" class="fa fa-2x fa-close text-muted col-lg-2" aria-hidden="true"></i>
+          </row>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="javascript:window.location.reload()" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
   <!-- <div class="background-img">  </div>
     <div ng-app="myApp" class="outer-div">
       <nav class="navbar navbar-default navbar-fixed-top" style="background:#D9853B;z-index: 10;">
