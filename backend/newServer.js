@@ -3186,53 +3186,6 @@ function sendMessage(req,res,next){
     });
 }
 
-app.post('/getMessagesFromAUser',getMessagesFromAUser);           //sessionString(receiver), username(sender)
-function getMessagesFromAUser(req,res,next) {
-    var receiverSessionString = req.body.sessionString;
-    var senderUsername = req.body.username;
-    var query = {"sessionString": receiverSessionString};
-    User.findOne(query, function (err, receiver) {
-        if (receiver == null) {
-            response["status"] = "false";
-            response["msg"] = "Invalid User";
-            res.send(response);
-            console.log("Error: User not found!")
-        }
-        else {
-            var query = {"userName": senderUsername};
-            User.findOne(query, function (err, sender) {
-                if (sender == null) {
-                    response["status"] = "false";
-                    response["msg"] = "User you want to get msgs from cannot be found.";
-                    res.send(response);
-                    console.log("Error: Sender not found!")
-                }
-                else {
-                    var MSGArray = [];
-                    var query = {"senderID":sender.userID,"receiverID":receiver.userID};
-                    Messages.find(query).sort('sentOn').exec(function (err,msgs) {
-                        if(err||msgs.length==0){
-                            response["status"] = "false";
-                            response["msg"] = "No messages. LAME.";
-                            res.send(response);
-                            console.log(response)
-                        }
-                        else {
-                            for(var i = 0; i < msgs.length; i++) {
-                                MSGArray.push(msgs[i]);
-                            }
-                            response["status"] = "true";
-                            response["msg"] = MSGArray;
-                            res.send(response);
-                            console.log(response["status"]);
-                        }
-                    });
-                }
-            });
-        }
-    });
-}
-
 app.post('/getAllMessages',getAllMessages);           //sessionString(receiver)
 function getAllMessages(req,res,next) {
     var query = {"sessionString": req.body.sessionString};
@@ -3330,6 +3283,11 @@ function sendMessageResponse(res,follower,userID) {
 // chat
 var connectedUsers = [];
 io.on('connection', function (socket) {
+    // when the user disconnects.. perform this
+    socket.on('cut', function (data) {
+        delete connectedUsers[data.sender];
+    });
+
     socket.on('universal', function (data) {
         var txt = {};
         txt["sender"] = data.sender;
@@ -3647,6 +3605,74 @@ function unfriend(req,res,next) {
                                     response["msg"] = "Friend Removed. I hope you are happy with yourself.";
                                     res.send(response);
                                     console.log(response)
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getMessagesFromAUser',getMessagesFromAUser);           //sessionString(receiver), username(sender)
+function getMessagesFromAUser(req,res,next) {
+    var receiverSessionString = req.body.sessionString;
+    var senderUsername = req.body.username;
+    var query = {"sessionString": receiverSessionString};
+    User.findOne(query, function (err, receiver) {
+        if (receiver == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var query = {"userName": senderUsername};
+            User.findOne(query, function (err, sender) {
+                if (sender == null) {
+                    response["status"] = "false";
+                    response["msg"] = "User you want to get msgs from cannot be found.";
+                    res.send(response);
+                    console.log("Error: Sender not found!")
+                }
+                else {
+                    var query = {"senderID": sender.userID, "receiverID": receiver.userID};
+                    Messages.find(query).sort('sentOn').exec(function (err, msgs1) {
+                        if (err || msgs1.length == 0) {
+                            response["status"] = "false";
+                            response["msg"] = "No messages. LAME.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            var query = {"senderID": receiver.userID, "receiverID": sender.userID};
+                            Messages.find(query).sort('sentOn').exec(function (err, msgs2) {
+                                if (err || msgs2.length == 0) {
+                                    response["status"] = "false";
+                                    response["msg"] = "No messages. LAME.";
+                                    res.send(response);
+                                    console.log(response)
+                                }
+                                else {
+
+                                    var convo = [];
+                                    var chatters = [];
+                                    chatters.push({"username":receiver.userName,"firstName":receiver.firstName,"lastName":receiver.lastName});
+                                    chatters.push({"username":sender.userName,"firstName":sender.firstName,"lastName":sender.lastName});
+
+                                    for (var i = 0; i < msgs1.length; i++) {
+                                        convo.push(msgs1[i]);
+                                    }
+
+                                    for (var i = 0; i < msgs2.length; i++) {
+                                        convo.push(msgs2[i]);
+                                    }
+
+                                    response["status"] = "true";
+                                    response["msg"] = {"users": chatters, "conversation": convo};
+                                    res.send(response);
+                                    console.log(response["msg"]);
                                 }
                             });
                         }
