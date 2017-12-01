@@ -56,7 +56,7 @@ function error(response){
 
 $scope.followUser = function(username){
   $http({
-        url: "http://silo.soic.indiana.edu:54545/followSomeone",
+        url: URL + "/sendRequest",
         method: "POST",
         data: {
           'username':username,

@@ -71,7 +71,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
 
   $scope.followUser = function () {
     $http({
-      url: "http://silo.soic.indiana.edu:54545/followSomeone",
+      url: "http://silo.soic.indiana.edu:54545/sendRequest",
       method: "POST",
       data: {
         'username': $scope.username,

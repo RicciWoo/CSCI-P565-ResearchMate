@@ -133,7 +133,7 @@ text-overflow: ellipsis;
 .menu ul li{display: inline-block}
 .menu ul li a{color:#fff}
 .dropdown-item.active, .dropdown-item:active{background-color: #D9853B !important; color:#fff !important;}
-.btn-primary{background-color: #D9853B !important; color:#fff !important;border-color: #8b8580 !important;}
+/*.btn-primary{background-color: #D9853B !important; color:#fff !important;border-color: #8b8580 !important;}*/
 @media (min-width:1023px){
   .hidden-lg, .hidden-md{display: none !important;}
   .ml-10{margin-left: 10px;}
@@ -142,4 +142,10 @@ text-overflow: ellipsis;
 @media (max-width:990px){
   .hidden-sm, .hidden-xs{display: none !important;}
   .ml-10{margin-left: 0px;}
+}
+
+.request-row{
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 5px;
 }

@@ -51,7 +51,7 @@
 
 <div class="row pull-right">
     <div class="col-12">
-        <input type="button" ng-click="followUser()" class="btn btn-success" value="Follow" ng-show="!allowEdit" style="background-color:#D9853B"
+        <input type="button" ng-click="followUser($event)" class="btn btn-success" value="Follow" ng-show="!allowEdit" style="background-color:#D9853B"
         />
     </div>
 </div>
@@ -137,10 +137,10 @@
   <marquee scrollamount="4" onmouseover="this.stop()" onmouseout="this.start()" direction="up" height="200">
   <ul>
     <li style="margin-top:10px;" class="text-ellipsis" ng-repeat="postDetail in bulletinPosts">
-      <a href="/researchmate/#/discussiondetail/{{postDetail.groupID}}/{{postDetail.postID}}"> {{postDetail.postString}}</a>
+      <a style="color: #990000; text-decoration:underline;" href="/researchmate/#/discussiondetail/{{postDetail.groupID}}/{{postDetail.postID}}"> {{postDetail.postString}}</a>
     </li>
     <li style="margin-top:10px;" class="text-ellipsis" ng-repeat="bullet in redditBullets">
-      <a target="_blank" href="{{bullet.data.url}}">{{bullet.data.title}}</a>
+      <a target="_blank" style="color: #990000; text-decoration:underline;" href="{{bullet.data.url}}">{{bullet.data.title}}</a>
     </li>
   </ul>
   </marquee>
