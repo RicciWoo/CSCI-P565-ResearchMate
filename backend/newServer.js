@@ -3330,7 +3330,6 @@ io.on('connection', function (socket) {
                 });
             }
         });
-        socket.to(receiverID).emit('universal', txt);
     });
 });
 
@@ -3658,8 +3657,8 @@ function getMessagesFromAUser(req,res,next) {
 
                                     var convo = [];
                                     var chatters = [];
-                                    chatters.push({"username":receiver.userName,"firstName":receiver.firstName,"lastName":receiver.lastName});
-                                    chatters.push({"username":sender.userName,"firstName":sender.firstName,"lastName":sender.lastName});
+                                    chatters.push({"userID":receiver.userID,"username":receiver.userName,"firstName":receiver.firstName,"lastName":receiver.lastName});
+                                    chatters.push({"userID":sender.userID,"username":sender.userName,"firstName":sender.firstName,"lastName":sender.lastName});
 
                                     for (var i = 0; i < msgs1.length; i++) {
                                         convo.push(msgs1[i]);
