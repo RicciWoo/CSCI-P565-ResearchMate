@@ -3338,6 +3338,7 @@ io.on('connection', function (socket) {
         console.log(txt);
 
         connectedUsers[data.sender] = socket.id;
+
         console.log(connectedUsers);
 
         var receiverID = connectedUsers[data.receiver];
@@ -3364,7 +3365,7 @@ io.on('connection', function (socket) {
                             }
                             else {
                                 console.log("msg sent.");
-                                socket.broadcast.emit('universal', txt);
+                                socket.to(receiverID).emit('universal', txt);
                             }
                         });
                     }
@@ -3372,7 +3373,6 @@ io.on('connection', function (socket) {
             }
         });
         socket.to(receiverID).emit('universal', txt);
-
     });
 });
 
