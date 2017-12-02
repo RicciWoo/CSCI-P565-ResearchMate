@@ -16,7 +16,7 @@
         </div>
 
         <div class="col-lg-9 container-fluid" style="background-color:white">
-         <div style="height:85%;border:thin solid gray;margin-right:10px;margin-bottom: 10px;margin-top:10px;background-color:rgba(240, 235, 235, 0.97); overflow:auto;" >
+         <div style="height:85%;border:thin solid gray;margin-right:10px;margin-bottom: 10px;margin-top:10px;background-color:rgba(240, 235, 235, 0.97); overflow:scroll;" scroll-glue >
            <div ng-repeat="message in pastMessages track by $index">
 
              <div class="col-lg-10 {{message.side}}"><i ng-show="message.side=='receive'" class="fa fa-2x fa-caret-left" aria-hidden="true"></i>{{message.msg}}  <span class="col-lg-2 pull-right"><em>{{message.date|date:'MM/dd/yyyy HH:mm:ss'}}</em></span> <i ng-show="message.side=='send'" class="fa fa-2x fa-caret-right" aria-hidden="true"></i></div>
