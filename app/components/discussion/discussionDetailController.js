@@ -14,7 +14,6 @@ myApp.controller('discussionDetailContainer',['$scope','$http','URL','$location'
     return;
   }
   $scope.displayGroupPost = function(postID){
-    debugger
     $http({
       url: URL + "/getAllRepliesByPostID",
       method: "POST",
@@ -32,7 +31,6 @@ myApp.controller('discussionDetailContainer',['$scope','$http','URL','$location'
           $scope.userInfo = userInfo;
           $scope.postInfo = response.data.msg.postInfo;
           $scope.replyInfo = resp.allRepliesInfo;
-          debugger
         }
         else{
           console.log("Message undefined for response: "+response.data.msg);

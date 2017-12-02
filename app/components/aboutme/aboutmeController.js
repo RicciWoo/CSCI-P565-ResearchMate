@@ -1,8 +1,63 @@
 myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$location', 'Upload','$rootScope', function ($scope, $http, URL,$cookies,$location, Upload,$rootScope) {
+
+
+
     var self = $scope;
-    self.abc = "abc";
     self.allowedit=false;
     self.sessionString = $cookies.get('sessionString');
+
+    /**
+     * Get user bullet-in board data
+     */
+
+     $scope.redditBullets = [];
+
+     $scope.searchRedditForPost = function(searchQuery){
+       if(searchQuery == undefined || searchQuery.trim() == "")
+         return;
+       $http({
+         url: "https://www.reddit.com/search.json?q="+searchQuery+"&sort=hot",
+         method: "GET"
+       }).then(function success(response){
+         debugger
+         if(response.status == 200){
+           if(response.data != undefined && response.data.data!=undefined && response.data.data.children != undefined){
+             debugger
+             $scope.redditBullets = $scope.redditBullets.concat(response.data.data.children);
+           }
+         }
+       },
+     function error(response){
+    debugger
+     });
+     };
+
+
+    $scope.getUserBulletinBoard = function(){
+      $http({
+        url: URL + "/getUserBulletinBoard",
+        method: "POST",
+        data:{
+          'sessionString': self.sessionString
+        }
+      }).then(function success(response){
+        if(response.status == 200){
+          if(response.data.status == "true"){
+            $scope.bulletinPosts = response.data.msg.posts;
+            $scope.userInterests = response.data.msg.tagNames;
+            for(var i=0;i<$scope.userInterests.length;i++){
+              $scope.searchRedditForPost($scope.userInterests[i]);
+            }
+          }
+        }
+      },
+      function error(response){
+        console.log(response.data.msg);
+      });
+
+
+    }
+
 
     $scope.uploadProfilePic = function($file){
       if($scope.allowEdit==true)
@@ -22,23 +77,25 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
     }
 
     var url = $location.path().split('/');
-    $scope.username = url[2];
-    $scope.followUser = function () {
+    if(url.length==3 && url[2]!="")
+      $scope.username = url[2];
+    else {
+      $scope.username = $cookies.get('username');
+    }
+    $scope.followUser = function ($event) {
       $http({
-        url: "http://silo.soic.indiana.edu:54545/followSomeone",
+        url: URL + "/sendRequest",
         method: "POST",
         data: {
           'username': $scope.username,
           'sessionString': $scope.sessionString
         },
-
       }).then(function success(response) {
         if (response.status == 200) {
           if (response.data.status == false && response.data.msg != undefined && response.data.msg != "")
-            alert(response.data.msg);
+            console.log(response.data.msg);
           else {
-            alert("Followed Successfully");
-
+            $event.target.value = "Request sent"
           }
         }
       },
@@ -66,7 +123,10 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
               var sessString = userinfo.user.sessionString;
 
               if(sessString!=undefined && sessString!="" && sessString == self.sessionString)
-                $scope.allowEdit = true;
+                {
+                  $scope.allowEdit = true;
+                  $scope.getUserBulletinBoard();
+                }
               else {
                 $scope.allowEdit = false;
               }
@@ -120,5 +180,9 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
           console.log(response);
         });
     }
+
+
+
+
 
 }]);

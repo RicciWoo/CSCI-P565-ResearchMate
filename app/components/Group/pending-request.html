@@ -1,6 +1,9 @@
 <div ng-controller="groupPendingController" class="container-margin container bg-white">
-  <div class="pending-requests col-lg-10">
-    <h3 style="padding-bottom: 10px;">Pending request to approve</h3>
+  <div class="pending-requests col-lg-12">
+    <div class="row">
+    <h3 class="col-lg-8" style="padding-bottom: 10px;">Pending request to approve</h3>
+    <a class="col-lg-4 text-right" href="/researchmate/#/groups/">Back</a>
+  </div>
     <div class="row" style="padding-bottom:10px; border-bottom: 1px solid #ccc;" ng-repeat="user in userInfo">
       <div class="col-lg-6 col-md-12">{{user.firstName}} {{user.lastName}}</div>
       <div class="col-lg-3 col-md-6"><a href="/researchmate/#/profile/{{user.userName}}">{{user.userName}}</a></div>

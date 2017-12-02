@@ -8,47 +8,47 @@ var userInfoSchema = mongoose.Schema({
     },
     university:{
         type: String,
-	default: "(University)"
+	    default: "(University)"
     },
     location:{
         address:{
             type: String,
-	    default: "(Location)"
+	        default: "(Location)"
         },
         city:{
             type: String,
-	    default: "(City)"
+	        default: "(City)"
         },
         state:{
             type: String,
-	    default: "(State)"
+	        default: "(State)"
         },
         country:{
             type: String,
-	    default: "(Country)"
+	        default: "(Country)"
         }
     },
     dob:{
         type:Date,
-	default: "10/15/2017"
+	    default: "10/15/2017"
     },
     advisor: {
         primary: {
             type: String,
-	    default: "(Primary Advisor)"
+	        default: "(Primary Advisor)"
         },
         secondary: {
             type: String,
-	    default: "(Secondary Advisor)"
+	        default: "(Secondary Advisor)"
         }
     },
     picture:{
         type : String,
-	default: ""
+	    default: ""
     },
     summary:{
         type : String,
-	default: "(summary)"
+	    default: "(summary)"
     }
 });
 

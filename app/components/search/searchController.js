@@ -29,7 +29,11 @@ myApp.controller('searchController', ['$scope', '$http', '$location', 'URL', '$c
   }).then(function success(response){
     if(response.status == 200 && response.data!=undefined){
       //set user search object
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> dce556e96ab90253e1d4f2d5d44dc443bbd13814
       if(response.data.publicsInfoResponse!=undefined && response.data.publicsInfoResponse.status == "true"){
         $scope.publicationSearchResult = response.data.publicsInfoResponse.msg.publicationInfo;
       }
@@ -71,7 +75,7 @@ function error(response){
 
 $scope.followUser = function(username){
   $http({
-        url: "http://silo.soic.indiana.edu:54545/followSomeone",
+        url: URL + "/sendRequest",
         method: "POST",
         data: {
           'username':username,

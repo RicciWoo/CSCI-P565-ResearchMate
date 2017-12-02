@@ -1,5 +1,5 @@
 <div class="container col-lg-6" ng-controller="signupController">
-    <form ng-submit="submit()" method="" class="center-block verticle-center ">
+    <form name="signupForm" ng-submit="submit()" method="" class="center-block verticle-center ">
         <h2 class="headingh2">Sign up</h2>
         <div class="row center" align="center">
             <div class="form-group col-lg-6">
@@ -20,13 +20,15 @@
 
             <input type="email" id="email" ng-model="email" class="form-control" placeholder="Email" required>
         </div>
-        <div class="form-group">
+        <div class="form-group input-group">
 
-            <input type="password" id="pwd" ng-model="pwd" class="form-control" placeholder="Password" required>
+            <input type="password" aria-describedby="passwordInfo" name="password" ng-pattern="/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[$_@$!%*#?&])[A-Za-z\d$_@$!%*#?&]{8,}$/" id="pwd" ng-model="pwd" class="form-control" placeholder="Password" required>
+            <span id="passwordInfo" title="Password should be at least 8 characters. Must contain 1 upper case, 1 lower case, and 1 special symbol" class="input-group-addon" ng-show="signupForm.password.$dirty && signupForm.password.$invalid"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
         </div>
-        <div class="form-group">
+        <div class="form-group input-group">
 
-            <input type="text" id="phone" ng-model="phone" class="form-control" placeholder="Phone Number" required>
+            <input type="text" id="phone" aria-describedby="phoneInfo" ng-pattern="/^(\+\d{1,3}[- ]?)?\d{3}-?\d{3}-?\d{4}$/" name="phone" ng-model="phone" class="form-control" placeholder="Phone Number" required>
+            <span id="phoneInfo" title="Phone number should be at least 10 digits" class="input-group-addon" ng-show="signupForm.phone.$dirty && signupForm.phone.$invalid"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
         </div>
         <div class="form-group">
           <select class="form-control" ng-model="carrier" required>

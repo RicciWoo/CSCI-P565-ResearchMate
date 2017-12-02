@@ -22,7 +22,7 @@ if(url.length ==3){
         if(response.data.status == "true" && response.data.msg!=undefined){
           var pubInfo = response.data.msg.publicationInfo;
           if(pubInfo!=undefined){
-            debugger
+
             $scope.pubName = pubInfo.name;
             $scope.pubIssn = pubInfo.ISSN;
             $scope.abstract = pubInfo.paperAbstract;
@@ -31,10 +31,10 @@ if(url.length ==3){
             $scope.publicationPath = $sce.trustAsResourceUrl(pubInfo.filePath);
           }
           var userInfo = response.data.msg.userInfo;
-          debugger
+
           for(var i=0;i<userInfo.length;i++){
             if($scope.sessionString == userInfo[i].sessionString){
-              $scope.allowEdit = true;
+              $scope.allowEdit = false;
               break;
             }
           }
@@ -46,6 +46,9 @@ function error(response){
 }
 
 );
+}
+else{
+  $scope.allowEdit = true;
 }
 
 $scope.savePublication = function(){

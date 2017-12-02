@@ -28,14 +28,25 @@ var userSchema = mongoose.Schema({
         required: true
     },
     createdDate:{
-        type:Date,
-        default: Date.now
+        type: Date
     },
     verificationNumber:{
-        type:Number
+        type: Number
     },
     sessionString:{
-        type:String
+        type: String
+    },
+    OTP:{
+        type: Number
+    },
+    phone:{
+        type: String
+    },
+    carrier:{
+        type: String
+    },
+    active:{
+        type:Boolean,
     }
 });
 
