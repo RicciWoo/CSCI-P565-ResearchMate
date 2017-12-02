@@ -1,6 +1,6 @@
 myApp.controller('searchController', ['$scope', '$http', '$location', 'URL', '$cookieStore', '$cookies', function ($scope, $http, $location, URL, $cookieStore, $cookies) {
   var searchQuery = $location.search().searchStr;
-  
+
   $scope.currentUsername = $cookies.get("username");
   var sessionString = $cookies.get("sessionString");
   $scope.data1 = {
@@ -29,11 +29,7 @@ myApp.controller('searchController', ['$scope', '$http', '$location', 'URL', '$c
   }).then(function success(response){
     if(response.status == 200 && response.data!=undefined){
       //set user search object
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> dce556e96ab90253e1d4f2d5d44dc443bbd13814
       if(response.data.publicsInfoResponse!=undefined && response.data.publicsInfoResponse.status == "true"){
         $scope.publicationSearchResult = response.data.publicsInfoResponse.msg.publicationInfo;
       }
@@ -97,5 +93,23 @@ $scope.followUser = function(username){
   }
   );
 };
-
 }]);
+
+
+
+$(function(){
+  $('#ratingValue').on('change', function(){
+    var $this = $(this);
+    var value = $this.val();
+    $('#publicationSearchSection [rating-value]').each(function(value){
+      var currRatingValue = parseInt($(this).attr('rating-value'));
+      var selectedValue = parseInt($('#ratingValue').val());
+      if(currRatingValue == selectedValue){
+        $(this).show();
+      }
+      else{
+        $(this).hide();
+      }
+    });
+  })
+})
