@@ -27,8 +27,8 @@
         $('form').submit(function(){
             var data = {
                 message:$('#m').val(),
-                sender:'gmadhwaaan',
-                receiver:'testuser1'
+                sender:'test2',
+                receiver:'test1'
             };
             socket.emit('universal',data);
             $('#m').val('');

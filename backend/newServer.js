@@ -32,15 +32,14 @@ app.get('/test3', function(req, res){
     res.sendFile(__dirname + '/index3.html');
 });
 
-/*
-// For saving logs
-app.use(express.static('../app/'));
-app.use(express.static('log/'));
+
+
 // create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream('./log/access.log', {flags: 'a'});
+var accessLogStream = fs.createWriteStream('./backend/log/access.log', {flags: 'a'});
+
 // setup the logger
 app.use(morgan('combined', {stream: accessLogStream}));
-*/
+
 
 
 app.use(bodyParser.json());
@@ -56,24 +55,24 @@ mongoose.Promise = global.Promise;
 var connection = mongoose.connect('mongodb://silo.soic.indiana.edu:27018/researchMate2', { useMongoClient: true });
 
 //  importing pre-defined model
-var User = require('./app/userModel'),
-    UserInfo = require('./app/userInfoModel'),
-    GroupInfo = require('./app/groupInfoModel'),
-    UserGroup = require('./app/userGroupInfoModel'),
-    Publications = require('./app/publicationsInfoModel'),
-    UserPublications = require('./app/userPublicationInfoModel'),
-    UserFollowee = require('./app/userFolloweeModel'),
-    UserSkills = require('./app/userSkillModel'),
-    Skills = require('./app/skillModel'),
-    PublicationRatings = require('./app/publicationRatings'),
-    DiscussionPosts = require('./app/discussionPosts'),
-    DiscussionReplies = require('./app/discussionReplies'),
-    PostTags = require('./app/postTags'),
-    PostTagsMapping = require('./app/postTagMapping'),
-    GroupJoinRequest = require('./app/groupJoinRequests'),
-    UserInterests = require('./app/userInterests'),
-    Messages = require('./app/messages'),
-    FriendRequest = require('./app/friendRequests');
+var User = require('./models/userModel'),
+    UserInfo = require('./models/userInfoModel'),
+    GroupInfo = require('./models/groupInfoModel'),
+    UserGroup = require('./models/userGroupInfoModel'),
+    Publications = require('./models/publicationsInfoModel'),
+    UserPublications = require('./models/userPublicationInfoModel'),
+    UserFollowee = require('./models/userFolloweeModel'),
+    UserSkills = require('./models/userSkillModel'),
+    Skills = require('./models/skillModel'),
+    PublicationRatings = require('./models/publicationRatings'),
+    DiscussionPosts = require('./models/discussionPosts'),
+    DiscussionReplies = require('./models/discussionReplies'),
+    PostTags = require('./models/postTags'),
+    PostTagsMapping = require('./models/postTagMapping'),
+    GroupJoinRequest = require('./models/groupJoinRequests'),
+    UserInterests = require('./models/userInterests'),
+    Messages = require('./models/messages'),
+    FriendRequest = require('./models/friendRequests');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -81,7 +80,6 @@ var response = {
     "status":"false",
     "msg" : ""
 };
-
 
 //  hashing function
 var myHasher = function(password) {
