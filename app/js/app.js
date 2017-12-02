@@ -1,4 +1,4 @@
-var myApp = angular.module('myApp',['ngRoute','ngCookies', 'ngFileUpload','moment-picker']);
+var myApp = angular.module('myApp',['ngRoute','ngCookies', 'ngFileUpload','moment-picker','luegg.directives']);
 myApp.constant('URL','http://silo.soic.indiana.edu:54545');
 myApp.config(function ($routeProvider) {
   $routeProvider
@@ -118,4 +118,14 @@ myApp.service('chatService', function($cookies) {
     getUserName: getUserName
   };
 
+});
+myApp.directive("scrollBottom", function(){
+  return {
+      link: function(scope, element, attr){
+          var $id= $("#" + attr.scrollBottom);
+          $(element).on("click", function(){
+              $id.scrollTop($id[0].scrollHeight);
+          });
+      }
+  }
 });
