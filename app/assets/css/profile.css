@@ -36,7 +36,17 @@ a .fa{
     color:white;
   }
 
-
+  .my-custom-stars .button .material-icons {
+    font-size: 50px; 
+  }
+  
+  .my-custom-stars .star-button.star-on .material-icons {
+    color: #003399; 
+  }
+  
+  .my-custom-stars .star-button.star-off .material-icons {
+    color: #99ccff; 
+  }
 
 /**
  * ratings css
@@ -67,3 +77,16 @@ input[type=text] {
     border-radius: 4px;
     height: 30px;
 }*/
+/* Styles go here */
+
+.my-custom-stars .button .material-icons {
+    font-size: 50px; 
+  }
+  
+  .my-custom-stars .star-button.star-on .material-icons {
+    color: #003399; 
+  }
+  
+  .my-custom-stars .star-button.star-off .material-icons {
+    color: #99ccff; 
+  }

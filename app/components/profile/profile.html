@@ -26,8 +26,9 @@
                     <div class="col-xs-12 col-sm-12">
                         <div  style="border-bottom:1px solid #ccc;">
                         <div class="row">
-                            <div class="col-lg-6">Name</div>
+                            <div class="col-lg-3">Name</div>
                             <div class="col-lg-3">Journal Name</div>
+                            <div class="col-lg-3">Rating</div>
                         </div>
                         </div>
                     </div>
@@ -37,10 +38,14 @@
                     <div class="col-lg-6 text-ellipsis">
                         <a href="/researchmate/#/publication/{{publication.publicationID}}">{{publication.name}}</a>
                     </div>
-                    <div class="text-ellipsis col-lg-3 col-md-6">{{publication.publishedAt}}</div>
+                    <div class="text-ellipsis col-lg-3 col-md-6">{{publication.publishedAt}} </div>
+                    <jk-rating-stars class=col-lg-3 rating="publication.avgRating" ng-click="ratePublication(publication.publicationID,publication.avgRating)" read-only="allowEdit"></jk-rating-stars>
                 </div>
 
-
+                <div class="row col-lg-6">
+                    <input type="button" class="btn btn-primary" value="Add Publications" ng-show="allowEdit" ng-click="redirectAddPublication()"
+                    />
+                </div>
             </div>
         </div>
         <div ng-controller="profileController" class="col-lg-6" style="padding:40px;">

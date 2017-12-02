@@ -149,3 +149,6 @@ text-overflow: ellipsis;
   border-bottom: 1px solid #ccc;
   margin-bottom: 5px;
 }
+#ratingValue{
+  font-family: 'FontAwesome', 'Second Font name'
+}
