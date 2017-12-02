@@ -56,15 +56,9 @@
                     <input type="text" ng-model="skillName" placeholder="Add Skills" class="form-control" ng-enter="addUserSkill()" />
                 </div>
                 <div class="row">
-<<<<<<< HEAD
-                    <div class=" col-lg-2 text-ellipsis" ng-repeat="userSkillName in skillNameArr" style="margin:15px;padding:8px 15px;border-radius:4px;background-color:#D9853B;color:white">
-                        {{userSkillName}}<a href="" ng-click="deleteSkills($index)" ng-show="allowEdit"> <i class="fa fa-times pull-right" ></i> </a>
-                        
-=======
                     <div class=" col-lg-2 text-ellipsis" title="{{userSkillName}}" ng-repeat="userSkillName in skillNameArr" style="margin:15px;padding:8px 15px;border-radius:4px;background-color:#D9853B;color:white">
                       <img width="40" ng-src="{{skillIcon[userSkillName]}}" ng-show="skillIcon[userSkillName]!=''&& skillIcon[userSkillName]!=null"></img>  <span ng-show="skillIcon[userSkillName]==''||skillIcon[userSkillName]==null">{{userSkillName}}</span><a href="" ng-click="deleteSkills($index)" ng-show="allowEdit"> <i class="fa fa-times pull-right" ></i> </a>
 
->>>>>>> dce556e96ab90253e1d4f2d5d44dc443bbd13814
                     </div>
                 </div>
             </div>
