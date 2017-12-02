@@ -1,4 +1,4 @@
-myApp.controller('chatController', ['$scope', '$http', 'URL','$cookies','$location','chatService','$rootScope', function ($scope, $http, URL,$cookies,$location,chatService,$rootScope) {
+myApp.controller('chatController', ['$scope', '$http', 'URL','$cookies','$location','chatService','$rootScope','$anchorScroll', function ($scope, $http, URL,$cookies,$location,chatService,$rootScope,$anchorScroll) {
     var self=$scope;
 
     var sessionString = $cookies.get('sessionString');
@@ -59,6 +59,10 @@ myApp.controller('chatController', ['$scope', '$http', 'URL','$cookies','$locati
       socket.emit('universal',self.data);
       $scope.messages.push({'side': 'send', 'msg': self.msg, 'date': new Date()});
       self.msg ="";
+     
+      $location.hash('bottom');
+       $anchorScroll();
+      
     }
     $http({
         url: "http://silo.soic.indiana.edu:54545/getUserFollowers",
