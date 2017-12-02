@@ -1,22 +1,27 @@
 <div ng-controller="chatController">
  <div class="row " style="height:770px">
   <div class="col-lg-3 " style="background-color:lightgray;">
-    <div class="list-group" ng-repeat="user in followerInfo">
+    <div class="list-group user-list" ng-repeat="user in followerInfo track by $index">
 
-       <button type="button" class="list-group-item list-group-item-action" style="width:104%" ng-click="chatConfig(user, $event)" active >
+       <div type="button" class="list-group-item list-group-item-action" style="width:104%" ng-click="chatConfig(user, $event)" >
                 <div class="row">
-               <div class=col-lg-10>
-                  <img ng-src={{user.imgLocation==""?'http://simpleicon.com/wp-content/uploads/user1.png':user.imgLocation}} title="{{user.firstname +' ' + user.lastname}}" height="50px" width="50px" style="padding:10px"/>
+               <div class="col-lg-10">
+                  <img check-image ng-src={{user.imgLocation==""?'http://simpleicon.com/wp-content/uploads/user1.png':user.imgLocation}} title="{{user.firstname +' ' + user.lastname}}" height="50px" width="50px" style="padding:10px"/>
                   {{user.firstname +' ' + user.lastname}}
                 </div>
-
+                <div style="color: #090;" class="col-lg-2 justify-content-center align-self-center"><i class="fa fa-circle" aria-hidden="true"></i></div>
             </div>
-            </button>
+          </div>
             </div>
         </div>
 
         <div class="col-lg-9 container-fluid" style="background-color:white">
-         <div style="height:85%;border:thin solid gray;margin-right:10px;margin-bottom: 10px;margin-top:10px;background-color:rgba(240, 235, 235, 0.97)" >
+         <div style="height:85%;border:thin solid gray;margin-right:10px;margin-bottom: 10px;margin-top:10px;background-color:rgba(240, 235, 235, 0.97); overflow:auto;" >
+           <div ng-repeat="message in pastMessages track by $index">
+
+             <div class="col-lg-10 {{message.side}}"><i ng-show="message.side=='receive'" class="fa fa-2x fa-caret-left" aria-hidden="true"></i>{{message.msg}}  <span class="col-lg-2 pull-right"><em>{{message.date|date:'MM/dd/yyyy HH:mm:ss'}}</em></span> <i ng-show="message.side=='send'" class="fa fa-2x fa-caret-right" aria-hidden="true"></i></div>
+
+           </div>
            <div ng-repeat="message in messages track by $index">
              <div class="col-lg-10 {{message.side}}">{{message.msg}}  <span class="col-lg-2 pull-right"><em>{{message.date|date:'MM/dd/yyyy HH:mm:ss'}}</em></span> </div>
 

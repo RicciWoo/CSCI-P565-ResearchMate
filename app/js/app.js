@@ -74,6 +74,22 @@ myApp.directive('ngEnter', function() {
   };
 });
 
+myApp.directive('checkImage', function($http) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            attrs.$observe('ngSrc', function(ngSrc) {
+                $http.get(ngSrc).success(function(){
+                    // alert('image exist');
+                }).error(function(){
+                    // alert('image not exist');
+                    element.attr('src', 'https://cdn0.iconfinder.com/data/icons/student-2/100/student-1-512.png'); // set default image
+                });
+            });
+        }
+    };
+});
+
 myApp.service('chatService', function($cookies) {
   var sessionString;
   var userName;

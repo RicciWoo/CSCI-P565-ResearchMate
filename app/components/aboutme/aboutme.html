@@ -1,7 +1,7 @@
 <div class="row divpad text-white" ng-controller="aboutmeController">
     <div class="col-lg-2 col-xs-12 ">
         <label class="btn btn-default" title="Click to upload new">
-        <img ng-src={{imgLocation}} class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
+        <img check-image ng-src={{imgLocation}} class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
         <input type="file"  hidden ngf-select = "uploadProfilePic($file)" /><label>
     </div>
     <div class="col-lg-5 col-xs-12 " ng-show="!edit">

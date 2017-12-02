@@ -32,8 +32,44 @@ myApp.controller('chatController', ['$scope', '$http', 'URL','$cookies','$locati
     $scope.chatConfig = function(user, $event){
 
       self.to = user.username;
+      self.toUserID = user.userID;
       self.from =$scope.username;
-      $event.target.style.background = "#ccc";
+      self.fromUserID = $cookies.get('userID');
+      $('.user-list, .user-list div').removeClass('activeRow')
+      $($event.target).parent().addClass('activeRow');
+      /**
+       * Function to get past messages from backend
+       */
+       $scope.pastMessages = [];
+       $http({
+         url: URL + "/getMessagesFromAUser",
+         method: "POST",
+         data:{
+           'sessionString': sessionString,
+           'username': user.username
+         }
+       }).then(function success(response){
+         if(response.status == 200 && response.data.status == "true"){
+           var conversations = response.data.msg.conversation;
+           conversations.sort(function(a, b) {
+              return a.sentOn>b.sentOn;
+          });
+
+           for(var i=0;i<conversations.length;i++){
+             if(conversations[i].senderID == self.fromUserID)
+                $scope.pastMessages.push({'side': 'send', 'msg': conversations[i].msg, 'date':  conversations[i].sentOn});
+            else{
+              $scope.pastMessages.push({'side': 'receive', 'msg':  conversations[i].msg, 'date':  conversations[i].sentOn});
+            }
+           }
+         }
+         else{
+           console.log(response.data.msg);
+         }
+       },
+     function error(response){
+       console.log(response.statusText);
+     });
     }
 
     self.data={
@@ -71,8 +107,9 @@ myApp.controller('chatController', ['$scope', '$http', 'URL','$cookies','$locati
     }).then(function success(response){
       if(response.status == 200){
         if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
-          alert(response.data.msg);
+          console.log(response.data.msg);
         else{
+          debugger
           self.followerInfo = response.data.msg.userInfo;
 
         }
@@ -82,4 +119,6 @@ myApp.controller('chatController', ['$scope', '$http', 'URL','$cookies','$locati
 
     }
     );
+
+
 }])

@@ -152,17 +152,44 @@ text-overflow: ellipsis;
 
 
 .send{
+  margin-right: 20px;
   margin-top: 10px;
   border-radius: 10px;
   background: #ccc;
   float: right;
   padding: 10px;
 }
+
+.send .fa-caret-right{
+  color: #ccc;
+  position: absolute;
+  right: -14px;
+  top: -3px;
+  font-size: 45px;
+}
+/*.send .fa-caret-left{
+  display: none;
+}*/
 .receive{
+  margin-left: 20px;
   margin-top: 10px;
   border-radius: 10px;
   background: #007bff;
   color: #fff;
   float: left;
   padding: 10px;
+}
+.receive .fa-caret-left{
+  color: #007bff;
+  position: absolute;
+  top: -2px;
+  left: -14px;
+  font-size: 45px;
+}
+/*.receive .fa-caret-right{
+  display: none;
+}*/
+
+.activeRow{
+  background: #ccc;
 }
