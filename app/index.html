@@ -29,6 +29,8 @@
   <script src="components/discussion/discussionDetailController.js"></script>
   <script src="components/group/addGroupController.js"></script>
   <script src="components/group/pendingRequestController.js"></script>
+  <script src="components/chat/chat.js"></script>
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular-cookies.js"></script>
   <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"></link>
   <script src="assets/js/ng-file-upload-shim.min.js"></script>
@@ -42,9 +44,8 @@
     <script src="assets/js/jk-rating-stars.min.js"></script>
   </script>
   <script src="assets/js/ng-file-upload.min.js">
-
   </script>
-
+  <script src="https://cdn.rawgit.com/Luegg/angularjs-scroll-glue/master/src/scrollglue.js"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment-with-locales.js">
 
   </script>
@@ -94,6 +95,9 @@
             <a href="/researchmate/#/creategroup/" class="dropdown-item">Create Group</a>
             <a href="/researchmate/#/groups" class="dropdown-item">View All Groups</a>
           </div>
+        </li>
+        <li class="nav-item active">
+          <a href="/researchmate/#/chat/" class="nav-link">Chat</a>
         </li>
       </ul>
       <div data-toggle="modal" data-target="#pendingReqModal" style="padding-right: 20px; cursor:pointer;" class="form-inline my-1 my-lg-1"><i class="fa fa-2x fa-users" aria-hidden="true"></i>

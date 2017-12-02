@@ -98,7 +98,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
 
   $scope.followUser = function () {
     $http({
-      url: "http://silo.soic.indiana.edu:54545/sendRequest",
+      url: URL + "/sendRequest",
       method: "POST",
       data: {
         'username': $scope.username,
@@ -108,7 +108,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
       }).then(function success(response){
         if(response.status == 200){
           if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
-            alert(response.data.msg);
+            console.log(response.data.msg);
           else{
             console.log("Followed Successfully");
 
@@ -130,10 +130,11 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
     },
 
   }).then(function success(response) {
+    debugger
     if (response.status == 200) {
       if (response.data.status == "false") {
         if (response.data.msg != "")
-          alert(response.data.msg)
+          console.log(response.data.msg)
       }
       else {
         var userinfo = response.data.msg;
@@ -165,7 +166,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
     }
   },
     function error(response) {
-      alert("Error occured while authenticating user");
+      console.log("Error occured while authenticating user");
     }
     );
 
@@ -181,7 +182,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
   }).then(function success(response) {
     if (response.status == 200) {
       if (response.data.status == false && response.data.msg != undefined && response.data.msg != "")
-        alert(response.data.msg);
+        console.log(response.data.msg);
       else {
         var followerInfo = response.data.msg.userInfo;
         $scope.followUsernames = followerInfo.usernames;
@@ -208,7 +209,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
   }).then(function success(response) {
     if (response.status == 200) {
       if (response.data.status == "false" && response.data.msg != undefined && response.data.msg != "")
-        alert(response.data.msg);
+        console.log(response.data.msg);
       else {
         var groupInfo = response.data.msg.groupInfo
         var groupNames = []
@@ -237,7 +238,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
   }).then(function success(response) {
     if (response.status == 200) {
       if (response.data.status == "false" && response.data.msg != undefined && response.data.msg != "")
-        alert(response.data.msg);
+        console.log(response.data.msg);
       else {
         $scope.userSkills = response.data.msg;
         for(i=0;i<$scope.userSkills.length;i++)
@@ -270,7 +271,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
   }).then(function success(response) {
     if (response.status == 200) {
       if (response.data.status == false && response.data.msg != undefined && response.data.msg != "")
-        alert(response.data.msg);
+        console.log(response.data.msg);
       else {
 
         var publicationInfo = response.data.msg.publicationInfo;
@@ -301,7 +302,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
       }).then(function success(response) {
         if (response.status == 200) {
           if (response.data.status == false && response.data.msg != undefined && response.data.msg != "")
-            alert(response.data.msg);
+            console.log(response.data.msg);
           else {
             console.log("skill added");
             $scope.skillNameArr.push($scope.skillName)
