@@ -96,6 +96,8 @@ var transporter = nodemailer.createTransport(smtpTransport({
 }));
 //  sending mail using nodemailer
 function sendMaill(mailOptions) {
+  if(mailOptions.to == undefined || mailOptions.to == "")
+    return;
     transporter.sendMail(mailOptions, function(error, info){
         if (error) {
             console.log(error);
@@ -2517,6 +2519,10 @@ function sendOTP(sessionString) {            // sessionString
         }
         else {
             var carriers={"att":"txt.att.net","sprint":"messaging.sprintpcs.com","t-mobile":"tmomail.net","verizon":"vtext.com"};
+            if(user.phone == undefined || user.phone == ""){
+              console.log("Phone is undefined. Cannot proceed! ");
+              return;
+            }
             var phone = user.phone.replace(/-/g,'').replace(/\(/g,'').replace(/\)/g,'').replace(/\+/g,'');
             var mailOption = {
                 from: 'se.researchmate@gmail.com',
