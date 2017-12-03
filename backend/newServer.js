@@ -806,7 +806,7 @@ app.post('/getUserGroups', getUserGroups);                  //username + (opt)se
  */
 function getUserGroups(req,res,next) {
     var sessionString = req.body.sessionString;
-    if(!inputValidator.checkGetUserInfo(req.body.username))
+    if(!inputValidator.checkGetUserInfo(res,req.body.username))
       return;
     var query = {"userName": req.body.username};
     User.findOne(query, function (err, user) {
