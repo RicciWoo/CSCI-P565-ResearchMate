@@ -1184,7 +1184,7 @@ function uploadProfilePic(req, res, next) {
 }
 
 app.post('/uploadPaperPDF', uploadPaperPDF);
-function uploadPaperPDF(req, res, next) {       // requires ISSN, username
+function uploadPaperPDF(req, res, next) {
   if(!inputValidator.checkAddPublication(res, req.body.sessionString, req.body.name, req.body.ISSN))
     return;
     var data = req.body.type,
@@ -3554,44 +3554,60 @@ function sendRequest(req,res,next) {
         else {
             query = {"userName": req.body.username};
             User.findOne(query, function (err, followme) {
-                if (err || followme == null) {
+                if (err || followme == null||followme == undefined) {
                     response["status"] = "false";
                     response["msg"] = "Unable to find user you want to send request to.";
                     res.send(response);
                     console.log("Error: User you want to befriend not found!")
                 }
                 else {
-                    FriendRequest.findOne({"requesterID":user.userID,"userID":followme.userID},function (err,entry) {
+                    UserFollowee.findOne({"userID":user.userID,"followeeID":followme.userID},function (err,alreadyFriend) {
                         if(err){
                             response["status"] = "false";
-                            response["msg"] = "DB error";
+                            response["msg"] = "Something Wrong in the database";
                             res.send(response);
-                            console.log(response)
+                            console.log(response["msg"]);
                         }
-                        else if(entry==null||entry==undefined){
-                            var entry = new FriendRequest({
-                                requesterID:user.userID,
-                                userID:followme.userID,
-                                requestedOn:Date.now()
-                            });
-                            entry.save(function (err) {
-                                if (err) {
+                        else if(alreadyFriend==null || alreadyFriend==undefined){
+                            FriendRequest.findOne({"requesterID":user.userID,"userID":followme.userID},function (err,entry) {
+                                if(err){
                                     response["status"] = "false";
-                                    response["msg"] = "unable to send request to this user";
+                                    response["msg"] = "DB error";
                                     res.send(response);
-                                    console.log(response["msg"]);
+                                    console.log(response)
+                                }
+                                else if(entry==null||entry==undefined){
+                                    var entry = new FriendRequest({
+                                        requesterID:user.userID,
+                                        userID:followme.userID,
+                                        requestedOn:Date.now()
+                                    });
+                                    entry.save(function (err) {
+                                        if (err) {
+                                            response["status"] = "false";
+                                            response["msg"] = "unable to send request to this user";
+                                            res.send(response);
+                                            console.log(response["msg"]);
+                                        }
+                                        else {
+                                            response["msg"] = "request send successfully.";
+                                            response["status"] = "true";
+                                            res.send(response);
+                                            console.log(response["msg"]);
+                                        }
+                                    });
                                 }
                                 else {
-                                    response["msg"] = "request send successfully.";
+                                    response["msg"] = "request already sent.";
                                     response["status"] = "true";
                                     res.send(response);
                                     console.log(response["msg"]);
                                 }
                             });
                         }
-                        else {
-                            response["msg"] = "request already sent.";
-                            response["status"] = "true";
+                        else{
+                            response["status"] = "false";
+                            response["msg"] = "Already friendzoned.";
                             res.send(response);
                             console.log(response["msg"]);
                         }
