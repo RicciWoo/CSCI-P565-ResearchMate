@@ -200,7 +200,7 @@ function verifyUser(req,res,next) {
             console.log(username+"doesn't exist.");
         }
         else{
-            if(seeUser.verificationNumber == parseInt(verifNumber)) {
+            if(seeUser.verificationNumber == parseInt(verifNumber)&&parseInt(verifNumber) != -565) {
                 User.findOneAndUpdate({userName: seeUser.userName}, {$set: {verificationNumber: 1}}, function (err, updatedUser) {
                     if (err) {
                         response["status"] = "false";
@@ -275,6 +275,12 @@ function login(req,res,next) {
             if(seeUser.verificationNumber != 1){
                 response["status"] = "false";
                 response["msg"] = "User not verified.";
+                res.send(response);
+                console.log(username + " is not verified.");
+            }
+            else if(seeUser.verificationNumber == -565){
+                response["status"] = "false";
+                response["msg"] = "User Blocked. Contact admin.";
                 res.send(response);
                 console.log(username + " is not verified.");
             }
@@ -3674,6 +3680,89 @@ function getMessagesFromAUser(req,res,next) {
                             });
                         }
                     });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getAllUsers',getAllUsers);
+function getAllUsers(req,res,next) {
+    User.find({},function (err,users) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Error in database.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            UserInfo.find({},function (err,userInfos) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "Error in database.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    response["status"] = "true";
+                    response["msg"] = {"users": users, "userInfos": userInfos};
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+            });
+        }
+    });
+}
+
+app.post('/activateUser',activateUser);           //username
+function activateUser(req,res,next) {
+    var username = req.body.username;
+    User.findOne({"userName":username},function (err,user) {
+        if(err||user==null||user==undefined){
+            response["status"] = "false";
+            response["msg"] = "Invalid Username.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            user.set({verificationNumber: 1});
+            user.save(function(err, updatedUser) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "Failed to activate User. Please try again";
+                    res.send(response);
+                } else {
+                    response["msg"] = "Activated user successfully.";
+                    response["status"] = "true";
+                    res.send(response);
+                }
+            });
+        }
+    });
+}
+
+app.post('/deactivateUser',deactivateUser);           //username
+function deactivateUser(req,res,next) {
+    var username = req.body.username;
+    User.findOne({"userName":username},function (err,user) {
+        if(err||user==null||user==undefined){
+            response["status"] = "false";
+            response["msg"] = "Invalid Username.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            user.set({verificationNumber: -565});
+            user.save(function(err, updatedUser) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "Failed to deactivate User. Please try again";
+                    res.send(response);
+                }
+                else {
+                    response["msg"] = "Deactivated user successfully.";
+                    response["status"] = "true";
+                    res.send(response);
                 }
             });
         }
