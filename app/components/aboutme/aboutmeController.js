@@ -1,15 +1,11 @@
 myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$location', 'Upload','$rootScope', function ($scope, $http, URL,$cookies,$location, Upload,$rootScope) {
 
-
-
     var self = $scope;
     self.allowedit=false;
     self.sessionString = $cookies.get('sessionString');
-
     /**
      * Get user bullet-in board data
      */
-
      $scope.redditBullets = [];
 
      $scope.searchRedditForPost = function(searchQuery){

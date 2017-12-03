@@ -145,7 +145,7 @@
   <marquee scrollamount="4" onmouseover="this.stop()" onmouseout="this.start()" direction="up" height="200">
   <ul>
     <li style="margin-top:10px;" class="text-ellipsis" ng-repeat="postDetail in bulletinPosts">
-      <a style="color: #990000; text-decoration:underline;" href="/researchmate/#/discussiondetail/{{postDetail.groupID}}/{{postDetail.postID}}"> {{postDetail.postString}}</a>
+      <a style="color: #990000; text-decoration:underline;" href="/#/discussiondetail/{{postDetail.groupID}}/{{postDetail.postID}}"> {{postDetail.postString}}</a>
     </li>
     <li style="margin-top:10px;" class="text-ellipsis" ng-repeat="bullet in redditBullets">
       <a target="_blank" style="color: #990000; text-decoration:underline;" href="{{bullet.data.url}}">{{bullet.data.title}}</a>

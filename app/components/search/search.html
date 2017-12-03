@@ -28,7 +28,7 @@
             <div rating-value = {{publication.avgRating}} ng-repeat="publication in publicationSearchResult | filter:query |orderBy: data1.selectedOption1.value " style="padding: 10px 5px;" class="row">
 
                   <div class="col-lg-3 col-md-12">
-                    <a href="/researchmate/#/publication/{{publication.publicationID}}">{{publication.name}}  </a>
+                    <a href="/#/publication/{{publication.publicationID}}">{{publication.name}}  </a>
                   </div>
                   <div class="col-lg-3 col-md-6 float-md-left">{{publication.publishedAt}}</div>
                   <jk-rating-stars ng-class="{true:'fa-star' ,false: 'fa-star-o'}[hovered||item.default]" class=col-lg-3 rating="publication.avgRating" ng-click="ratePublication(publication.publicationID,publication.avgRating)" read-only="allowEdit"></jk-rating-stars>
@@ -51,7 +51,7 @@
               </div>
             <div ng-repeat="userResult in userSearchResult | orderBy:data.selectedOption.value" style="padding: 10px 5px;" class="row">
 
-                  <div class="col-lg-6 col-md-12"><a href="http://localhost/ResearchMate/#/profile/{{userResult.userName}}">
+                  <div class="col-lg-6 col-md-12"><a href="/#/profile/{{userResult.userName}}">
                     {{userResult.firstName}} {{userResult.lastName}}
                   </a></div>
                   <div class="col-lg-3 col-md-6 float-md-left">{{userResult.emailID}}</div>
@@ -77,7 +77,7 @@
             <h5 style="padding-bottom: 10px; border-bottom:1px solid #ccc;margin-top:20px;" ng-show="skillSearchResult.length>0">Skill Search Results</h5>
               <div ng-repeat="skillResult in skillSearchResult" style="padding: 10px 5px;" class="row">
 
-                <div class="col-lg-6 col-md-12"><a href="http://localhost/ResearchMate/#/profile/{{skillResult.userName}}">
+                <div class="col-lg-6 col-md-12"><a href="/#/profile/{{skillResult.userName}}">
                   {{skillResult.firstName}} {{skillResult.lastName}}
                 </a></div>
                 <div class="col-lg-3 col-md-6 float-md-left">{{skillResult.emailID}}</div>

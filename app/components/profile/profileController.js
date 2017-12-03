@@ -1,7 +1,9 @@
 myApp.controller('profileController', function ($scope, $http, $location, $cookies, $cookieStore, Upload, $rootScope, URL) {
 
   var sessionString = $cookies.get('sessionString');
-
+  if(sessionString!=undefined && sessionString!=""){
+    $('.menu-header').show();
+  }
 
   var url = $location.path().split('/');
 
@@ -12,7 +14,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
   }
   $scope.edit = false;
   $scope.icon = "fa fa-pencil-square-o btnEdit"
-  $rootScope.loggedIn = true;
+
   $scope.uploadProfilePic = function ($file) {
     Upload.upload({
       url: 'http://silo.soic.indiana.edu:54545/uploadProfilePic',
@@ -41,7 +43,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
   }
 
   $scope.ratePublication = function(index,rate){
-     
+
      $http({
       url: "http://silo.soic.indiana.edu:54545/setRating",
       method: "POST",
@@ -56,9 +58,9 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
       if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
         console.log(response.data.msg);
       else{
-      
+
         console.log(response.data.msg);
-      
+
       }
     }
   },
@@ -130,7 +132,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
     },
 
   }).then(function success(response) {
-    debugger
+
     if (response.status == 200) {
       if (response.data.status == "false") {
         if (response.data.msg != "")
@@ -195,7 +197,7 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
     }
     );
 
-  
+
 
 
   $http({
@@ -335,7 +337,8 @@ myApp.controller('profileController', function ($scope, $http, $location, $cooki
 /**
  * Get user ID for future use.. Added by Gulshan
  */
-if($rootScope.allowEdit){
+
+if(sessionString != undefined && sessionString!=""){
   $http({
     url: URL + "/getUserID",
     method: "POST",
@@ -354,6 +357,10 @@ if($rootScope.allowEdit){
   }
   );
   }
+  setTimeout(function(){
+  $('.background-img').height($(document).height());
+}, 1000)
+
 }); //end of controller
 
 

@@ -4,12 +4,12 @@
   <div class="col-lg-11 bg-white pull-right">
 <div class="row col-lg-12 reply-section" style="margin-bottom: 30px;">
   <h4 class="col-lg-8 text-left">Welcome to Discussions Page</h4>
-  <a href="/researchmate/#/gendiscussion" class="btn btn-primary col-lg-4 float-lg-right">Post discussion</a>
+  <a href="/#/gendiscussion" class="btn btn-primary col-lg-4 float-lg-right">Post discussion</a>
 </div>
   <div class="discussion-section">
     <div class="col-lg-12 row post-row" ng-repeat="post in postInfo">
-        <div title={{post.postString}} class="col-lg-6 text-ellipsis"><a href="http://localhost/researchmate/#/discussiondetail/{{post.groupID}}/{{post.postID}}">{{post.postString}}</a></div>
-        <div class="col-lg-4 col-md-6 float-md-left text-ellipsis"><a href="http://localhost/researchmate/#/profile/{{userInfo[post.userID].userName}}"> {{userInfo[post.userID].firstName}} {{userInfo[post.userID].lastName}}</a></div>
+        <div title={{post.postString}} class="col-lg-6 text-ellipsis"><a href="/#/discussiondetail/{{post.groupID}}/{{post.postID}}">{{post.postString}}</a></div>
+        <div class="col-lg-4 col-md-6 float-md-left text-ellipsis"><a href="/#/profile/{{userInfo[post.userID].userName}}"> {{userInfo[post.userID].firstName}} {{userInfo[post.userID].lastName}}</a></div>
         <div class="col-lg-2 float-lg-right col-md-6 float-md-right">{{post.postedOn|date:"MM/dd/yyyy"}}</div>
     </div>
   </div>

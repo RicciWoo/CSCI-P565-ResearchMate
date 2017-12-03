@@ -1,4 +1,4 @@
-myApp.controller('indexController', ['$scope','$location','URL','$cookies','$cookieStore', '$http', function ($scope, $location, URL, $cookies, $cookieStore, $http) {
+myApp.controller('indexController', ['$scope','$location','URL','$cookies','$cookieStore', '$http', '$rootScope', function ($scope, $location, URL, $cookies, $cookieStore, $http, $rootScope) {
   $scope.searchQuery = function(){
     if($scope.searchStr.indexOf('=')!=-1){
       alert("Possible attempt of SQL Injection. Request blocked!");
@@ -9,7 +9,9 @@ myApp.controller('indexController', ['$scope','$location','URL','$cookies','$coo
   };
 
   var sessionString = $cookies.get('sessionString');
+
   if(sessionString != undefined && sessionString.trim()!=""){
+    $('.menu-header').show();
     $http({
       url: URL + "/getAllConnectionRequests",
       method: "POST",
@@ -36,7 +38,9 @@ myApp.controller('indexController', ['$scope','$location','URL','$cookies','$coo
     console.log(response.statusText);
   });
   }
-
+  else{
+    $('.menu-header').hide();
+  }
 
   function removeUserFromList(username){
     for(var i=0;i<$scope.users.length;i++){
@@ -95,8 +99,10 @@ myApp.controller('indexController', ['$scope','$location','URL','$cookies','$coo
 
 
   $scope.signOut = function() {
-
-window.location.href="http://localhost/researchmate";
+    $cookies.remove('username');
+    $cookies.remove('userID');
+    $cookies.remove('sessionString');
+window.location.href="/#/";
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.signOut().then(function () {
         auth2.disconnect();
