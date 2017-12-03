@@ -169,7 +169,7 @@ checkForgetPwdInput: function(res, input){
  * @param  {[type]} username [description]
  * @return {[type]}          [description]
  */
-checkGetUserInfo: function (username){
+checkGetUserInfo: function (res, username){
   var msg = "checkGetUserInfo\n";
     var result = true;
 
