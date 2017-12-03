@@ -44,7 +44,7 @@ app.get('/test3', function(req, res){
 
 
 // create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream('./backend/log/access.log', {flags: 'a'});
+var accessLogStream = fs.createWriteStream('./log/access.log', {flags: 'a'});
 
 // setup the logger
 app.use(morgan('combined', {stream: accessLogStream}));
@@ -150,7 +150,7 @@ function signUp(req,res,next) {
     var phone = req.body.phone;
     var carrier = req.body.carrier;
 
-    if(!checkSignupInput(res, firstname, lastname, username, email, pw, phone, carrier))
+    if(!inputValidator.checkSignupInput(res, firstname, lastname, username, email, pw, phone, carrier))
       return;
 
     var maxCount = 1;
@@ -333,7 +333,7 @@ function login(req,res,next) {
                 res.send(response);
                 console.log(response["msg"]);
             }
-            else if(seeUser.verificationNumber == -565){
+            else if(seeUser.verificationNumber == -1){
                 response["status"] = "false";
                 response["msg"] = "User Blocked. Contact admin. username: "+ username;
                 res.send(response);
@@ -748,7 +748,7 @@ app.post('/createGroup', createGroup);                  //groupname, sessionStri
 function createGroup(req,res,next) {
     var maxCount = 1;
     var groupPrivate = req.body.isPrivate;
-    if(!inputValidator.checkCreateGroupInput(res, req.body.sessionString))
+    if(!inputValidator.checkCreateGroupInput(res, req.body.sessionString,req.body.groupname))
       return;
 
     if(groupPrivate==null){
@@ -1276,10 +1276,13 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                                     }
                                                 });
                                                 var otherUsernames = req.body.otherUsernames;
+						console.log(otherUsernames);
+						console.log(otherUsernames.length);
                                                 if(otherUsernames != undefined && otherUsernames.length>0)
                                                 {
                                                     for(var i = 0;i<otherUsernames.length;i++){
                                                         User.findOne({"userName": otherUsernames[i]}, function(err, otherUser){
+
                                                             if(err || otherUser==null || otherUser==undefined){
                                                             }
                                                             else {
@@ -2804,7 +2807,7 @@ function getUserPendingRequests(req,res,next) {
 app.post('/getUserID',getUserID);       //sessionString
 function getUserID(req,res,next) {
     User.findOne({"sessionString":req.body.sessionString},function (err,user) {
-        if(err){
+        if(err||user==null||user==undefined){
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
