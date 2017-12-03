@@ -35,7 +35,7 @@ app.get('/test3', function(req, res){
 
 
 // create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream('./backend/log/access.log', {flags: 'a'});
+var accessLogStream = fs.createWriteStream('./log/access.log', {flags: 'a'});
 
 // setup the logger
 app.use(morgan('combined', {stream: accessLogStream}));
@@ -48,7 +48,7 @@ app.use(express.static('public/'));
 app.use(express.static('public/images/profilePics/'));
 app.use(express.static('public/papers/'));
 app.use(express.static('public/images/skillIcons/'));
-
+app.use(express.static('../app/'));
 
 mongoose.Promise = global.Promise;
 // Connect to MongoDB on localhost:27017
@@ -3936,7 +3936,7 @@ function deactivateUser(req,res,next) {
             console.log(response["msg"]);
         }
         else {
-            user.set({verificationNumber: -565});
+            user.set({verificationNumber: -1});
             user.save(function(err, updatedUser) {
                 if (err) {
                     response["status"] = "false";
