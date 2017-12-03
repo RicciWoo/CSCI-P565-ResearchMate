@@ -2327,7 +2327,6 @@ function tagging(res,tagArray,postID) {
                     console.log(response["msg"]);
                 }
                 else{
-                    console.log("Tags added in postTags:"+saved);
                     tagMapping(res,tagIDs,postID);
                 }
 
@@ -2483,7 +2482,6 @@ function getAllRepliesByPostID(req, res, next) {
                             response["status"] = "true";
                             response["msg"] = {"postInfo":post,"replyInfo":{"status":"false","msg":"no replies for this post"},"allUsers":user};
                             res.send(response);
-                            console.log(response["msg"]);
                         }
                     });
                 }
@@ -2502,7 +2500,6 @@ function getAllRepliesByPostID(req, res, next) {
                             response["status"] = "true";
                             response["msg"] = {"postInfo": post, "allRepliesInfo": replies,"allUsers":users};
                             res.send(response);
-                            console.log(response["msg"]);
                         }
                     });
                 }
@@ -2550,8 +2547,8 @@ function sendOTP(sessionString) {            // sessionString
         if (user == null||err) {
             response["status"] = "false";
             response["msg"] = "user not registered.";
-            console.log(response["msg"]);
             res.send(response);
+            console.log(response["msg"]);
         }
         else {
             var carriers={"att":"txt.att.net","sprint":"messaging.sprintpcs.com","t-mobile":"tmomail.net","verizon":"vtext.com"};
@@ -2738,7 +2735,7 @@ function approveGroupRequests(req,res,next) {       //groupID,userID
                 else {
                     var newEntry = new UserGroup({
                         groupID:req.body.groupID,
-                        userID:req.body.userID,
+                        userID:req.body.userID
                     });
                     newEntry.save(function (err) {
                         if (err) {
