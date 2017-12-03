@@ -1,15 +1,11 @@
 myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$location', 'Upload','$rootScope', function ($scope, $http, URL,$cookies,$location, Upload,$rootScope) {
 
-
-
     var self = $scope;
     self.allowedit=false;
     self.sessionString = $cookies.get('sessionString');
-
     /**
      * Get user bullet-in board data
      */
-
      $scope.redditBullets = [];
 
      $scope.searchRedditForPost = function(searchQuery){
@@ -19,10 +15,10 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
          url: "https://www.reddit.com/search.json?q="+searchQuery+"&sort=hot",
          method: "GET"
        }).then(function success(response){
-         debugger
+
          if(response.status == 200){
            if(response.data != undefined && response.data.data!=undefined && response.data.data.children != undefined){
-             debugger
+
              $scope.redditBullets = $scope.redditBullets.concat(response.data.data.children);
            }
          }
