@@ -1276,8 +1276,6 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                                     }
                                                 });
                                                 var otherUsernames = req.body.otherUsernames;
-						console.log(otherUsernames);
-						console.log(otherUsernames.length);
                                                 if(otherUsernames != undefined && otherUsernames.length>0)
                                                 {
                                                     for(var i = 0;i<otherUsernames.length;i++){
@@ -1472,6 +1470,7 @@ function getUserSkills(req, res, next) {       // userName
                     response["status"] = "false";
                     response["msg"] = "No skills";
                     res.send(response);
+                    console.log(response["msg"]);
                 }
                 else {
                     var ids = [];
@@ -1489,7 +1488,6 @@ function getUserSkills(req, res, next) {       // userName
                             response["status"] = "true";
                             response["msg"] = skillNames;
                             res.send(response);
-                            console.log(response["msg"]);
                         }
                     });
                 }
