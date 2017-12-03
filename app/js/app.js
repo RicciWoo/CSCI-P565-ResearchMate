@@ -1,4 +1,4 @@
-var myApp = angular.module('myApp',['ngRoute','ngCookies', 'ngFileUpload','moment-picker']);
+var myApp = angular.module('myApp',['ngRoute','ngCookies', 'ngFileUpload','moment-picker','luegg.directives','ngMaterial', 'jkAngularRatingStars']);
 myApp.constant('URL','http://silo.soic.indiana.edu:54545');
 myApp.config(function ($routeProvider) {
   $routeProvider
@@ -38,6 +38,8 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/group/add-group.html"
     }).when("/pendingrequest/:groupID", {
       templateUrl: "components/group/pending-request.html"
+    }).when("/chat", {
+      templateUrl: "components/chat/chat.html"
     });
 
 
@@ -69,4 +71,60 @@ myApp.directive('ngEnter', function() {
           }
       });
   };
+});
+
+myApp.directive('checkImage', function($http) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            attrs.$observe('ngSrc', function(ngSrc) {
+                $http.get(ngSrc).success(function(){
+                    // alert('image exist');
+                }).error(function(){
+                    // alert('image not exist');
+                    element.attr('src', 'https://cdn0.iconfinder.com/data/icons/student-2/100/student-1-512.png'); // set default image
+                });
+            });
+        }
+    };
+});
+
+myApp.service('chatService', function($cookies) {
+  var sessionString;
+  var userName;
+  var addSessionString = function(newObj) {
+    sessionString = newObj;
+
+  };
+  var addUserName= function(newObj) {
+    userName = newObj;
+    console.log(newObj+" app");
+  };
+  var getUserName= function(newObj) {
+    console.log(userName+" app");
+    return userName;
+
+  };
+  var getSessionString = function(){
+
+      return sessionString;
+  };
+
+  return {
+    addSessionString: addSessionString,
+    getSessionString: getSessionString,
+    addUserName: addUserName,
+    getUserName: getUserName
+  };
+
+});
+myApp.directive("scrollBottom", function(){
+  return {
+      link: function(scope, element, attr){
+          var $id= $("#" + attr.scrollBottom);
+          $(element).on("click", function(){
+              $id.scrollTop($id[0].scrollHeight);
+          });
+      }
+  }
 });

@@ -3,23 +3,53 @@
         <div class="container">
           <h3>Search Results</h3>
 
-          <div class="col-lg-12">
-            <h5 style="padding-bottom: 10px; border-bottom:1px solid #ccc;margin-top:20px;" ng-show="publicationSearchResult.length>0">Publication Search Results</h5>
-              <div ng-repeat="publication in publicationSearchResult" style="padding: 10px 5px;" class="row">
+          <div class="col-lg-12" ng-show="publicationSearchResult.length>0">
+            <div style="padding-bottom: 10px; border-bottom:1px solid #ccc;margin-top:20px;" class="row">
+                <h5 class="col-lg-3">Publication Search Results</h5>
 
-                  <div class="col-lg-6 col-md-12">
-                    <a href="/researchmate/#/publication/{{publication.publicationID}}">{{publication.name}}</a>
+                <h4 style="margin-right: 10px;">Filter: </h4>
+                    <select name="mySelect1" class="col-lg-5 form-control" id="mySelect1"
+                      ng-options="option.name for option in data1.availableOptions1 track by option.id"
+                      ng-model="data1.selectedOption1"></select>
+
+                  <select style="margin-left: 10px;" id="ratingValue" class="col-lg-2 form-control" ng-model="query">
+                    <option value="1">&#xf005;</option>
+                    <option value="2">&#xf005;&#xf005;</option>
+                    <option value="3">&#xf005;&#xf005;&#xf005;</option>
+                    <option value="4">&#xf005;&#xf005;&#xf005;&#xf005;</option>
+                    <option value="5">&#xf005;&#xf005;&#xf005;&#xf005;&#xf005;</option>
+                  </select>
+            </div>
+
+
+
+
+            <div id="publicationSearchSection">
+            <div rating-value = {{publication.avgRating}} ng-repeat="publication in publicationSearchResult | filter:query |orderBy: data1.selectedOption1.value " style="padding: 10px 5px;" class="row">
+
+                  <div class="col-lg-3 col-md-12">
+                    <a href="/researchmate/#/publication/{{publication.publicationID}}">{{publication.name}}  </a>
                   </div>
                   <div class="col-lg-3 col-md-6 float-md-left">{{publication.publishedAt}}</div>
+                  <jk-rating-stars ng-class="{true:'fa-star' ,false: 'fa-star-o'}[hovered||item.default]" class=col-lg-3 rating="publication.avgRating" ng-click="ratePublication(publication.publicationID,publication.avgRating)" read-only="allowEdit"></jk-rating-stars>
                   <!-- <div ng-show="userResult.userName!=currentUsername" class="col-lg-3 col-md-6 float-md-right float-lg-right">
                     <input type="button" value="Follow" class="btn btn-primary" ng-click="followUser(userResult.userName)"></input>
                   </div> -->
               </div>
+            </div>
           </div>
 
-          <div class="col-lg-12">
-            <h5 style="padding-bottom: 10px; border-bottom:1px solid #ccc;margin-top:20px;" ng-show="userSearchResult.length>0">User Search Results</h5>
-              <div ng-repeat="userResult in userSearchResult" style="padding: 10px 5px;" class="row">
+          <div ng-show="userSearchResult.length>0" class="col-lg-12">
+              <div style="padding-bottom: 10px; border-bottom:1px solid #ccc;margin-top:20px;" class="row">
+            <h5 class="col-lg-6">User Search Results</h5>
+            <form class="col-lg-6" name="myForm">
+                <label for="mySelect">Name : </label>
+                <select name="mySelect" id="mySelect"
+                  ng-options="option.name for option in data.availableOptions track by option.id"
+                  ng-model="data.selectedOption"></select>
+              </form>
+              </div>
+            <div ng-repeat="userResult in userSearchResult | orderBy:data.selectedOption.value" style="padding: 10px 5px;" class="row">
 
                   <div class="col-lg-6 col-md-12"><a href="http://localhost/ResearchMate/#/profile/{{userResult.userName}}">
                     {{userResult.firstName}} {{userResult.lastName}}

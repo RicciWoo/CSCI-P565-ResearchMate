@@ -1,7 +1,22 @@
 myApp.controller('searchController', ['$scope', '$http', '$location', 'URL', '$cookieStore', '$cookies', function ($scope, $http, $location, URL, $cookieStore, $cookies) {
   var searchQuery = $location.search().searchStr;
+
   $scope.currentUsername = $cookies.get("username");
   var sessionString = $cookies.get("sessionString");
+  $scope.data1 = {
+    availableOptions1: [
+      {id: '1', name: 'lower to higher',value:'avgRating'},
+      {id: '2', name: 'higher to lower',value:'-avgRating'}
+    ],
+    selectedOption1:  {id: '2', name: 'higher to lower',value:'-avgRating'}//This sets the default value of the select in the ui
+    };
+    $scope.data = {
+      availableOptions: [
+        {id: '1', name: 'A-Z',value:'firstName'},
+        {id: '2', name: 'Z-A',value:'-firstName'}
+      ],
+      selectedOption:  {id: '1', name: 'A-Z',value:'firstName'}//This sets the default value of the select in the ui
+      };
   if(searchQuery == undefined || searchQuery == "")
     return;
     $scope.userSearchResult = [];
@@ -56,7 +71,7 @@ function error(response){
 
 $scope.followUser = function(username){
   $http({
-        url: "http://silo.soic.indiana.edu:54545/followSomeone",
+        url: URL + "/sendRequest",
         method: "POST",
         data: {
           'username':username,
@@ -78,5 +93,23 @@ $scope.followUser = function(username){
   }
   );
 };
-
 }]);
+
+
+
+$(function(){
+  $('#ratingValue').on('change', function(){
+    var $this = $(this);
+    var value = $this.val();
+    $('#publicationSearchSection [rating-value]').each(function(value){
+      var currRatingValue = parseInt($(this).attr('rating-value'));
+      var selectedValue = parseInt($('#ratingValue').val());
+      if(currRatingValue == selectedValue){
+        $(this).show();
+      }
+      else{
+        $(this).hide();
+      }
+    });
+  })
+})

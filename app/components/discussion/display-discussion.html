@@ -24,8 +24,8 @@
     </div>
   </div>
   <div class="col-lg-10">
-    <span ng-repeat="interest in userInterests track by $index" class="col-lg-2 text-left interest-badge text-ellipsis badge badge-primary">
-      {{interest.tagName}} <i ng-click="deleteUserInterest($index, interest.tagName)" class="fa fa-close fa-lg pull-right"></i>
+    <span ng-repeat="interest in userInterests track by $index" class="col-lg-3 text-left interest-badge badge badge-primary">
+      <span class="text-left col-lg-8">{{interest.tagName}}</span> <i ng-click="deleteUserInterest($index, interest.tagName)" class="col-lg-3 pull-right fa fa-close fa-lg"></i>
     </span>
   </div>
   </div>

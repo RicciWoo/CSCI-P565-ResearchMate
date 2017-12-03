@@ -29,15 +29,23 @@
   <script src="components/discussion/discussionDetailController.js"></script>
   <script src="components/group/addGroupController.js"></script>
   <script src="components/group/pendingRequestController.js"></script>
+  <script src="components/chat/chat.js"></script>
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular-cookies.js"></script>
   <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"></link>
-  <script src="assets/js/ng-file-upload-shim.min.js">
+  <script src="assets/js/ng-file-upload-shim.min.js"></script>
+   <script src="https://code.angularjs.org/1.5.0/angular-animate.min.js"></script>
+    <script src="https://code.angularjs.org/1.5.0/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.5/angular-material.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.5/angular-material.min.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/jk-rating-stars.min.css" />
 
+    <script src="assets/js/jk-rating-stars.min.js"></script>
   </script>
   <script src="assets/js/ng-file-upload.min.js">
-
   </script>
-
+  <script src="https://cdn.rawgit.com/Luegg/angularjs-scroll-glue/master/src/scrollglue.js"></script>
   <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment-with-locales.js">
 
   </script>
@@ -88,7 +96,13 @@
             <a href="/researchmate/#/groups" class="dropdown-item">View All Groups</a>
           </div>
         </li>
+        <li class="nav-item active">
+          <a href="/researchmate/#/chat/" class="nav-link">Chat</a>
+        </li>
       </ul>
+      <div data-toggle="modal" data-target="#pendingReqModal" style="padding-right: 20px; cursor:pointer;" class="form-inline my-1 my-lg-1"><i class="fa fa-2x fa-users" aria-hidden="true"></i>
+          <h2 style="color: #fff; margin-top: -20px; margin-left: -10px;" class="badge badge-danger">{{connectionReqCount}}</h2>
+      </div>
       <form class="form-inline my-2 my-lg-0 hidden-sm hidden-xs" role="search" ng-show="loggedIn">
         <input class="form-control" type="search" ng-model="searchStr" name="q" placeholder="Search" aria-label="Search">
         <button class="btn btn-default my-2 my-sm-0" type="button" ng-click="searchQuery()" style="margin-left: -5px;"><i class="fa fa-search"></i></button>
@@ -99,6 +113,39 @@
 
   </nav>
   <div ng-view ng-animate="{enter: 'view-enter', leave: 'view-leave'}"></div>
+  <div class="container">
+  <!-- <h2>Modal Example</h2>
+
+  <button type="button" class="btn btn-info btn-lg">Open Modal</button> -->
+
+  <!-- Modal -->
+  <div class="modal fade" id="pendingReqModal" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Pending Requests</h4>
+        </div>
+        <div class="modal-body">
+          <h4 ng-hide="connectionReqCount>0">No Pending Request</h4>
+          <div ng-repeat="user in users" ng-show="connectionReqCount>0" class="row request-row">
+              <img class="col-lg-2 img-responsive rounded-circle" alt="User Image" width="20" height="40" ng-src={{userInfo[user.userID].picture}} />
+              <a class="align-self-center col-lg-6 text-ellipsis" href="#">{{user.firstName}} {{user.lastName}}</a>
+              <i title="Accept" ng-click="acceptRequest(user.userName)" class="fa fa-2x fa-check text-success col-lg-2" aria-hidden="true"></i>
+              <i title="Reject" ng-click="rejectRequest(user.userName)" class="fa fa-2x fa-close text-muted col-lg-2" aria-hidden="true"></i>
+          </row>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="javascript:window.location.reload()" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
   <!-- <div class="background-img">  </div>
     <div ng-app="myApp" class="outer-div">
       <nav class="navbar navbar-default navbar-fixed-top" style="background:#D9853B;z-index: 10;">
@@ -106,9 +153,10 @@
           <h2>ResearchMate</h2>
           <div class="menu">
           <ul>
-            <li><a href="/researchmate/#/profile/">Home</a></li>
-            <li><a href="/researchmate/#/discussion/-1">Discussion</a></li>
-            <li><a href="/researchmate/#/groups">Groups</a></li>
+            <li><a href="#">Home</a></li>
+            <li><a href="http://localhost/researchmate/#/discussion/-1">Discussion</a></li>
+            <li><a href="http://localhost/researchmate/#/groups">Groups</a></li>
+            <li><a href="http://localhost/researchmate/#/chat">chat</a></li>
           </ul>
           </div>
           <form class="navbar-form" role="search" ng-show="loggedIn">

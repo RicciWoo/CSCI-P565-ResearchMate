@@ -1,7 +1,7 @@
 <div class="row divpad text-white" ng-controller="aboutmeController">
     <div class="col-lg-2 col-xs-12 ">
         <label class="btn btn-default" title="Click to upload new">
-        <img ng-src={{imgLocation}} class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
+        <img check-image ng-src={{imgLocation}} class="img-responsive rounded-circle" alt="Cinque Terre" width="200" height="200">
         <input type="file"  hidden ngf-select = "uploadProfilePic($file)" /><label>
     </div>
     <div class="col-lg-5 col-xs-12 " ng-show="!edit">
@@ -51,7 +51,7 @@
 
 <div class="row pull-right">
     <div class="col-12">
-        <input type="button" ng-click="followUser()" class="btn btn-success" value="Follow" ng-show="!allowEdit" style="background-color:#D9853B"
+        <input type="button" ng-click="followUser($event)" class="btn btn-success" value="Follow" ng-show="!allowEdit" style="background-color:#D9853B"
         />
     </div>
 </div>
@@ -65,13 +65,15 @@
         <div class="col-lg-9">
             <div class="row">
                 <div class="col-xs-6 col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group input-group">
                         <input type="text" class="form-control" ng-model="firstname" />
+                        <span id="fnInfo" title="First Name" class="input-group-addon"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
                     </div>
                 </div>
                 <div class="col-xs-6 col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group input-group">
                         <input type="text" class="form-control" ng-model="lastname" />
+                        <span id="fnInfo" title="Last Name" class="input-group-addon"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
                     </div>
                 </div>
             </div>
@@ -86,13 +88,15 @@
         <div class="col-lg-9">
             <div class="row">
                 <div class="col-xs-6 col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group input-group">
                         <input type="text" class="form-control" ng-model="address" />
+                        <span id="fnInfo" title="Address" class="input-group-addon"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
                     </div>
                 </div>
                 <div class="col-xs-6 col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group input-group">
                         <input type="text" ng-model="city" class="form-control" />
+                        <span id="fnInfo" title="City" class="input-group-addon"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
                     </div>
                 </div>
             </div>
@@ -102,13 +106,15 @@
         <div class="col-lg-9">
             <div class="row">
                 <div class="col-xs-6 col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group input-group">
                         <input type="text" ng-model="state" class="form-control" />
+                        <span id="fnInfo" title="State" class="input-group-addon"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
                     </div>
                 </div>
                 <div class="col-xs-6 col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group input-group">
                         <input type="text" ng-model="country" class="form-control" />
+                        <span id="fnInfo" title="Country" class="input-group-addon"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
                     </div>
                 </div>
             </div>
@@ -118,13 +124,15 @@
         <div class="col-lg-9">
             <div class="row">
                 <div class="col-xs-6 col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group input-group">
                         <input type="text" ng-model="university" class="form-control" />
+                        <span id="fnInfo" title="University" class="input-group-addon"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
                     </div>
                 </div>
                 <div class="col-xs-6 col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group input-group">
                         <input type="text" ng-model="summary" class="form-control" />
+                        <span id="fnInfo" title="Summary" class="input-group-addon"><i class="fa fa-question-circle" aria-hidden="true"></i></span>
                     </div>
                 </div>
             </div>
@@ -137,10 +145,10 @@
   <marquee scrollamount="4" onmouseover="this.stop()" onmouseout="this.start()" direction="up" height="200">
   <ul>
     <li style="margin-top:10px;" class="text-ellipsis" ng-repeat="postDetail in bulletinPosts">
-      <a href="/researchmate/#/discussiondetail/{{postDetail.groupID}}/{{postDetail.postID}}"> {{postDetail.postString}}</a>
+      <a style="color: #990000; text-decoration:underline;" href="/researchmate/#/discussiondetail/{{postDetail.groupID}}/{{postDetail.postID}}"> {{postDetail.postString}}</a>
     </li>
     <li style="margin-top:10px;" class="text-ellipsis" ng-repeat="bullet in redditBullets">
-      <a target="_blank" href="{{bullet.data.url}}">{{bullet.data.title}}</a>
+      <a target="_blank" style="color: #990000; text-decoration:underline;" href="{{bullet.data.url}}">{{bullet.data.title}}</a>
     </li>
   </ul>
   </marquee>
