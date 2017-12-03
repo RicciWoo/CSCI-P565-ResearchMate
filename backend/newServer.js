@@ -45,9 +45,9 @@ app.get('/test3', function(req, res){
 
 // create a write stream (in append mode)
 var accessLogStream = fs.createWriteStream('./log/access.log', {flags: 'a'});
-
 // setup the logger
 app.use(morgan('combined', {stream: accessLogStream}));
+
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -4068,6 +4068,67 @@ function leaveAGroup(req,res,next) {
                         else {
                             response["status"] = "true";
                             response["msg"] = "left the group.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/checkUserConnection',checkUserConnection);           //sessionString, username
+function checkUserConnection(req,res,next) {
+    var reply = {};
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
+        }
+        else {
+            var query = {"userName": req.body.username};
+            User.findOne(query, function (err, suspect) {
+                if (err||suspect == null||suspect==undefined) {
+                    response["status"] = "false";
+                    response["msg"] = "Invalid username";
+                    res.send(response);
+                    console.log(response["msg"] + " username: " + req.body.username);
+                }
+                else {
+                    UserFollowee.findOne({"followeeID": user.userID, "userID": suspect.userID}, function (err, entry) {
+                        if (err) {
+                            response["status"] = "false";
+                            response["msg"] = "DB error";
+                            console.log(response["msg"]);
+                        }
+                        else if (entry == null || entry == undefined) {
+                            FriendRequest.findOne({"requesterID":user.userID,"userID":suspect.userID},function(err,reqEntry){
+                                if (err) {
+                                    response["status"] = "false";
+                                    response["msg"] = "DB error";
+                                    console.log(response["msg"]);
+                                }
+                                else if (reqEntry == null || reqEntry == undefined) {
+                                    response["status"] = "false";
+                                    response["msg"] = "nothing";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                                else {
+                                    response["status"] = "true";
+                                    response["msg"] = "requested";
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                            });
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = "Following";
                             res.send(response);
                             console.log(response["msg"]);
                         }
