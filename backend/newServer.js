@@ -16,12 +16,21 @@ var express = require('express'),
     async = require('async'),
     morgan = require('morgan'),
     io = require('socket.io')(http);
-var inputValidator = require('./InputValidator');
+
 var portNumber = 54545;
-http.listen(portNumber);
+http.listen(portNumber,function (err) {
+    if(err){
+        response["status"] = "false";
+        response["msg"] = err;
+        console.log(response);
+    }
+    else{
+        console.log("Server running at silo.soic.indiana.edu: " + portNumber);
+    }
+});
 
-console.log("Server running at silo.soic.indiana.edu:"+portNumber);
-
+//  chat test
+/*
 app.get('/test1', function(req, res){
     res.sendFile(__dirname + '/index1.html');
 });
@@ -31,24 +40,25 @@ app.get('/test2', function(req, res){
 app.get('/test3', function(req, res){
     res.sendFile(__dirname + '/index3.html');
 });
-
+*/
 
 
 // create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream('./log/access.log', {flags: 'a'});
+var accessLogStream = fs.createWriteStream('./backend/log/access.log', {flags: 'a'});
 
 // setup the logger
 app.use(morgan('combined', {stream: accessLogStream}));
 
-
-
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.static('../app/'));
 app.use(express.static('public/'));
+
+/*
 app.use(express.static('public/images/profilePics/'));
 app.use(express.static('public/papers/'));
 app.use(express.static('public/images/skillIcons/'));
-app.use(express.static('../app/'));
+*/
 
 mongoose.Promise = global.Promise;
 // Connect to MongoDB on localhost:27017
@@ -72,7 +82,8 @@ var User = require('./models/userModel'),
     GroupJoinRequest = require('./models/groupJoinRequests'),
     UserInterests = require('./models/userInterests'),
     Messages = require('./models/messages'),
-    FriendRequest = require('./models/friendRequests');
+    FriendRequest = require('./models/friendRequests'),
+    inputValidator = require('./InputValidator');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -88,6 +99,7 @@ var myHasher = function(password) {
     var hash = bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
     return hash;
 };
+
 //  nodemailer setup
 var transporter = nodemailer.createTransport(smtpTransport({
     service: 'gmail',
@@ -98,6 +110,7 @@ var transporter = nodemailer.createTransport(smtpTransport({
         pass: 'agileteam'
     }
 }));
+
 //  sending mail using nodemailer
 function sendMaill(mailOptions) {
   if(mailOptions.to == undefined || mailOptions.to == "")
@@ -111,13 +124,13 @@ function sendMaill(mailOptions) {
     });
 }
 
-var low = 10000000;
-var high = 99999999;
 
+//  function which returns random values
 function getRandom(low,high) {
     return Math.floor(Math.random() * (high - low) + low);
 }
-
+var low = 10000000;
+var high = 99999999;
 
 app.post('/signUp',signUp);
 /**
@@ -178,22 +191,29 @@ function signUp(req,res,next) {
 //  adding a document to database
         var query = {"userName": username};
         User.findOne(query, function (err, seeUser) {
-            addUser.save(function (err) {
-                if (err) {
-                    console.log(err);
-                    response["status"] = "false";
-                    response["msg"] = "User already exists.";
-                    console.log("User already exists, username = " + addUser.userName);
-                    res.send(response);
-                }
-                else {
-                    response["status"] = "true";
-                    response["msg"] = "Account Added successfully. Please check your email to verify your account.";
-                    sendMaill(mailOptions);
-                    res.send(response);
-                    console.log("New User Added : " + addUser.userName);
-                }
-            });
+            if(seeUser==null||seeUser==undefined) {
+                addUser.save(function (err) {
+                    if (err) {
+                        response["status"] = "false";
+                        response["msg"] = "User already exists.";
+                        res.send(response);
+                        console.log("User already exists with username : " + addUser.userName);
+                    }
+                    else {
+                        response["status"] = "true";
+                        response["msg"] = "Account Added successfully. Please check your email to verify your account.";
+                        sendMaill(mailOptions);
+                        res.send(response);
+                        console.log("New User Added : " + addUser.userName);
+                    }
+                });
+            }
+            else{
+                response["status"] = "false";
+                response["msg"] = "User already exists.";
+                res.send(response);
+                console.log("User already exists with username : " + addUser.userName);
+            }
         });
     });
 }
@@ -216,17 +236,18 @@ function verifyUser(req,res,next) {
     User.findOne(query, function(err, seeUser) {
         if (seeUser == null) {
             response["status"] = "false";
-            response["msg"] = "User does not exist";
+            response["msg"] = "User does not exist: " + username;
             res.send(response);
-            console.log(username+"doesn't exist.");
+            console.log(response["msg"]);
         }
         else{
             if(seeUser.verificationNumber == parseInt(verifNumber)&&parseInt(verifNumber) != -565) {
                 User.findOneAndUpdate({userName: seeUser.userName}, {$set: {verificationNumber: 1}}, function (err, updatedUser) {
                     if (err) {
                         response["status"] = "false";
-                        response["msg"] = "couldn't set verificationNumber to 1";
+                        response["msg"] = "unable to set verificationNumber: "+username;
                         res.send(response);
+                        console.log(response["msg"]);
                     }
                     else {
                         var pic = "http://silo.soic.indiana.edu:" + portNumber.toString() + "/public/userIcon.jpg";
@@ -251,15 +272,15 @@ function verifyUser(req,res,next) {
                         userInfo.save(function (err) {
                             if (err) {
                                 response["status"] = "false";
-                                response["msg"] = "unable to add into userInfo";
+                                response["msg"] = "unable to add userInfo for: " + username;
                                 res.send(response);
-                                console.log("unable to add into userInfo");
+                                console.log(response["msg"]);
                             }
                             else {
                                 response["status"] = "true";
-                                response["msg"] = "Verification Successful.";
+                                response["msg"] = "Verification Successful for: " + username;
                                 res.send(response);
-                                console.log("added into userInfo");
+                                console.log(response["msg"]);
                             }
                         });
                     }
@@ -267,8 +288,9 @@ function verifyUser(req,res,next) {
             }
             else{
                 response["status"] = "false";
-                response["msg"] = "Incorrect Verification Number";
+                response["msg"] = "Incorrect Verification Number for: " + username;
                 res.send(response);
+                console.log(response["msg"]);
             }
         }
     });
@@ -291,54 +313,55 @@ function login(req,res,next) {
 
     if(username==null||pw==null||pw==undefined||username==undefined||username==""||pw==""){
         response["status"] = "false";
-        response["msg"] = "Wrong input";
+        response["msg"] = "Invalid input for:" + username;
         res.send(response);
+        console.log(response["msg"]);
         return;
     }
     var query = {'userName':username};
     User.findOne(query, function(err, seeUser) {
         if (seeUser == null) {
             response["status"] = "false";
-            response["msg"] = "User does not exist";
+            response["msg"] = "User does not exist:" + username;
             res.send(response);
-            console.log(username + "doesn't exist.");
+            console.log(response["msg"]);
         }
         else{
             if(seeUser.verificationNumber != 1){
                 response["status"] = "false";
-                response["msg"] = "User not verified.";
+                response["msg"] = "User not verified: " + username;
                 res.send(response);
-                console.log(username + " is not verified.");
+                console.log(response["msg"]);
             }
             else if(seeUser.verificationNumber == -565){
                 response["status"] = "false";
-                response["msg"] = "User Blocked. Contact admin.";
+                response["msg"] = "User Blocked. Contact admin. username: "+ username;
                 res.send(response);
-                console.log(username + " is not verified.");
+                console.log(response["msg"]);
             }
             else{
                 if (bcrypt.compareSync(pw, seeUser.passWord)){
                     User.findOne(query, function(err, seeUser) {
                         if (seeUser == null) {
                             response["status"] = "false";
-                            response["msg"] = "User does not exist";
+                            response["msg"] = "User does not exist: "+ username;
                             res.send(response);
-                            console.log(username + "doesn't exist.");
+                            console.log(response["msg"]);
                         }
                         else {
                             var sessionString = randomstring.generate(16);
                             User.findOneAndUpdate({userName:seeUser.userName}, {$set:{sessionString:sessionString,active:true}}, function(err,updatedUser){
                                 if(err){
                                     response["status"] = "false";
-                                    response["msg"] = "Failed to update sessionString.";
+                                    response["msg"] = "Failed to update sessionString: " + username;
                                     res.send(response);
-                                    console.log(username + ": failed to update sessionSting");
+                                    console.log(response["msg"]);
                                 }
                                 else{
                                     response["status"] = "true";
                                     response["msg"] = sessionString;
                                     res.send(response);
-                                    console.log(username + ": updated sessionSting");
+                                    console.log("sessionString updated: " + username);
                                     sendOTP(sessionString);
                                 }
                             });
@@ -346,11 +369,10 @@ function login(req,res,next) {
                     });
                 }
                 else{
-
                     response["status"] = "false";
-                    response["msg"] = "Incorrect password";
+                    response["msg"] = "Incorrect password: "+ username;
                     res.send(response);
-                    console.log(username + ": incorrect password");
+                    console.log(response["msg"]);
                 }
             }
         }
@@ -374,8 +396,10 @@ function updatePassword(req, res, next){
     User.findOne(query, function(err, UserObj){
         if(UserObj == null){
             response["status"] = "false";
-            response["msg"] = "User does not exist";
+            response["msg"] = "User does not exist.";
             res.send(response);
+            console.log(response["msg"] + "sessionString: " + sessionString);
+
         }
         else{
             if(UserObj.sessionString == sessionString){
@@ -383,13 +407,15 @@ function updatePassword(req, res, next){
                 UserObj.save(function(err, updatedUser) {
                     if (err) {
                         response["status"] = "false";
-                        response["msg"] = "Failed to update password. Please try again";
-                        console.log("Update Failed while saving.");
+                        response["msg"] = "Failed to update password. Please try again. ";
                         res.send(response);
-                    } else {
+                        console.log(response["msg"]+ "sessionString: " + sessionString);
+                    }
+                    else {
                         response["msg"] = "Password reset successful.";
                         response["status"] = "true";
                         res.send(response);
+                        console.log(response["msg"] + "sessionString: " + sessionString);
                     }
                 });
             }
@@ -397,6 +423,7 @@ function updatePassword(req, res, next){
                 response["status"] = "false";
                 response["msg"] = "Session string does not match";
                 res.send(response);
+                console.log(response["msg"] + "sessionString: " + sessionString);
             }
         }
     });
@@ -418,8 +445,9 @@ function forgetUsername(req, res, next){
     User.findOne(query, function(err, UserObj){
         if(UserObj == null){
             response["status"] = "false";
-            response["msg"] = "User does not exist";
+            response["msg"] = "User does not exist.";
             res.send(response);
+            console.log(response["msg"] + "email: " + email);
         }
         else{
             var username = UserObj.userName;
@@ -434,6 +462,7 @@ function forgetUsername(req, res, next){
             response["msg"] = "Username sent on your email. Please check your email";
             response["status"] = "true";
             res.send(response);
+            console.log("username sent at: " + email);
         }
     });
 }
@@ -461,8 +490,10 @@ function forgetPassword(req, res, next){
     User.findOne(query, function(err, UserObj){
         if(UserObj == null){
             response["status"] = "false";
-            response["msg"] = "User does not exist";
+            response["msg"] = "User does not exist.";
             res.send(response);
+            console.log(response["msg"]);
+            console.log(input);
         }
         else{
             var rand = randomstring.generate(16);
@@ -470,22 +501,24 @@ function forgetPassword(req, res, next){
             UserObj.save(function(err, updatedUser) {
                 if (err) {
                     response["status"] = "false";
-                    response["msg"] = "Failed to update session key. Please try again";
-                    console.log("Update Failed while saving.");
+                    response["msg"] = "Failed to update session key. Please try again.";
                     res.send(response);
-                } else {
+                    console.log(response["msg"] + " username: " + UserObj.userName);
+                }
+                else {
                     var firstname = UserObj.firstName;
-                    var link = 'http://localhost/researchmate/#/updatepassword';
+                    var link = 'http://silo.soic.indiana.edu:54545/#/updatepassword';
                     var mailOptions = {
                         from: 'se.researchmate@gmail.com',
                         to: UserObj.emailID,
                         subject: 'Hello '+ firstname +'. Please reset your password' ,
-                        text: 'Hello ' + firstname + '. Please click the link to reset your password: ' + link + '?sessionStr=' + rand
+                        text: 'Hello ' + firstname + '. Please click the link to reset your password: ' + link + '?sessionString=' + rand
                     };
                     sendMaill(mailOptions);
                     response["msg"] = "Password reset link sent on your email. Please check your email";
                     response["status"] = "true";
                     res.send(response);
+                    console.log("password reset link sent for: " + UserObj.userName);
                 }
             });
         }
@@ -509,11 +542,10 @@ function getUserInfo(req,res,next) {
     var query = {"userName": username};
     User.findOne(query, function(err, user) {
         if (user == null) {
-            console.log(req.body);
             response["status"] = "false";
-            response["msg"] = "Error: User not found!";
+            response["msg"] = "Error: User not found.";
             res.send(response);
-            console.log("Error: User not found!");
+            console.log(response["msg"] + " username: "+ username);
         }
         else {
             var queryInfo = {"userID": user.userID};
@@ -522,17 +554,13 @@ function getUserInfo(req,res,next) {
                     response["status"] = "false";
                     response["msg"] = "Error: UserInfo not found, may due to verification not done!";
                     res.send(response);
-                    console.log("Error: UserInfo not found, may due to verification not done!");
+                    console.log(response["msg"] + " username: "+ username);
                 }
                 else {
-                    if(sessionString == undefined || sessionString == ""){
-                        // user.sessionString = "";
-                        console.log("check");
-                    }
                     response["msg"] = {"user":user,"userInfo":userInfo};
                     response["status"] = "true";
                     res.send(response);
-                    console.log("Complete: UserInfo sent for user = "+user.userName);
+                    console.log("userInfo sent for user: " + user.userName);
                 }
             });
         }
@@ -557,7 +585,7 @@ function setUserInfo(req,res,next) {
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: Update failed. User not found!")
+            console.log("Invalid sessionString: " + sessionString);
         }
         else{
             user.set({firstName: req.body.firstname, lastName: req.body.lastname});
@@ -566,9 +594,9 @@ function setUserInfo(req,res,next) {
             UserInfo.findOne(queryInfo, function(err, userInfo) {
                 if (userInfo == null) {
                     response["status"] = "false";
-                    response["msg"] = " Update failed.";
+                    response["msg"] = " User has not verified.";
                     res.send(response);
-                    console.log("Error: Update failed. UserInfo not found, may due to user not verified!");
+                    console.log("Unverified user. sessionString: " + sessionString);
                 }
                 else {
                     userInfo.set({university: req.body.university});
@@ -592,15 +620,15 @@ function setUserInfo(req,res,next) {
                     userInfo.save(function (err, updatedUser) {
                         if(err) {
                             response["status"] = "false";
-                            response["msg"] = " Update failed while saving.";
+                            response["msg"] = " update failed while saving at setUserInfo for user: " + user.userName;
                             res.send(response);
-                            console.log("Error: Update failed while saving!");
+                            console.log(response["msg"]);
                         }
                         else {
-                            response["msg"] = " Update successful.";
+                            response["msg"] = "Update successful. for user: " + user.userName;
                             response["status"] = "true";
                             res.send(response);
-                            console.log("Complete: Update successful.");
+                            console.log(response["msg"]);
                         }
                     });
                 }
@@ -635,17 +663,18 @@ function getUserPublications(req,res,next) {
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid username";
+            response["msg"] = "Invalid username: " + req.body.username;
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"]);
         }
         else {
             var userID = user.userID;
             UserPublications.find({"userID": userID},{'_id':0}).select("publicationID").exec(function (err, docs) {
                 if (err) {
                     response["status"] = "false";
-                    response["msg"] = "No publications";
+                    response["msg"] = "No publications for user: " + req.body.username;
                     res.send(response);
+                    console.log(response["msg"]);
                 }
                 else {
                     var ids = [];
@@ -659,7 +688,7 @@ function getUserPublications(req,res,next) {
                             response["msg"] = {"sessionString": user.sessionString, "publicationInfo": publications};
                         response["status"] = "true";
                         res.send(response);
-                        console.log(response["msg"]);
+                        console.log("publicationInfo sent for user: " + req.body.username);
                     });
                 }
             });
@@ -681,9 +710,9 @@ function setUserPublication(req,res,next) {
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid Session String";
+            response["msg"] = "Invalid sessionString: " + req.body.sessionstring;
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"]);
         }
         else {
             var setUserPublicationDoc = new UserPublications({
@@ -693,7 +722,7 @@ function setUserPublication(req,res,next) {
             setUserPublicationDoc.save(function (err) {
                 if(err){
                     response["status"] = "false";
-                    response["msg"] = "unable to save";
+                    response["msg"] = "unable to save new publication.";
                     res.send(response);
                     console.log(response["msg"]);
                 }
@@ -740,7 +769,7 @@ function createGroup(req,res,next) {
                 response["status"] = "false";
                 response["msg"] = "Invalid Session String";
                 res.send(response);
-                console.log("Error: User not found!");
+                console.log(response["msg"] + " sessionString: " + req.body.sessionString);
             }
             else {
                 var newGroupDoc = new GroupInfo({
@@ -756,28 +785,28 @@ function createGroup(req,res,next) {
                         newGroupDoc.save(function (err) {
                             if (err) {
                                 response["status"] = "false";
-                                response["msg"] = "unable to save group";
+                                response["msg"] = "unable to new save group";
                                 res.send(response);
-                                console.log(response["msg"]);
+                                console.log(response["msg"] + "groupname: " + req.body.groupname);
                             }
                             else {
                                 var newGroupDoc = new UserGroup({
                                     groupID: maxCount,
-                                    userID: user.userID,
+                                    userID: user.userID
                                 });
 
                                 newGroupDoc.save(function (err, saved) {
                                     if(err){
                                         response["status"] = "false";
-                                        response["msg"] = "unable to save group";
+                                        response["msg"] = "unable to add user in group.";
                                         res.send(response);
                                         console.log(response["msg"]);
                                     }
                                     else{
-                                        response["msg"] = "group created and added myself.";
+                                        response["msg"] = "group created and added creator.";
                                         response["status"] = "true";
                                         res.send(response);
-                                        console.log(response["msg"]);
+                                        console.log(response["msg"] + "groupname: " + req.body.groupname);
                                     }
                                 });
                             }
@@ -785,9 +814,9 @@ function createGroup(req,res,next) {
                     }
                     else {
                         response["status"] = "false";
-                        response["msg"] = "unable to save group";
+                        response["msg"] = "unable to save group.";
                         res.send(response);
-                        console.log(response["msg"]);
+                        console.log(response["msg"] + "groupname: " + req.body.groupname);
                     }
                 });
             }
@@ -812,9 +841,9 @@ function getUserGroups(req,res,next) {
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid username";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var userID = user.userID;
@@ -861,11 +890,9 @@ function setUserGroup(req,res,next) {
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
-
-            console.log(user.userID);
             var setUserGroupDoc = new UserGroup({
                 userID: user.userID,
                 groupID: req.body.groupID
@@ -901,21 +928,21 @@ function getUserFollowers(req,res,next) {
     if(!inputValidator.checkGetUserInfo(res, req.body.username))
       return;
     var query = {"userName": req.body.username};
-    console.log(req.body.username);
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid username";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var userID = user.userID;
             UserFollowee.find({"userID": userID},{'_id':0}).select("followeeID").exec(function (err, docs) {
-                if (err) {
+                if (err||docs.length==0) {
                     response["status"] = "false";
                     response["msg"] = "No Followers";
                     res.send(response);
+                    console.log(response["msg"] + " for user: "+ req.body.username);
                 }
                 else {
                     var ids = [];
@@ -972,7 +999,7 @@ function followSomeone(req,res,next) {
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             query = {"userName": req.body.username};
@@ -981,7 +1008,7 @@ function followSomeone(req,res,next) {
                     response["status"] = "false";
                     response["msg"] = "Unable to find user you want to follow.";
                     res.send(response);
-                    console.log("Error: User you want to follow not found!")
+                    console.log(response["msg"] + " username: " + req.body.username);
                 }
                 else {
                     var userFollowDoc = new UserFollowee({
@@ -992,7 +1019,7 @@ function followSomeone(req,res,next) {
                     userFollowDoc.save(function (err) {
                         if (err) {
                             response["status"] = "false";
-                            response["msg"] = "unable to follow this user";
+                            response["msg"] = "unable to follow this user: "+ req.body.username;
                             res.send(response);
                             console.log(response["msg"]);
                         }
@@ -1010,7 +1037,7 @@ function followSomeone(req,res,next) {
                                     console.log(response["msg"]);
                                 }
                                 else {
-                                    response["msg"] = "following successful entry added.";
+                                    response["msg"] = "following successful.";
                                     response["status"] = "true";
                                     res.send(response);
                                     console.log(response["msg"]);
@@ -1023,7 +1050,6 @@ function followSomeone(req,res,next) {
         }
     });
 }
-
 
 app.post('/addPublication',addPublication);
 /**
@@ -1041,7 +1067,7 @@ function addPublication(req,res,next) {
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var query = {"name": req.body.name};
@@ -1106,8 +1132,8 @@ function uploadProfilePic(req, res, next) {
             if (err) {
                 response["status"] = "false";
                 response["msg"] = "user picture upload failed.";
-                console.log(response["msg"]);
                 res.send(response);
+                console.log(response["msg"]);
             }
             else {
                 var host = "http://silo.soic.indiana.edu:";
@@ -1120,8 +1146,8 @@ function uploadProfilePic(req, res, next) {
                     if (err) {
                         response["status"] = "false";
                         response["msg"] = "user picture upload failed. unable to find user info.";
-                        console.log(response["msg"]);
                         res.send(response);
+                        console.log(response["msg"]);
                     }
                     else {
                         console.log("user: "+user);
@@ -1130,6 +1156,7 @@ function uploadProfilePic(req, res, next) {
                                 response["status"] = "false";
                                 response["msg"] = "user picture upload failed. unable to find user info. please verify your account.";
                                 res.send(response);
+                                console.log(response["msg"]);
                             }
                             else {
                                 userinf.set({picture: pathVar});
@@ -1137,14 +1164,14 @@ function uploadProfilePic(req, res, next) {
                                     if (err) {
                                         response["status"] = "false";
                                         response["msg"] = "user picture upload failed. unable to find user info.";
-                                        console.log(response["msg"]);
                                         res.send(response);
+                                        console.log(response["msg"]);
                                     }
                                     else {
                                         response["status"] = "true";
                                         response["msg"] = "user picture upload successful.";
-                                        console.log(response["msg"]);
                                         res.send(response);
+                                        console.log(response["msg"]);
                                     }
                                 });
                             }
@@ -1164,21 +1191,20 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
         finalPath = './public/papers/' + req.body.ISSN.toString() + '.pdf',
         file = req.files.file,
         tmp_path = file.path;
-    console.log(req.body.sessionString);
     fs.rename(tmp_path, finalPath, function (err) {
         if (err){
             response["status"] = "false";
             response["msg"] = "user paperPDF upload failed.";
-            console.log(response["msg"]);
             res.send(response);
+            console.log(response["msg"]);
         }
         else{
             fs.unlink(tmp_path, function () {
                 if (err) {
                     response["status"] = "false";
                     response["msg"] = "user paperPDF upload failed.";
-                    console.log(response["msg"]);
                     res.send(response);
+                    console.log(response["msg"]);
                 }
                 else {
                     var host = "http://silo.soic.indiana.edu:";
@@ -1187,14 +1213,12 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                     pathVar = pathVar.replace("edu:/", "edu:");
                     pathVar = pathVar.replace("ttp:","ttp:/");
                     pathVar = pathVar.replace("/public","");
-                    console.log(req.body.sessionString);
                     User.findOne({"sessionString": req.body.sessionString}, function (err, user) {
-                        console.log("error: "+user);
                         if (err||user==null) {
                             response["status"] = "false";
-                            response["msg"] = "user paperPDF upload failed. unable to find user info.";
-                            console.log(response["msg"]);
+                            response["msg"] = "Invalid Session String";
                             res.send(response);
+                            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
                         }
                         else {
                             var query = {"name": req.body.name};
@@ -1202,8 +1226,8 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                 if (publics != null) {
                                     response["msg"] = "Publication already exists.";
                                     response["status"] = "false";
-                                    console.log(response["msg"]);
                                     res.send(response);
+                                    console.log(response["msg"]);
                                 }
                                 else {
                                     var maxCount = 1;
@@ -1215,7 +1239,6 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                             maxCount = entry.publicationID + 1;
                                         }
                                         var publishDate = new Date(req.body.publishDate);
-                                        console.log(user.userID);
                                         var newPublication = new Publications({
                                             publicationID: maxCount,
                                             name: req.body.name,
@@ -1231,7 +1254,7 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                                 response["status"] = "false";
                                                 response["msg"] = "cannot save publication.";
                                                 res.send(response);
-                                                console.log(err);
+                                                console.log("cannot save publication.");
                                             }
                                             else {
                                                 var setUserPublicationDoc = new UserPublications({
@@ -1257,11 +1280,15 @@ function uploadPaperPDF(req, res, next) {       // requires ISSN, username
                                                 {
                                                     for(var i = 0;i<otherUsernames.length;i++){
                                                         User.findOne({"userName": otherUsernames[i]}, function(err, otherUser){
-                                                            var publicationMapping = new UserPublications({
-                                                                userID: otherUser.userID,
-                                                                publicationID: maxCount
-                                                            });
-                                                            publicationMapping.save();
+                                                            if(err || otherUser==null || otherUser==undefined){
+                                                            }
+                                                            else {
+                                                                var publicationMapping = new UserPublications({
+                                                                    userID: otherUser.userID,
+                                                                    publicationID: maxCount
+                                                                });
+                                                                publicationMapping.save();
+                                                            }
                                                         });
                                                     }
                                                 }
@@ -1364,9 +1391,9 @@ function addSkill(req, res, next) {       // SessionString, skillName
     User.findOne(query, function (err, user) {
         if (err || user == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid sessionString.";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var query = {"skillName": req.body.skillName};
@@ -1517,7 +1544,7 @@ function searchUser(req, res, next) {       // searchString
                 response["status"] = "false";
                 response["msg"] = "no data found in the users that matches the string.";
 //                res.send(response);
-                console.log(response);
+                console.log(response["msg"]);
                 return response;
             }
         }
@@ -1532,6 +1559,7 @@ function searchGroup(req, res, next) {       // searchString
         response["status"] = "false";
         response["msg"] = "Invalid input for searching for group!";
 //        res.send(response);
+        console.log(response["msg"]);
         return response;
     }
     searchString = searchString.toLowerCase();
@@ -1541,6 +1569,7 @@ function searchGroup(req, res, next) {       // searchString
             response["status"] = "false";
             response["msg"] = "Error encountered while searching for group!";
 //            res.send(response);
+            console.log(response["msg"]);
             return response;
         }
         else {
@@ -1562,6 +1591,7 @@ function searchGroup(req, res, next) {       // searchString
                 response["status"] = "false";
                 response["msg"] = "No data found in groups that matches the string.";
 //                res.send(response);
+                console.log(response["msg"]);
                 return response;
             }
         }
@@ -1584,6 +1614,7 @@ function searchSkill(req, res, next) {
                 response["status"] = "false";
                 response["msg"] = "This skill is not registered";
 //                res.send(response);
+                console.log(response["msg"]);
                 return response;
             }
             else {
@@ -1592,6 +1623,7 @@ function searchSkill(req, res, next) {
                         response["status"] = "false";
                         response["msg"] = "Nobody has this skill.";
 //                        res.send(response);
+                        console.log(response["msg"]);
                         return response;
                     }
                     else {
@@ -1603,6 +1635,7 @@ function searchSkill(req, res, next) {
                             response["status"] = "true";
                             response["msg"] = userInfos;
 //                            res.send(response);
+                            console.log(response["msg"]);
                             return response;
                         });
                     }
@@ -1870,11 +1903,6 @@ function searchPublicationInfo(res, searchStr, resultObj) {
                             }
                             publicsInfoResponse["status"] = "true";
                             publicsInfoResponse["msg"] = {"publicationInfo":publicationsInfo,"userPublicMap":userPublicMap,"userData":userData};
-                            /*
-                                                        console.log("publications:"+publicationsInfo);
-                                                        console.log("userpubs:"+userPublicMap+"\n");
-                                                        console.log("users:"+userData);
-                            */
                             resultObj['publicsInfoResponse'] = publicsInfoResponse;
                             sendSearchResponse(res, resultObj)
                         }
@@ -1903,12 +1931,11 @@ function setRating(req,res,next) {
         User.findOne(query, function (err, user) {
             if (user == null) {
                 response["status"] = "false";
-                response["msg"] = "Invalid sessionString.";
+                response["msg"] = "Invalid Session String";
                 res.send(response);
-                console.log(response["msg"]);
+                console.log(response["msg"] + " sessionString: " + req.body.sessionString);
             }
             else if (err) {
-                console.log("error");
                 response["status"] = "false";
                 response["msg"] = "Error in finding user";
                 res.send(response);
@@ -1989,7 +2016,6 @@ function setPublicationAvgRatings(ID){    //publicationID
                 avg = avg + entries[i].ratings;
             }
             avg = avg / entries.length;
-            console.log("avg : "+avg);
             Publications.findOne({"publicationID":ID},function (err,paper) {
                 if(err||paper==null||paper==undefined){
                     response["status"] = "false";
@@ -2014,7 +2040,6 @@ function setPublicationAvgRatings(ID){    //publicationID
             });
         }
     });
-//    res.send("Hit");
 }
 
 app.post('/getPublicationRatings', getPublicationRatings);
@@ -2039,7 +2064,6 @@ function getPublicationRatings(req, res, next) {       // publicationID or publi
             response["status"] = "true";
             response["msg"] = {"avgRating":avgRating,"ratings":allRatings};
             res.send(response);
-            console.log(response["msg"]);
         }
     });
 }
@@ -2051,8 +2075,9 @@ function removeUserFromGroup(req, res, next) {          //sessionString,groupID
     User.findOne(query, function(err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "User does not exist!";
+            response["msg"] = "Invalid Session String";
             res.send(response);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var userID = user.userID;
@@ -2098,8 +2123,9 @@ function removeUserPublication(req, res, next) {
     User.findOne(query, function(err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "User does not exist!";
+            response["msg"] = "Invalid Session String";
             res.send(response);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var userID = user.userID;
@@ -2155,7 +2181,7 @@ function removeUserPublication(req, res, next) {
                     else {
                         response["status"] = "false";
                         response["msg"] = "User is not authorized to delete the publication";
-                        console.log("User is not authorized to delete this publication.");
+                        console.log(response["msg"]);
                         res.send(response);
                     }
                 }
@@ -2171,8 +2197,9 @@ function removeUserSkill(req, res, next) {
     User.findOne(query, function(err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "User does not exist!";
+            response["msg"] = "Invalid Session String";
             res.send(response);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var userID = user.userID;
@@ -2182,6 +2209,7 @@ function removeUserSkill(req, res, next) {
                     response["status"] = "false";
                     response["msg"] = "Can not find user ID in user skill table!";
                     res.send(response);
+                    console.log(response["msg"]);
                 }
                 else {
                     var skillName = req.body.skillName;
@@ -2231,9 +2259,9 @@ function postQuestion(req, res, next) {
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "user not registered.";
-            console.log(response["msg"]);
+            response["msg"] = "Invalid Session String";
             res.send(response);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var maxCount = 1;
@@ -2334,9 +2362,9 @@ function postReply(req, res, next) {
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "user not registered.";
-            console.log(response["msg"]);
+            response["msg"] = "Invalid Session String";
             res.send(response);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var maxCount = 1;
@@ -2363,12 +2391,6 @@ function postReply(req, res, next) {
                     }
                     else {
                         addInterestThroughReply(res,user.userID,parseInt(req.body.postID));
-                        /*
-                                                response["status"] = "true";
-                                                response["msg"] = "Reply posted successfully.";
-                                                res.send(response);
-                                                console.log(response["msg"]);
-                        */
                     }
                 });
             });
@@ -2554,9 +2576,9 @@ function checkOTP(req,res,next) {       //sessionString,OTP
     User.findOne(query,function (err,user) {
         if(user==null||err||user==undefined){
             response["status"] = "false";
-            response["msg"] = "Invalid user";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             if(user.OTP != req.body.OTP){
@@ -2581,9 +2603,9 @@ function getPendingRequests(req,res,next) {       //sessionString for groupAdmin
     User.findOne(query,function (err,user) {
         if(err||user==null){
             response["status"] = "false";
-            response["msg"] = "Invalid sessionString";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else{
             GroupInfo.findOne({"groupID":req.body.groupID},function (err,group) {
@@ -2643,9 +2665,9 @@ function joinPrivateGroup(req,res,next) {       //sessionString for userID, grou
     User.findOne(query,function (err,user) {
         if(err||user==null){
             response["status"] = "false";
-            response["msg"] = "Invalid sessionString";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else{
             GroupJoinRequest.find({"groupID":req.body.groupID,"requesterID":user.userID},function (err,entry) {
@@ -2742,9 +2764,9 @@ function getUserPendingRequests(req,res,next) {
     User.findOne({"sessionString":req.body.sessionString},function (err,user) {
         if(err){
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             GroupJoinRequest.find({"requesterID":user.userID}).sort({"requestedOn":-1},function (err,entries) {
@@ -2784,9 +2806,9 @@ function getUserID(req,res,next) {
     User.findOne({"sessionString":req.body.sessionString},function (err,user) {
         if(err){
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             response["status"] = "true";
@@ -2826,9 +2848,9 @@ function addUserInterest(req,res,next) {
     User.findOne({"sessionString":sessionString},function (err,user) {
         if(err){
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             PostTags.findOne({"tagName":interestName},function (err,tag) {
@@ -2896,9 +2918,9 @@ function removeUserInterest(req,res,next) {
     User.findOne({"sessionString":req.body.sessionString},function (err,user) {
         if(err){
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             PostTags.findOne({"tagName":req.body.interestName},function (err,entry) {
@@ -2952,9 +2974,9 @@ function getUserBulletinBoard(req,res,next) {
     User.findOne({"sessionString":sessionString},function (err,user) {
         if (err) {
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             UserInterests.find({"userID":user.userID},function (err,tags) {
@@ -3050,9 +3072,9 @@ function getUserInterest(req,res,next) {
     User.findOne({"sessionString":sessionString},function (err,user) {
         if (err||user==null) {
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             UserInterests.find({"userID": user.userID}, function (err, tags) {
@@ -3094,9 +3116,9 @@ function logout(req,res,next) {
     User.findOne({"sessionString": sessionString}, function (err, user) {
         if (err||user==null||user==undefined) {
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log(response["msg"]);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             user.set({sessionString:""});
@@ -3272,9 +3294,9 @@ function getMyCircle(req,res,next) {
     User.findOne(query, function (err, user) {
         if (user == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var userID = user.userID;
@@ -3334,9 +3356,9 @@ function sendMessage(req,res,next){
     User.findOne(query, function (err, sender) {
         if (sender == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var query = {"userName": receiverUsername};
@@ -3380,9 +3402,9 @@ function getAllMessages(req,res,next) {
     User.findOne(query, function (err, receiver) {
         if (receiver == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var userID = receiver.userID;
@@ -3529,7 +3551,7 @@ function sendRequest(req,res,next) {
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             query = {"userName": req.body.username};
@@ -3590,7 +3612,7 @@ function getAllConnectionRequests(req,res,next) {
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             FriendRequest.find({"userID":user.userID},function (err,requesters) {
@@ -3643,7 +3665,7 @@ function allowConnectionRequest(req,res,next) {
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             User.findOne({"userName":req.body.username}, function (err, requester) {
@@ -3713,7 +3735,7 @@ function rejectConnectionRequest(req,res,next) {
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             User.findOne({"userName": req.body.username}, function (err, requester) {
@@ -3753,7 +3775,7 @@ function unfriend(req,res,next) {
             response["status"] = "false";
             response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             User.findOne({"userName": req.body.username}, function (err, requester) {
@@ -3810,9 +3832,9 @@ function getMessagesFromAUser(req,res,next) {
     User.findOne(query, function (err, receiver) {
         if (receiver == null) {
             response["status"] = "false";
-            response["msg"] = "Invalid User";
+            response["msg"] = "Invalid Session String";
             res.send(response);
-            console.log("Error: User not found!")
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
         }
         else {
             var query = {"userName": senderUsername};
