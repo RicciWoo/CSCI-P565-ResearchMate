@@ -22,19 +22,24 @@ http.listen(portNumber);
 
 console.log("Server running at silo.soic.indiana.edu:"+portNumber);
 
-app.get('/', function(req, res){
-    res.sendFile(__dirname + '/index.html');
+app.get('/test1', function(req, res){
+    res.sendFile(__dirname + '/index1.html');
+});
+app.get('/test2', function(req, res){
+    res.sendFile(__dirname + '/index2.html');
+});
+app.get('/test3', function(req, res){
+    res.sendFile(__dirname + '/index3.html');
 });
 
-/*
-// For saving logs
-app.use(express.static('../app/'));
-app.use(express.static('log/'));
+
+
 // create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream('./log/access.log', {flags: 'a'});
+var accessLogStream = fs.createWriteStream('./backend/log/access.log', {flags: 'a'});
+
 // setup the logger
 app.use(morgan('combined', {stream: accessLogStream}));
-*/
+
 
 
 app.use(bodyParser.json());
@@ -50,24 +55,24 @@ mongoose.Promise = global.Promise;
 var connection = mongoose.connect('mongodb://silo.soic.indiana.edu:27018/researchMate2', { useMongoClient: true });
 
 //  importing pre-defined model
-var User = require('./app/userModel'),
-    UserInfo = require('./app/userInfoModel'),
-    GroupInfo = require('./app/groupInfoModel'),
-    UserGroup = require('./app/userGroupInfoModel'),
-    Publications = require('./app/publicationsInfoModel'),
-    UserPublications = require('./app/userPublicationInfoModel'),
-    UserFollowee = require('./app/userFolloweeModel'),
-    UserSkills = require('./app/userSkillModel'),
-    Skills = require('./app/skillModel'),
-    PublicationRatings = require('./app/publicationRatings'),
-    DiscussionPosts = require('./app/discussionPosts'),
-    DiscussionReplies = require('./app/discussionReplies'),
-    PostTags = require('./app/postTags'),
-    PostTagsMapping = require('./app/postTagMapping'),
-    GroupJoinRequest = require('./app/groupJoinRequests'),
-    UserInterests = require('./app/userInterests'),
-    Messages = require('./app/messages'),
-    FriendRequest = require('./app/friendRequests');
+var User = require('./models/userModel'),
+    UserInfo = require('./models/userInfoModel'),
+    GroupInfo = require('./models/groupInfoModel'),
+    UserGroup = require('./models/userGroupInfoModel'),
+    Publications = require('./models/publicationsInfoModel'),
+    UserPublications = require('./models/userPublicationInfoModel'),
+    UserFollowee = require('./models/userFolloweeModel'),
+    UserSkills = require('./models/userSkillModel'),
+    Skills = require('./models/skillModel'),
+    PublicationRatings = require('./models/publicationRatings'),
+    DiscussionPosts = require('./models/discussionPosts'),
+    DiscussionReplies = require('./models/discussionReplies'),
+    PostTags = require('./models/postTags'),
+    PostTagsMapping = require('./models/postTagMapping'),
+    GroupJoinRequest = require('./models/groupJoinRequests'),
+    UserInterests = require('./models/userInterests'),
+    Messages = require('./models/messages'),
+    FriendRequest = require('./models/friendRequests');
 
 //  mundane accessory functions
 //  basic response initialization
@@ -75,7 +80,6 @@ var response = {
     "status":"false",
     "msg" : ""
 };
-
 
 //  hashing function
 var myHasher = function(password) {
@@ -217,7 +221,7 @@ function verifyUser(req,res,next) {
             console.log(username+"doesn't exist.");
         }
         else{
-            if(seeUser.verificationNumber == parseInt(verifNumber)) {
+            if(seeUser.verificationNumber == parseInt(verifNumber)&&parseInt(verifNumber) != -565) {
                 User.findOneAndUpdate({userName: seeUser.userName}, {$set: {verificationNumber: 1}}, function (err, updatedUser) {
                     if (err) {
                         response["status"] = "false";
@@ -225,35 +229,38 @@ function verifyUser(req,res,next) {
                         res.send(response);
                     }
                     else {
+                        var pic = "http://silo.soic.indiana.edu:" + portNumber.toString() + "/public/userIcon.jpg";
 
-                        var maxCount = 1;
-                        UserInfo.findOne().sort('-userID').exec(function (err, entry) {
-                            // entry.userID is the max value
-                            if (entry == null) {
-                                maxCount = 1;
+                        var userInfo = new UserInfo({
+                            userID: seeUser.userID,
+                            university: "",
+                            location: {
+                                address: "",
+                                city: "",
+                                state: "",
+                                country: ""
+                            },
+                            dob: Date.now(),
+                            advisor: {
+                                primary: "",
+                                secondary: ""
+                            },
+                            picture: pic,
+                            summary: ""
+                        });
+                        userInfo.save(function (err) {
+                            if (err) {
+                                response["status"] = "false";
+                                response["msg"] = "unable to add into userInfo";
+                                res.send(response);
+                                console.log("unable to add into userInfo");
                             }
                             else {
-                                maxCount = entry.userID + 1;
+                                response["status"] = "true";
+                                response["msg"] = "Verification Successful.";
+                                res.send(response);
+                                console.log("added into userInfo");
                             }
-
-                            var pic = "http://silo.soic.indiana.edu:"+portNumber.toString()+"/public/userIcon.jpg";
-                            var userInfo = new UserInfo({userID: maxCount,picture:pic});
-
-
-                            userInfo.save(function (err) {
-                                if (err) {
-                                    response["status"] = "false";
-                                    response["msg"] = "unable to add into userInfo";
-                                    res.send(response);
-                                    console.log("unable to add into userInfo");
-                                }
-                                else {
-                                    response["status"] = "true";
-                                    response["msg"] = "Verification Successful.";
-                                    res.send(response);
-                                    console.log("added into userInfo");
-                                }
-                            });
                         });
                     }
                 });
@@ -300,6 +307,12 @@ function login(req,res,next) {
             if(seeUser.verificationNumber != 1){
                 response["status"] = "false";
                 response["msg"] = "User not verified.";
+                res.send(response);
+                console.log(username + " is not verified.");
+            }
+            else if(seeUser.verificationNumber == -565){
+                response["status"] = "false";
+                response["msg"] = "User Blocked. Contact admin.";
                 res.send(response);
                 console.log(username + " is not verified.");
             }
@@ -3361,53 +3374,6 @@ function sendMessage(req,res,next){
     });
 }
 
-app.post('/getMessagesFromAUser',getMessagesFromAUser);           //sessionString(receiver), username(sender)
-function getMessagesFromAUser(req,res,next) {
-    var receiverSessionString = req.body.sessionString;
-    var senderUsername = req.body.username;
-    var query = {"sessionString": receiverSessionString};
-    User.findOne(query, function (err, receiver) {
-        if (receiver == null) {
-            response["status"] = "false";
-            response["msg"] = "Invalid User";
-            res.send(response);
-            console.log("Error: User not found!")
-        }
-        else {
-            var query = {"userName": senderUsername};
-            User.findOne(query, function (err, sender) {
-                if (sender == null) {
-                    response["status"] = "false";
-                    response["msg"] = "User you want to get msgs from cannot be found.";
-                    res.send(response);
-                    console.log("Error: Sender not found!")
-                }
-                else {
-                    var MSGArray = [];
-                    var query = {"senderID":sender.userID,"receiverID":receiver.userID};
-                    Messages.find(query).sort('sentOn').exec(function (err,msgs) {
-                        if(err||msgs.length==0){
-                            response["status"] = "false";
-                            response["msg"] = "No messages. LAME.";
-                            res.send(response);
-                            console.log(response)
-                        }
-                        else {
-                            for(var i = 0; i < msgs.length; i++) {
-                                MSGArray.push(msgs[i]);
-                            }
-                            response["status"] = "true";
-                            response["msg"] = MSGArray;
-                            res.send(response);
-                            console.log(response["status"]);
-                        }
-                    });
-                }
-            });
-        }
-    });
-}
-
 app.post('/getAllMessages',getAllMessages);           //sessionString(receiver)
 function getAllMessages(req,res,next) {
     var query = {"sessionString": req.body.sessionString};
@@ -3503,13 +3469,26 @@ function sendMessageResponse(res,follower,userID) {
 }
 
 // chat
+var connectedUsers = [];
 io.on('connection', function (socket) {
+    // when the user disconnects.. perform this
+    socket.on('cut', function (data) {
+        delete connectedUsers[data.sender];
+    });
+
     socket.on('universal', function (data) {
         var txt = {};
         txt["sender"] = data.sender;
         txt["receiver"] = data.receiver;
         txt["message"] = data.message;
         console.log(txt);
+
+        connectedUsers[data.sender] = socket.id;
+
+        console.log(connectedUsers);
+
+        var receiverID = connectedUsers[data.receiver];
+
         User.findOne({"userName":txt["sender"]},function (err,sender) {
             if (err||sender ==null) {
                 return new Error("Database Error for sender");
@@ -3532,14 +3511,13 @@ io.on('connection', function (socket) {
                             }
                             else {
                                 console.log("msg sent.");
-                                socket.broadcast.emit('universal', txt);
+                                socket.to(receiverID).emit('universal', txt);
                             }
                         });
                     }
                 });
             }
         });
-        socket.broadcast.emit('universal', txt);
     });
 });
 
@@ -3721,6 +3699,254 @@ function allowConnectionRequest(req,res,next) {
                             });
                         }
                     });
+                }
+            });
+        }
+    });
+}
+
+app.post('/rejectConnectionRequest',rejectConnectionRequest);           //sessionString(me), username (requester)
+function rejectConnectionRequest(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            User.findOne({"userName": req.body.username}, function (err, requester) {
+                if (requester == null || err) {
+                    response["status"] = "false";
+                    response["msg"] = "He/She/It is just your imagination.";
+                    res.send(response);
+                    console.log(response)
+                }
+                else {
+                    FriendRequest.findOne({"requesterID": requester.userID, "userID": user.userID},function(err,entry){
+                        if (err || entry == null || entry == undefined) {
+                            response["status"] = "false";
+                            response["msg"] = "He/She/It is not in the table anymore.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            entry.remove();
+                            response["status"] = "true";
+                            response["msg"] = "request deleted.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/unfriend',unfriend);           //sessionString(me), username (to unfriend)
+function unfriend(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            User.findOne({"userName": req.body.username}, function (err, requester) {
+                if (requester == null || err) {
+                    response["status"] = "false";
+                    response["msg"] = "He/She/It is just your imagination.";
+                    res.send(response);
+                    console.log(response)
+                }
+                else {
+                    UserFollowee.findOne({
+                        "userID": user.userID,
+                        "followeeID": requester.userID
+                    }, function (err, entry1) {
+                        if (err || entry == null || entry == undefined) {
+                            response["status"] = "false";
+                            response["msg"] = "He/She/It is just your imagination.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            UserFollowee.findOne({
+                                "userID": requester.userID,
+                                "followeeID": user.userID
+                            }, function (err, entry2) {
+                                if (err || entry == null || entry == undefined) {
+                                    response["status"] = "false";
+                                    response["msg"] = "He/She/It is just your imagination.";
+                                    res.send(response);
+                                    console.log(response)
+                                }
+                                else {
+                                    entry1.remove();
+                                    entry2.remove();
+                                    response["status"] = "true";
+                                    response["msg"] = "Friend Removed. I hope you are happy with yourself.";
+                                    res.send(response);
+                                    console.log(response)
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getMessagesFromAUser',getMessagesFromAUser);           //sessionString(receiver), username(sender)
+function getMessagesFromAUser(req,res,next) {
+    var receiverSessionString = req.body.sessionString;
+    var senderUsername = req.body.username;
+    var query = {"sessionString": receiverSessionString};
+    User.findOne(query, function (err, receiver) {
+        if (receiver == null) {
+            response["status"] = "false";
+            response["msg"] = "Invalid User";
+            res.send(response);
+            console.log("Error: User not found!")
+        }
+        else {
+            var query = {"userName": senderUsername};
+            User.findOne(query, function (err, sender) {
+                if (sender == null) {
+                    response["status"] = "false";
+                    response["msg"] = "User you want to get msgs from cannot be found.";
+                    res.send(response);
+                    console.log("Error: Sender not found!")
+                }
+                else {
+                    var query = {"senderID": sender.userID, "receiverID": receiver.userID};
+                    Messages.find(query).sort('sentOn').exec(function (err, msgs1) {
+                        if (err || msgs1.length == 0) {
+                            response["status"] = "false";
+                            response["msg"] = "No messages. LAME.";
+                            res.send(response);
+                            console.log(response)
+                        }
+                        else {
+                            var query = {"senderID": receiver.userID, "receiverID": sender.userID};
+                            Messages.find(query).sort('sentOn').exec(function (err, msgs2) {
+                                if (err || msgs2.length == 0) {
+                                    response["status"] = "false";
+                                    response["msg"] = "No messages. LAME.";
+                                    res.send(response);
+                                    console.log(response)
+                                }
+                                else {
+
+                                    var convo = [];
+                                    var chatters = [];
+                                    chatters.push({"userID":receiver.userID,"username":receiver.userName,"firstName":receiver.firstName,"lastName":receiver.lastName});
+                                    chatters.push({"userID":sender.userID,"username":sender.userName,"firstName":sender.firstName,"lastName":sender.lastName});
+
+                                    for (var i = 0; i < msgs1.length; i++) {
+                                        convo.push(msgs1[i]);
+                                    }
+
+                                    for (var i = 0; i < msgs2.length; i++) {
+                                        convo.push(msgs2[i]);
+                                    }
+
+                                    response["status"] = "true";
+                                    response["msg"] = {"users": chatters, "conversation": convo};
+                                    res.send(response);
+                                    console.log(response["msg"]);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/getAllUsers',getAllUsers);
+function getAllUsers(req,res,next) {
+    User.find({},function (err,users) {
+        if(err){
+            response["status"] = "false";
+            response["msg"] = "Error in database.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else{
+            UserInfo.find({},function (err,userInfos) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "Error in database.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else{
+                    response["status"] = "true";
+                    response["msg"] = {"users": users, "userInfos": userInfos};
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+            });
+        }
+    });
+}
+
+app.post('/activateUser',activateUser);           //username
+function activateUser(req,res,next) {
+    var username = req.body.username;
+    User.findOne({"userName":username},function (err,user) {
+        if(err||user==null||user==undefined){
+            response["status"] = "false";
+            response["msg"] = "Invalid Username.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            user.set({verificationNumber: 1});
+            user.save(function(err, updatedUser) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "Failed to activate User. Please try again";
+                    res.send(response);
+                } else {
+                    response["msg"] = "Activated user successfully.";
+                    response["status"] = "true";
+                    res.send(response);
+                }
+            });
+        }
+    });
+}
+
+app.post('/deactivateUser',deactivateUser);           //username
+function deactivateUser(req,res,next) {
+    var username = req.body.username;
+    User.findOne({"userName":username},function (err,user) {
+        if(err||user==null||user==undefined){
+            response["status"] = "false";
+            response["msg"] = "Invalid Username.";
+            res.send(response);
+            console.log(response["msg"]);
+        }
+        else {
+            user.set({verificationNumber: -565});
+            user.save(function(err, updatedUser) {
+                if (err) {
+                    response["status"] = "false";
+                    response["msg"] = "Failed to deactivate User. Please try again";
+                    res.send(response);
+                }
+                else {
+                    response["msg"] = "Deactivated user successfully.";
+                    response["status"] = "true";
+                    res.send(response);
                 }
             });
         }
