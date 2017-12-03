@@ -1,0 +1,19 @@
+<div ng-controller="adminCtrl" style="margin-top:100px">
+ <div class="bg-white container">
+    <ul class="list-group" ng-repeat="userDetail in userDetails">
+        <li class="list-group-item" style="margin-top:20px">
+            <div class="row">
+                    <img src={{userDetail.userInfo.picture}} class="rounded-circle col-lg-2 " alt="No Image Available" style="height: 120px;width: 40px">
+                   <h5 class="col-lg-4">{{userDetail.user.firstName}} {{userDetail.user.lastName}}</h5> 
+                   <div class="col-lg-4"></div>
+                   <div class="col-lg-2"  ng-click="activate(userDetail.user.userName,$index, $event)">
+                        <button type="button" class="btn btn-success">Activate</button>
+                    </div>
+            </div>
+            
+        </li>
+      
+      </ul>
+ 
+ </div>
+</div>
