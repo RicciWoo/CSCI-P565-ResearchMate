@@ -8,7 +8,7 @@
         <div id="aboutme" class="col-lg-6 following" ng-include="'./components/following/following.html'">
 
         </div>
-        <div id="aboutme" class="col-lg-6 following" ng-include="'./components/group/group.html'">
+        <div id="aboutme" class="col-lg-6 following" ng-include="'./components/Group/group.html'">
         </div>
     </div>
     <div class="row">
@@ -36,7 +36,7 @@
                 </div>
                 <div style="padding:5px 0px;" ng-repeat="publication in publicationInfo" class="row">
                     <div class="col-lg-6 text-ellipsis">
-                        <a href="/researchmate/#/publication/{{publication.publicationID}}">{{publication.name}}</a>
+                        <a href="/#/publication/{{publication.publicationID}}">{{publication.name}}</a>
                     </div>
                     <div class="text-ellipsis col-lg-3 col-md-6">{{publication.publishedAt}} </div>
                     <jk-rating-stars class=col-lg-3 rating="publication.avgRating" ng-click="ratePublication(publication.publicationID,publication.avgRating)" read-only="allowEdit"></jk-rating-stars>

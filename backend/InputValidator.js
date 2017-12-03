@@ -85,7 +85,7 @@ module.exports = {
       msg += "Username cannot be blank\n";
       result = false;
     }
-    if(verfication == undefined || verficiation.trim() == ""){
+    if(verification == undefined || verification.trim() == ""){
       msg += "Verification number cannot be blank\n";
       result = false;
     }

@@ -35,9 +35,9 @@ myApp.config(function ($routeProvider) {
     }).when("/discussiondetail/:groupid/:postid", {
       templateUrl: "components/discussion/discussion-detail.html"
     }).when("/creategroup", {
-      templateUrl: "components/group/add-group.html"
+      templateUrl: "components/Group/add-group.html"
     }).when("/pendingrequest/:groupID", {
-      templateUrl: "components/group/pending-request.html"
+      templateUrl: "components/Group/pending-request.html"
     }).when("/chat", {
       templateUrl: "components/chat/chat.html"
     });

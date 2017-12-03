@@ -102,7 +102,7 @@ myApp.controller('indexController', ['$scope','$location','URL','$cookies','$coo
     $cookies.remove('username');
     $cookies.remove('userID');
     $cookies.remove('sessionString');
-window.location.href="http://localhost/researchmate";
+window.location.href="/#/";
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.signOut().then(function () {
         auth2.disconnect();

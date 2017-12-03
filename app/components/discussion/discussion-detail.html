@@ -12,7 +12,7 @@
     <div class="reply-row col-lg-12" ng-repeat="reply in replyInfo">
       <div class="col-lg-10">{{reply.replyString}}</div>
       <div class="col-lg-12 row text-right">
-        <div class="col-lg-10 text-ellipsis"><a href="http://localhost/researchmate/#/profile/{{userInfo[reply.userID].userName}}">{{userInfo[reply.userID].firstName}} {{userInfo[reply.userID].lastName}}</a></div>
+        <div class="col-lg-10 text-ellipsis"><a href="/#/profile/{{userInfo[reply.userID].userName}}">{{userInfo[reply.userID].firstName}} {{userInfo[reply.userID].lastName}}</a></div>
         <div class="col-lg-2">{{reply.postedOn|date:"MM/dd/yy"}}</div>
       </div>
     </div>

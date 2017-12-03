@@ -18,17 +18,17 @@
   <script src="components/login/loginController.js"></script>
   <script src="components/signup/signupController.js"></script>
   <script src="components/profile/profileController.js"></script>
-  <script src="components/group/groupController.js?ver=1"></script>
+  <script src="components/Group/groupController.js?ver=1"></script>
   <script src="components/publication/publicationController.js"></script>
   <script src="components/aboutme/aboutmeController.js"></script>
-  <script src="components/following/followingCOntroller.js"></script>
+  <script src="components/following/followingController.js"></script>
   <script src="components/groups/groupsController.js"></script>
   <script src="components/search/searchController.js"></script>
   <script src="components/discussion/genDiscussionController.js"></script>
   <script src="components/discussion/displayDiscussionController.js"></script>
   <script src="components/discussion/discussionDetailController.js"></script>
-  <script src="components/group/addGroupController.js"></script>
-  <script src="components/group/pendingRequestController.js"></script>
+  <script src="components/Group/addGroupController.js"></script>
+  <script src="components/Group/pendingRequestController.js"></script>
   <script src="components/chat/chat.js"></script>
   <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular-cookies.js"></script>
@@ -76,15 +76,15 @@
     <div  class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a href="/researchmate/#/profile/" class="nav-link">Home</a>
+          <a href="/#/profile/" class="nav-link">Home</a>
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Discussions
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a href="/researchmate/#/gendiscussion/" class="dropdown-item">Post a Discussion</a>
-            <a href="/researchmate/#/discussion/-1" class="dropdown-item">View All Discussions</a>
+            <a href="/#/gendiscussion/" class="dropdown-item">Post a Discussion</a>
+            <a href="/#/discussion/-1" class="dropdown-item">View All Discussions</a>
           </div>
         </li>
         <li class="nav-item dropdown">
@@ -92,12 +92,12 @@
             Groups
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a href="/researchmate/#/creategroup/" class="dropdown-item">Create Group</a>
-            <a href="/researchmate/#/groups" class="dropdown-item">View All Groups</a>
+            <a href="/#/creategroup/" class="dropdown-item">Create Group</a>
+            <a href="/#/groups" class="dropdown-item">View All Groups</a>
           </div>
         </li>
         <li class="nav-item active">
-          <a href="/researchmate/#/chat/" class="nav-link">Chat</a>
+          <a href="/#/chat/" class="nav-link">Chat</a>
         </li>
       </ul>
       <div data-toggle="modal" data-target="#pendingReqModal" style="padding-right: 20px; cursor:pointer;" class="form-inline my-1 my-lg-1"><i class="fa fa-2x fa-users" aria-hidden="true"></i>
