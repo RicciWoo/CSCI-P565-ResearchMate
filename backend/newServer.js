@@ -399,7 +399,6 @@ function updatePassword(req, res, next){
             response["msg"] = "User does not exist.";
             res.send(response);
             console.log(response["msg"] + "sessionString: " + sessionString);
-
         }
         else{
             if(UserObj.sessionString == sessionString){
@@ -507,12 +506,12 @@ function forgetPassword(req, res, next){
                 }
                 else {
                     var firstname = UserObj.firstName;
-                    var link = 'http://silo.soic.indiana.edu:54545/#/updatepassword';
+                    var link = 'http://silo.soic.indiana.edu:54545/#/updatepassword'+ '?sessionStr=' + rand;
                     var mailOptions = {
                         from: 'se.researchmate@gmail.com',
                         to: UserObj.emailID,
                         subject: 'Hello '+ firstname +'. Please reset your password' ,
-                        text: 'Hello ' + firstname + '. Please click the link to reset your password: ' + link + '?sessionString=' + rand
+                        text: 'Hello ' + firstname + '. Please click the link to reset your password: ' + link
                     };
                     sendMaill(mailOptions);
                     response["msg"] = "Password reset link sent on your email. Please check your email";
@@ -3983,6 +3982,96 @@ function deactivateUser(req,res,next) {
                     response["msg"] = "Deactivated user successfully.";
                     response["status"] = "true";
                     res.send(response);
+                }
+            });
+        }
+    });
+}
+
+app.post('/deleteAPaper',deleteAPaper);           //sessionString, publicationID
+function deleteAPaper(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
+        }
+        else {
+            UserPublications.findOne({"publicationID":req.body.publicationID,"userID":user.userID},function (err,entry) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "DB error";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else if(entry==null||entry==undefined){
+                    response["status"] = "false";
+                    response["msg"] = "You don't own this paper.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    entry.remove(function (err) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "DB error";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = "Paper deleted.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+app.post('/leaveAGroup',leaveAGroup);           //sessionString, groupID
+function leaveAGroup(req,res,next) {
+    var query = {"sessionString": req.body.sessionString};
+    User.findOne(query, function (err, user) {
+        if (user == null || err) {
+            response["status"] = "false";
+            response["msg"] = "Invalid Session String";
+            res.send(response);
+            console.log(response["msg"] + " sessionString: " + req.body.sessionString);
+        }
+        else {
+            UserGroup.findOne({"userID":user.userID,"groupID":req.body.groupID},function (err,entry) {
+                if(err){
+                    response["status"] = "false";
+                    response["msg"] = "DB error";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else if(entry==null||entry==undefined){
+                    response["status"] = "false";
+                    response["msg"] = "You are not a member of this group.";
+                    res.send(response);
+                    console.log(response["msg"]);
+                }
+                else {
+                    entry.remove(function (err) {
+                        if(err){
+                            response["status"] = "false";
+                            response["msg"] = "DB error";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                        else {
+                            response["status"] = "true";
+                            response["msg"] = "left the group.";
+                            res.send(response);
+                            console.log(response["msg"]);
+                        }
+                    });
                 }
             });
         }
