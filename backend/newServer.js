@@ -327,15 +327,15 @@ function login(req,res,next) {
             console.log(response["msg"]);
         }
         else{
-            if(seeUser.verificationNumber != 1){
+            if(seeUser.verificationNumber == -1){
                 response["status"] = "false";
-                response["msg"] = "User not verified: " + username;
+                response["msg"] = "User Blocked. Contact admin. username: "+ username;
                 res.send(response);
                 console.log(response["msg"]);
             }
-            else if(seeUser.verificationNumber == -1){
+            else if(seeUser.verificationNumber != 1){
                 response["status"] = "false";
-                response["msg"] = "User Blocked. Contact admin. username: "+ username;
+                response["msg"] = "User not verified: " + username;
                 res.send(response);
                 console.log(response["msg"]);
             }
