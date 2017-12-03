@@ -3,17 +3,17 @@
     <ul class="list-group" ng-repeat="userDetail in userDetails">
         <li class="list-group-item" style="margin-top:20px">
             <div class="row">
-                    <img src={{userDetail.userInfo.picture}} class="rounded-circle col-lg-2 " alt="No Image Available" style="height: 120px;width: 40px">
-                   <h5 class="col-lg-4">{{userDetail.user.firstName}} {{userDetail.user.lastName}}</h5> 
+                    <img check-image ng-src={{userDetail.userInfo.picture}} class="rounded-circle col-lg-2 " alt="No Image Available" style="height: 140px;">
+                   <h5 class="col-lg-4">{{userDetail.user.firstName}} {{userDetail.user.lastName}}</h5>
                    <div class="col-lg-4"></div>
-                   <div class="col-lg-2"  ng-click="activate(userDetail.user.userName,$index, $event)">
-                        <button type="button" class="btn btn-success">Activate</button>
+                   <div class="col-lg-2">
+                        <input type="button" ng-click="activate(userDetail.user.userName,$index, $event)" value={{userDetail.active?'Deactivate':'Activate'}} class="btn btn-success"></input>
                     </div>
             </div>
-            
+
         </li>
-      
+
       </ul>
- 
+
  </div>
 </div>

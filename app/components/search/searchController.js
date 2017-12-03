@@ -98,7 +98,7 @@ $scope.followUser = function(username){
 
 
 $(function(){
-  $('#ratingValue').on('change', function(){
+  $(document).on('change','#ratingValue', function(){
     var $this = $(this);
     var value = $this.val();
     $('#publicationSearchSection [rating-value]').each(function(value){

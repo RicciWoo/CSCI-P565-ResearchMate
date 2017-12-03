@@ -19,16 +19,14 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
          url: "https://www.reddit.com/search.json?q="+searchQuery+"&sort=hot",
          method: "GET"
        }).then(function success(response){
-         debugger
          if(response.status == 200){
            if(response.data != undefined && response.data.data!=undefined && response.data.data.children != undefined){
-             debugger
              $scope.redditBullets = $scope.redditBullets.concat(response.data.data.children);
            }
          }
        },
      function error(response){
-    debugger
+          console.log(response.statusText)
      });
      };
 
@@ -135,8 +133,8 @@ myApp.controller('aboutmeController', ['$scope', '$http', 'URL','$cookies','$loc
               $scope.lastname = userinfo.user.lastName;
               $scope.name=$scope.firstname+" "+$scope.lastname;
               $scope.imgLocation = "http://simpleicon.com/wp-content/uploads/user1.png";
-              $scope.address = userinfo.userInfo.location.address != undefined && userinfo.userInfo.location.address.trim()!=""?userinfo.userInfo.location.address + ',':"";
-              $scope.city = userinfo.userInfo.location.city != undefined && userinfo.userInfo.location.city.trim()!=""?userinfo.userInfo.location.city + ',':"";
+              $scope.address = userinfo.userInfo.location.address;
+              $scope.city = userinfo.userInfo.location.city;
               $scope.state = userinfo.userInfo.location.state;
               $scope.country = userinfo.userInfo.location.country;
               $scope.summary =  userinfo.userInfo.summary;

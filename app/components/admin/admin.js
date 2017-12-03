@@ -18,14 +18,14 @@ myApp.controller("adminCtrl", ['$scope', '$http', 'URL',  function ($scope, $htt
                     $scope.active=true;
                     else
                     $scope.active=false;
-                   
+
                      $scope.userDetails.push({
                          user:$scope.users[i],
                          userInfo:$scope.userInfos[i],
                          active:$scope.active
                      })
-                    
-                     
+
+
                 }
                 console.log($scope.userDetails)
             }
@@ -37,9 +37,9 @@ myApp.controller("adminCtrl", ['$scope', '$http', 'URL',  function ($scope, $htt
         );
 
         $scope.activate = function(userName,index, $event)
-        { 
+        {
             var method = "/activateUser";
-            if($event.target.value == "Activate")
+            if($event.target.value != "Activate")
                 method = "/deActivateUser";
             $http({
                 url: URL + method,
@@ -48,46 +48,24 @@ myApp.controller("adminCtrl", ['$scope', '$http', 'URL',  function ($scope, $htt
 
             }).then(function success(response) {
                 if (response.status == 200) {
-                    if (response.data.status == false && response.data.msg != undefined && response.data.msg != "") {
+                    if (response.data.status == "true") {
+                      debugger
                         console.log(response.data.users);
-                        if($event.target.value == "Activate")
+                        if($event.target.value != "Activate")
                             $event.target.value = "Activate";
-                        else    
-                        $event.target.value = "Deactivate";
+                        else
+                          $event.target.value = "Deactivate";
                     }
                     else {
                         console.log(response.data.msg);
-                       
+
                     }
                 }
             },
                 function error(response) {
-        
+
                 }
                 );
         }
-        $scope.deActivate = function(userName,index)
-        {
-            alert("deactivated : "+userName);
-            $http({
-                url: "http://silo.soic.indiana.edu:54545/deActivateUser",
-                method: "POST",
-                data: {'username':userName}
 
-            }).then(function success(response) {
-                if (response.status == 200) {
-                    if (response.data.status == false && response.data.msg != undefined && response.data.msg != "") {
-                        console.log(response.data.users);
-                    }
-                    else {
-                        console.log(response.data.msg);
-                       
-                    }
-                }
-            },
-                function error(response) {
-        
-                }
-                );  
-        }
 }])
