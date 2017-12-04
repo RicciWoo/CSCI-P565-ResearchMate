@@ -41,7 +41,7 @@
             Upload publication file <input ngf-select = "uploadPublication($file)" type="file" hidden>
           </label>
         </div>
-        <div ng-show="!allowEdit">
+        <div ng-show="allowEdit">
           <iframe ng-src={{publicationPath}} height="400" class="col-lg-12" ></iframe>
         </div>
        
