@@ -36,19 +36,19 @@
             <input type="text" placeholder="Other Users (comma separated)" class="form-control" ng-model="otherUsers" />
         </div>
 
-        <div ng-show="!allowEdit" class="row">
+        <div ng-show="!show" class="row">
           <label class="btn btn-link">
             Upload publication file <input ngf-select = "uploadPublication($file)" type="file" hidden>
           </label>
         </div>
-        <div ng-show="allowEdit">
+        <div>
           <iframe ng-src={{publicationPath}} height="400" class="col-lg-12" ></iframe>
         </div>
        
         <div class="row" >
             
         <div  class="row col-lg-4" >
-          <input type="button" ng-click="savePublication()" class="btn btn-success" value="Save publication" ng-show="!allowEdit" />
+          <input type="button" ng-click="savePublication()" class="btn btn-success" value="Save publication" ng-show="!show" />
         </div>
         <div  class="row col-lg-6  "></div>
         <div  class="row col-lg-2  "  >

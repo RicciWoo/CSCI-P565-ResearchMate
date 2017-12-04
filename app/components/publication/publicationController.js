@@ -8,7 +8,7 @@ $scope.uploadPublication = function($file){
 
 }
 $scope.allowEdit = false;
-
+$scope.show=true;
 var url = $location.path().split('/');
 if(url.length ==3){
   var publicationID = url[2];
@@ -36,7 +36,11 @@ if(url.length ==3){
           for(var i=0;i<userInfo.length;i++){
             if($scope.sessionString == userInfo[i].sessionString){
               $scope.allowEdit = true;
+            
               break;
+            }
+            else{
+              $scope.show=true;
             }
           }
         }
@@ -50,7 +54,7 @@ function error(response){
 }
 else{
   
-  $scope.allowEdit = false;
+  $scope.show = false;
 }
 $scope.deletePublication = function(){
   var result = confirm("Are you sure you want to delete this paper?");
