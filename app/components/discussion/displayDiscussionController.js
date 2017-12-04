@@ -132,7 +132,8 @@ $scope.addUserInterest = function(){
     }
   }).then(function success(response){
     if(response.status == 200 && response.data.status == "true"){
-      $scope.userInterests.push({'tagName': userInterest})
+      $scope.userInterests.push({'tagName': userInterest});
+      $scope.interest = "";
     }
   },
 function error(response){

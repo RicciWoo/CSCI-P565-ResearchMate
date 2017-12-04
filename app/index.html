@@ -6,6 +6,7 @@
   <script src="https://apis.google.com/js/platform.js" async defer></script>
   <link rel="stylesheet" href="assets/css/page.css">
   <link rel="stylesheet" href="assets/css/profile.css">
+
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
     crossorigin="anonymous">
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
@@ -29,6 +30,7 @@
   <script src="components/discussion/discussionDetailController.js"></script>
   <script src="components/Group/addGroupController.js"></script>
   <script src="components/Group/pendingRequestController.js"></script>
+  <script src="components/admin/admin.js"></script>
   <script src="components/chat/chat.js"></script>
   <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular-cookies.js"></script>
@@ -103,7 +105,7 @@
       <div data-toggle="modal" data-target="#pendingReqModal" style="padding-right: 20px; cursor:pointer;" class="form-inline my-1 my-lg-1"><i class="fa fa-2x fa-users" aria-hidden="true"></i>
           <h2 style="color: #fff; margin-top: -20px; margin-left: -10px;" class="badge badge-danger">{{connectionReqCount}}</h2>
       </div>
-      <form class="form-inline my-2 my-lg-0 hidden-sm hidden-xs" role="search" ng-show="loggedIn">
+      <form class="form-inline my-2 my-lg-0 hidden-sm hidden-xs" role="search">
         <input class="form-control" type="search" ng-model="searchStr" name="q" placeholder="Search" aria-label="Search">
         <button class="btn btn-default my-2 my-sm-0" type="button" ng-click="searchQuery()" style="margin-left: -5px;"><i class="fa fa-search"></i></button>
 

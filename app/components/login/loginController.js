@@ -59,13 +59,22 @@ function loginUser(username, password){
     if (response.status == 200) {
       if (response.data.status == "false") {
         if (response.data.msg != "")
-          alert(response.data.msg);
+          {
+            if(response.data.msg.toLowerCase().indexOf('blocked')!=-1){
+              alert("You account has been blocked by administrator. Please contact Admin");
+            }
+            else{
+              alert(response.data.msg);
+            }
+          }
       }
       else {
+        var now = new Date();
+        now.setDate(now.getFullYear(), now.getMonth(), now.getDate()+2);
         $cookies.remove('sessionString');
         $cookies.remove('username');
-        $cookies.put('sessionString', response.data.msg);
-        $cookies.put('username', username);
+        $cookies.put('sessionString', response.data.msg, {expires: now, path: '/'});
+        $cookies.put('username', username, {expires: now, path: '/'});
         var otp = prompt("Please enter OTP");
         if(otp == undefined || otp == "")
           return;
@@ -84,6 +93,7 @@ function loginUser(username, password){
             }
             else{
               alert(response.data.msg);
+
             }
           }
         },

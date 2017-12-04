@@ -8,6 +8,7 @@ $scope.uploadPublication = function($file){
 
 }
 $scope.allowEdit = false;
+$scope.show=true;
 var url = $location.path().split('/');
 if(url.length ==3){
   var publicationID = url[2];
@@ -34,8 +35,12 @@ if(url.length ==3){
 
           for(var i=0;i<userInfo.length;i++){
             if($scope.sessionString == userInfo[i].sessionString){
-              $scope.allowEdit = false;
+              $scope.allowEdit = true;
+            
               break;
+            }
+            else{
+              $scope.show=true;
             }
           }
         }
@@ -48,9 +53,40 @@ function error(response){
 );
 }
 else{
-  $scope.allowEdit = true;
+  
+  $scope.show = false;
 }
+$scope.deletePublication = function(){
+  var result = confirm("Are you sure you want to delete this paper?");
 
+if(result){
+  $http({
+    url: "http://silo.soic.indiana.edu:54545/deleteAPaper",
+    method: "POST",
+    data: {
+      'sessionString': $scope.sessionString,
+      'publicationID':publicationID
+  },
+
+}).then(function success(response){
+  if(response.status == 200){
+    if(response.data.status == false && response.data.msg!=undefined && response.data.msg!="")
+      console.log(response.data.msg);
+    else{
+   
+      alert(response.data.msg);
+      $location.path('/profile/'+$scope.username);
+
+    }
+  }
+},
+function error(response){
+
+}
+);
+}
+ 
+}
 $scope.savePublication = function(){
 /**
  * check if all the required values are provided

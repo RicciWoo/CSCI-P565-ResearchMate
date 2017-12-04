@@ -97,12 +97,36 @@ myApp.controller('indexController', ['$scope','$location','URL','$cookies','$coo
   });
   };
 
+  $scope.windowClose = function(){
+    $http({
+      url: URL + "/logout",
+      method: "POST",
+      data:{
+        'sessionString': sessionString
+      }
+    });
+  };
+
+  window.onbeforeunload = $scope.windowClose;
 
   $scope.signOut = function() {
+    $http({
+      url: URL + "/logout",
+      method: "POST",
+      data:{
+        'sessionString': sessionString
+      }
+    }).then(function success(response){
+      console.log(response.data.msg);
+    },
+  function error(response){
+    console.log(response.statusText);
+  });
     $cookies.remove('username');
     $cookies.remove('userID');
     $cookies.remove('sessionString');
 window.location.href="/#/";
+$('.menu-header').hide();
       var auth2 = gapi.auth2.getAuthInstance();
       auth2.signOut().then(function () {
         auth2.disconnect();

@@ -22,7 +22,6 @@ myApp.controller('followingController', ['$scope', '$http', 'URL','$cookies','$l
           alert(response.data.msg);
         else{
           self.followerInfo = response.data.msg.userInfo;
-
         }
       }
     },

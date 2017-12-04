@@ -40,6 +40,8 @@ myApp.config(function ($routeProvider) {
       templateUrl: "components/Group/pending-request.html"
     }).when("/chat", {
       templateUrl: "components/chat/chat.html"
+    }).when("/admin", {
+      templateUrl: "components/admin/admin.html"
     });
 
 
