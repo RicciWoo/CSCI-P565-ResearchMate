@@ -97,17 +97,6 @@ myApp.controller('indexController', ['$scope','$location','URL','$cookies','$coo
   });
   };
 
-  $scope.windowClose = function(){
-    $http({
-      url: URL + "/logout",
-      method: "POST",
-      data:{
-        'sessionString': sessionString
-      }
-    });
-  };
-
-  window.onbeforeunload = $scope.windowClose;
 
   $scope.signOut = function() {
     $http({
