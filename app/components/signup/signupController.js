@@ -40,8 +40,10 @@ $scope.checkGoogleSignup=function(){
 }
 
   $scope.submit = function(){
-    if($scope.signupForm.$invalid)
+    if($scope.signupForm.$invalid){
+      alert("Some of the fields are incorrect. Please check info icon aside fields for more info");
       return;
+    }
     var firstname = $scope.fname;
     var lastname = $scope.lname;
     var email = $scope.email;
